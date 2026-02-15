@@ -4,6 +4,7 @@ export interface IdentifyingData {
   lastName: string;
   firstName: string;
   middleName: string;
+  trueName: string;
   alias: string;
   sex: 'Male' | 'Female';
   birthday: Date | string;
@@ -18,6 +19,12 @@ export interface IdentifyingData {
   identifyingMarks: string;
   presentAddress: string;
   permanentAddress: string;
+  letterJudge: string;
+  letterCourt: string;
+  letterPosition: string;
+  letterAddress: string;
+  investigationDocketNumber: string;
+  criminalCaseNumber: string;
 }
 
 export interface PresentOffense {

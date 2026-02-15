@@ -31,7 +31,7 @@ export function SectionIII_SocioEconomic() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white text-sm font-bold">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-primary)] text-white text-sm font-bold">
             III
           </span>
           Socio-Economic Background

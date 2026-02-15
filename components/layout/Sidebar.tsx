@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, FileText, FilePlus, Search, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -39,7 +40,15 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
         )}
       >
         <div className="flex h-16 items-center justify-between border-b px-4">
-          <span className="font-semibold text-blue-600">PSIR System</span>
+          <div className="flex items-center gap-2">
+            <Image
+              src="/Parole_and_Probation_Administration_(PPA).svg"
+              alt="Parole and Probation Administration logo"
+              width={24}
+              height={24}
+            />
+            <span className="font-semibold text-[var(--brand-primary)]">PSIR System</span>
+          </div>
           <Button
             variant="ghost"
             size="icon"
@@ -63,7 +72,7 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
                 className={cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                   isActive
-                    ? 'bg-blue-50 text-blue-700'
+                    ? 'bg-[#fff1f2] text-[var(--brand-primary)]'
                     : 'text-gray-700 hover:bg-gray-100'
                 )}
               >

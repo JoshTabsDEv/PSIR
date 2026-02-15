@@ -25,7 +25,7 @@ export function SectionI_IdentifyingData() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white text-sm font-bold">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-primary)] text-white text-sm font-bold">
             I
           </span>
           Identifying Data
@@ -64,6 +64,16 @@ export function SectionI_IdentifyingData() {
               placeholder="e.g., SANTOS"
             />
           </div>
+        </div>
+
+        {/* True Name */}
+        <div className="space-y-2">
+          <Label htmlFor="trueName">True Name</Label>
+          <Input
+            id="trueName"
+            {...register('identifyingData.trueName')}
+            placeholder="Legal/complete true name"
+          />
         </div>
 
         {/* Alias and Sex */}
@@ -208,6 +218,62 @@ export function SectionI_IdentifyingData() {
                 {...register('identifyingData.permanentAddress')}
                 placeholder="Complete permanent address"
                 rows={2}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Letter Information */}
+        <div className="border-t pt-4">
+          <h4 className="text-sm font-medium text-gray-700 mb-3">Letter Information</h4>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="letterJudge">Judge</Label>
+              <Input
+                id="letterJudge"
+                {...register('identifyingData.letterJudge')}
+                placeholder="Judge name for letter heading"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="letterCourt">Court</Label>
+              <Input
+                id="letterCourt"
+                {...register('identifyingData.letterCourt')}
+                placeholder="e.g., RTC Branch 1, Manila"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="letterPosition">Position</Label>
+              <Input
+                id="letterPosition"
+                {...register('identifyingData.letterPosition')}
+                placeholder="e.g., Presiding Judge"
+              />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="letterAddress">Address</Label>
+              <Textarea
+                id="letterAddress"
+                {...register('identifyingData.letterAddress')}
+                placeholder="Court/office address for letter"
+                rows={2}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="investigationDocketNumber">Investigation Docket Number</Label>
+              <Input
+                id="investigationDocketNumber"
+                {...register('identifyingData.investigationDocketNumber')}
+                placeholder="Enter investigation docket number"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="criminalCaseNumber">Criminal Case Number</Label>
+              <Input
+                id="criminalCaseNumber"
+                {...register('identifyingData.criminalCaseNumber')}
+                placeholder="Enter criminal case number"
               />
             </div>
           </div>

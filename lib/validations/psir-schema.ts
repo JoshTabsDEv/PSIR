@@ -5,6 +5,7 @@ export const identifyingDataSchema = z.object({
   lastName: z.string().min(1, 'Last name is required'),
   firstName: z.string().min(1, 'First name is required'),
   middleName: z.string().default(''),
+  trueName: z.string().default(''),
   alias: z.string().default(''),
   sex: z.enum(['Male', 'Female']),
   birthday: z.coerce.date(),
@@ -19,6 +20,12 @@ export const identifyingDataSchema = z.object({
   identifyingMarks: z.string().default(''),
   presentAddress: z.string().default(''),
   permanentAddress: z.string().default(''),
+  letterJudge: z.string().default(''),
+  letterCourt: z.string().default(''),
+  letterPosition: z.string().default(''),
+  letterAddress: z.string().default(''),
+  investigationDocketNumber: z.string().default(''),
+  criminalCaseNumber: z.string().default(''),
 });
 
 // Section II: Criminal History

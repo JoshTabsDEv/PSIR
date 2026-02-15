@@ -1,4 +1,4 @@
-import type { PSIRReport, PreviousConviction } from '@/types/psir';
+import type { PSIRReport, PriorRecord } from '@/types/psir';
 import { formatDateDisplay, formatDateShort } from '@/lib/utils/date-formatters';
 import { formatFullName } from '@/lib/utils/form-helpers';
 
@@ -50,6 +50,7 @@ export function buildTemplateData(report: PSIRReport): Record<string, unknown> {
   const crim = report.criminalHistory;
   const socio = report.socioEconomicBackground;
   const analysis = report.analysisEvaluation;
+  const previousConvictions = extractPreviousConvictions(crim.priorRecords);
 
   return {
     // ===== Report Metadata =====
@@ -62,6 +63,7 @@ export function buildTemplateData(report: PSIRReport): Record<string, unknown> {
     Last_Name: str(id.lastName),
     First_Name: str(id.firstName),
     Middle_Name: str(id.middleName),
+    True_Name: str(id.trueName),
     Full_Name: formatFullName(str(id.lastName), str(id.firstName), str(id.middleName)),
     Alias: str(id.alias),
 
@@ -82,33 +84,69 @@ export function buildTemplateData(report: PSIRReport): Record<string, unknown> {
 
     // Spouse
     Spouse_Name: str(id.spouseName),
+    Spouse_Address: '',
 
     Identifying_Marks: str(id.identifyingMarks),
     Present_Address: str(id.presentAddress),
     Permanent_Address: str(id.permanentAddress),
+    Letter_Judge: str(id.letterJudge || crim.presentOffense?.judge),
+    Letter_Court: str(id.letterCourt || crim.presentOffense?.court),
+    Letter_Position: str(id.letterPosition),
+    Letter_Address: str(id.letterAddress),
+    Investigation_Docket_Number: str(id.investigationDocketNumber),
+    Criminal_Case_Number: str(id.criminalCaseNumber),
 
     // ===== Section II: Criminal History =====
+    // Latest schema tags
+    Charged_With: str(crim.presentOffense?.chargedWith),
+    Charged_Date: date(crim.presentOffense?.chargedDate),
+    Convicted_Of: str(crim.presentOffense?.convictedOf),
+    Convicted_Date: date(crim.presentOffense?.convictedDate),
+    Sentence: str(crim.presentOffense?.sentence),
+    Judge: '',
+    Court: str(id.letterCourt || crim.presentOffense?.court),
+    Custodial_Status: str(crim.custodialStatus),
+    Custodial_On_Bail: checkbox(crim.custodialStatus === 'On Bail'),
+    Custodial_On_Detention: checkbox(crim.custodialStatus === 'On Detention'),
+    Custodial_ROR: checkbox(crim.custodialStatus === 'ROR'),
+    ROR_Custodian: str(crim.rorCustodian),
+
+    // Prior Records (latest schema tags)
+    NBI_Case_Number: str(crim.priorRecords.nbi.criminalCaseNo),
+    NBI_Offense: str(crim.priorRecords.nbi.offense),
+    NBI_Date_Charged: date(crim.priorRecords.nbi.dateCharged),
+    NBI_Decision_Status: str(crim.priorRecords.nbi.decisionStatus),
+    CMRD_Case_Number: str(crim.priorRecords.cmrd.criminalCaseNo),
+    CMRD_Offense: str(crim.priorRecords.cmrd.offense),
+    CMRD_Date_Charged: date(crim.priorRecords.cmrd.dateCharged),
+    CMRD_Decision_Status: str(crim.priorRecords.cmrd.decisionStatus),
+    Others_Case_Number: str(crim.priorRecords.others.criminalCaseNo),
+    Others_Offense: str(crim.priorRecords.others.offense),
+    Others_Date_Charged: date(crim.priorRecords.others.dateCharged),
+    Others_Decision_Status: str(crim.priorRecords.others.decisionStatus),
+
+    // Legacy tags kept for template compatibility
     // Present Offense
-    Agency: str(crim.presentOffense?.agency),
-    Case_Number: str(crim.presentOffense?.caseNumber),
-    Criminal_Case_Nos: str(crim.presentOffense?.caseNumber), // Alias
-    Offense: str(crim.presentOffense?.offense),
-    Offense_Character: str(crim.presentOffense?.character),
-    Date_Of_Crime: date(crim.presentOffense?.dateOfCrime),
-    Date_Of_Arrest: date(crim.presentOffense?.dateOfArrest),
+    Agency: str(id.letterCourt || crim.presentOffense?.court),
+    Case_Number: '',
+    Criminal_Case_Nos: '',
+    Offense: str(crim.presentOffense?.chargedWith),
+    Offense_Character: str(crim.presentOffense?.convictedOf),
+    Date_Of_Crime: date(crim.presentOffense?.chargedDate),
+    Date_Of_Arrest: date(crim.presentOffense?.convictedDate),
 
     // Status checkboxes
-    Status_Of_Case: str(crim.statusOfCase),
-    Status_On_Trial: checkbox(crim.statusOfCase === 'On trial'),
-    Status_On_Detention: checkbox(crim.statusOfCase === 'On detention'),
+    Status_Of_Case: str(crim.custodialStatus),
+    Status_On_Trial: checkbox(false),
+    Status_On_Detention: checkbox(crim.custodialStatus === 'On Detention'),
 
     Address_At_Arrest: str(crim.address),
 
     // Previous Convictions - as array for loops
-    Previous_Convictions: formatPreviousConvictions(crim.previousConvictions || []),
-    Has_Previous_Convictions: checkbox((crim.previousConvictions?.length || 0) > 0),
-    No_Previous_Convictions: checkbox((crim.previousConvictions?.length || 0) === 0),
-    Previous_Convictions_Count: num(crim.previousConvictions?.length),
+    Previous_Convictions: formatPreviousConvictions(previousConvictions),
+    Has_Previous_Convictions: checkbox(previousConvictions.length > 0),
+    No_Previous_Convictions: checkbox(previousConvictions.length === 0),
+    Previous_Convictions_Count: num(previousConvictions.length),
 
     // ===== Section III: Socio-Economic Background =====
     // Family Economic Status
@@ -156,6 +194,8 @@ export function buildTemplateData(report: PSIRReport): Record<string, unknown> {
     Needs: str(analysis.needs),
     Attitude: str(analysis.attitude),
     Recommendations: str(analysis.recommendations),
+    Community_Service_Hours: num(analysis.communityServiceHours, true),
+    Community_Service_Type: str(analysis.communityServiceType),
 
     // Prepared By
     Prepared_By_Name: str(analysis.preparedBy?.name),
@@ -173,14 +213,26 @@ export function buildTemplateData(report: PSIRReport): Record<string, unknown> {
  * Format previous convictions for template loops.
  * Use in template as: {#Previous_Convictions}{Offense} - {Case_Number}{/Previous_Convictions}
  */
-function formatPreviousConvictions(convictions: PreviousConviction[]): Array<Record<string, string>> {
+function extractPreviousConvictions(records: PSIRReport['criminalHistory']['priorRecords']): PriorRecord[] {
+  const emptyDecisionStatuses = new Set(['', 'None', 'No record on file', 'No derogatory record']);
+  return [records.nbi, records.cmrd, records.others].filter((record) =>
+    Boolean(
+      record.criminalCaseNo ||
+      record.offense ||
+      record.dateCharged ||
+      !emptyDecisionStatuses.has(record.decisionStatus || '')
+    )
+  );
+}
+
+function formatPreviousConvictions(convictions: PriorRecord[]): Array<Record<string, string>> {
   return convictions.map((conv, index) => ({
     Index: String(index + 1),
     Offense: str(conv.offense),
-    Case_Number: str(conv.caseNumber),
-    Date: date(conv.date),
-    Court: str(conv.court),
-    Sentence: str(conv.sentence),
+    Case_Number: str(conv.criminalCaseNo),
+    Date: date(conv.dateCharged),
+    Court: '',
+    Sentence: str(conv.decisionStatus),
   }));
 }
 
@@ -192,12 +244,19 @@ export function getAllTemplateTags(): string[] {
     // Metadata
     'Report_Number', 'Status', 'Created_Date', 'Updated_Date',
     // Section I
-    'Last_Name', 'First_Name', 'Middle_Name', 'Full_Name', 'Alias',
+    'Last_Name', 'First_Name', 'Middle_Name', 'True_Name', 'Full_Name', 'Alias',
     'Sex', 'Sex_Male', 'Sex_Female',
     'Birthday', 'Birthday_Short', 'Birthplace', 'Nationality', 'Religion',
     'Civil_Status', 'Age', 'Educational_Attainment', 'Occupation',
-    'Spouse_Name', 'Spouse_Address', 'Identifying_Marks', 'Permanent_Address',
+    'Spouse_Name', 'Spouse_Address', 'Identifying_Marks', 'Present_Address', 'Permanent_Address',
+    'Letter_Judge', 'Letter_Court', 'Letter_Position', 'Letter_Address', 'Investigation_Docket_Number', 'Criminal_Case_Number',
     // Section II
+    'Charged_With', 'Charged_Date', 'Convicted_Of', 'Convicted_Date',
+    'Sentence', 'Judge', 'Court',
+    'Custodial_Status', 'Custodial_On_Bail', 'Custodial_On_Detention', 'Custodial_ROR', 'ROR_Custodian',
+    'NBI_Case_Number', 'NBI_Offense', 'NBI_Date_Charged', 'NBI_Decision_Status',
+    'CMRD_Case_Number', 'CMRD_Offense', 'CMRD_Date_Charged', 'CMRD_Decision_Status',
+    'Others_Case_Number', 'Others_Offense', 'Others_Date_Charged', 'Others_Decision_Status',
     'Agency', 'Case_Number', 'Criminal_Case_Nos', 'Offense', 'Offense_Character',
     'Date_Of_Crime', 'Date_Of_Arrest',
     'Status_Of_Case', 'Status_On_Trial', 'Status_On_Detention',
@@ -214,6 +273,7 @@ export function getAllTemplateTags(): string[] {
     'Overall_Well_Being', 'WellBeing_Very_Satisfactory', 'WellBeing_Satisfactory', 'WellBeing_Poor',
     // Section IV
     'Circumstances', 'Needs', 'Attitude', 'Recommendations',
+    'Community_Service_Hours', 'Community_Service_Type',
     'Prepared_By_Name', 'Prepared_By_Designation', 'Prepared_By_Date',
     'Reviewed_By_Name', 'Reviewed_By_Designation', 'Reviewed_By_Date',
   ];

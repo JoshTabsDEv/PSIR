@@ -109,7 +109,7 @@ export function SectionIV_Analysis() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white text-sm font-bold">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-primary)] text-white text-sm font-bold">
             IV
           </span>
           Analysis and Evaluation
@@ -158,7 +158,7 @@ export function SectionIV_Analysis() {
                     onClick={() => setSelectedTone(tone)}
                     className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
                       selectedTone === tone
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-[var(--brand-primary)] text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >

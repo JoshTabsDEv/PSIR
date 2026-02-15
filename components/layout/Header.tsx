@@ -1,6 +1,7 @@
 'use client';
 
-import { Menu, FileText } from 'lucide-react';
+import Image from 'next/image';
+import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface HeaderProps {
@@ -21,7 +22,13 @@ export function Header({ onMenuToggle }: HeaderProps) {
       </Button>
 
       <div className="flex items-center gap-2">
-        <FileText className="h-6 w-6 text-blue-600" />
+        <Image
+          src="/Parole_and_Probation_Administration_(PPA).svg"
+          alt="Parole and Probation Administration logo"
+          width={28}
+          height={28}
+          priority
+        />
         <h1 className="text-lg font-semibold">PSIR Management System</h1>
       </div>
 

@@ -19,7 +19,7 @@ export function SectionII_CriminalHistory() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white text-sm font-bold">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-primary)] text-white text-sm font-bold">
             II
           </span>
           Criminal History
@@ -80,25 +80,6 @@ export function SectionII_CriminalHistory() {
             />
           </div>
 
-          {/* Judge + Court */}
-          <div className="mt-4 grid gap-4 md:grid-cols-[1fr_1fr]">
-            <div className="space-y-2">
-              <Label htmlFor="judge">Judge</Label>
-              <Input
-                id="judge"
-                {...register('criminalHistory.presentOffense.judge')}
-                placeholder="e.g., Hon. Juan Dela Cruz"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="court">Court</Label>
-              <Input
-                id="court"
-                {...register('criminalHistory.presentOffense.court')}
-                placeholder="e.g., RTC Branch 1, Manila"
-              />
-            </div>
-          </div>
         </div>
 
         {/* Custodial Status */}

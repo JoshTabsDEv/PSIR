@@ -58,7 +58,7 @@ export function FormNavigation({
                 onClick={() => handleSectionClick(section.id)}
                 className={cn(
                   'flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors',
-                  isActive && 'bg-blue-600 text-white',
+                  isActive && 'bg-[var(--brand-primary)] text-white',
                   !isActive && isCompleted && 'bg-green-100 text-green-700',
                   !isActive && !isCompleted && 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 )}
@@ -66,7 +66,7 @@ export function FormNavigation({
                 <span
                   className={cn(
                     'flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold',
-                    isActive && 'bg-white text-blue-600',
+                    isActive && 'bg-[var(--brand-accent)] text-[var(--brand-accent-ink)]',
                     !isActive && isCompleted && 'bg-green-600 text-white',
                     !isActive && !isCompleted && 'bg-gray-300 text-gray-600'
                   )}
@@ -113,7 +113,7 @@ export function FormNavigation({
                 onClick={() => handleSectionClick(section.id)}
                 className={cn(
                   'h-2 flex-1 rounded-full transition-colors',
-                  isActive && 'bg-blue-600',
+                  isActive && 'bg-[var(--brand-primary)]',
                   !isActive && isCompleted && 'bg-green-500',
                   !isActive && !isCompleted && 'bg-gray-200'
                 )}

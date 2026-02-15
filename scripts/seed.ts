@@ -24,6 +24,7 @@ async function seed() {
           lastName: 'DELA CRUZ',
           firstName: 'JUAN',
           middleName: 'SANTOS',
+          trueName: 'JUAN SANTOS DELA CRUZ',
           alias: 'Jun',
           sex: 'Male',
           birthday: new Date('1985-03-15'),
@@ -38,6 +39,12 @@ async function seed() {
           identifyingMarks: 'Scar on left arm',
           presentAddress: '456 Current St., Quezon City',
           permanentAddress: '123 Rizal St., Brgy. San Jose, Manila',
+          letterJudge: 'Hon. Juan Dela Cruz',
+          letterCourt: 'RTC Branch 1, Manila',
+          letterPosition: 'Presiding Judge',
+          letterAddress: 'RTC Branch 1, Manila',
+          investigationDocketNumber: 'INV-2025-00001',
+          criminalCaseNumber: 'CRIM-2025-00001',
         },
         criminalHistory: {
           presentOffense: {
@@ -83,6 +90,7 @@ async function seed() {
           lastName: 'REYES',
           firstName: 'MARIA',
           middleName: 'GARCIA',
+          trueName: 'MARIA GARCIA REYES',
           alias: '',
           sex: 'Female',
           birthday: new Date('1990-07-22'),
@@ -97,6 +105,12 @@ async function seed() {
           identifyingMarks: 'None',
           presentAddress: '456 Mabini St., Cebu City',
           permanentAddress: '456 Mabini St., Cebu City',
+          letterJudge: '',
+          letterCourt: '',
+          letterPosition: '',
+          letterAddress: '',
+          investigationDocketNumber: '',
+          criminalCaseNumber: '',
         },
         criminalHistory: {
           presentOffense: {

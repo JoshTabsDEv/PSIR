@@ -96,6 +96,7 @@ export const defaultFormValues = {
     lastName: '',
     firstName: '',
     middleName: '',
+    trueName: '',
     alias: '',
     sex: 'Male' as const,
     birthday: new Date(),
@@ -110,6 +111,12 @@ export const defaultFormValues = {
     identifyingMarks: '',
     presentAddress: '',
     permanentAddress: '',
+    letterJudge: '',
+    letterCourt: '',
+    letterPosition: '',
+    letterAddress: '',
+    investigationDocketNumber: '',
+    criminalCaseNumber: '',
   },
   criminalHistory: {
     presentOffense: {

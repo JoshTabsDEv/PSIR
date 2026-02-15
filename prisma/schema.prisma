@@ -22,6 +22,7 @@ model PSIRReport {
   lastName              String   @db.VarChar(100)
   firstName             String   @db.VarChar(100)
   middleName            String?  @db.VarChar(100)
+  trueName              String?  @db.VarChar(255)
   alias                 String?  @db.VarChar(100)
   sex                   Sex
   birthday              DateTime
@@ -36,6 +37,12 @@ model PSIRReport {
   identifyingMarks      String?  @db.Text
   presentAddress        String?  @db.Text
   permanentAddress      String?  @db.Text
+  letterJudge                   String?  @db.VarChar(255)
+  letterCourt                   String?  @db.VarChar(255)
+  letterPosition                String?  @db.VarChar(255)
+  letterAddress                 String?  @db.Text
+  investigationDocketNumber     String?  @db.VarChar(100)
+  criminalCaseNumber            String?  @db.VarChar(100)
 
   // Section II: Criminal History - A. Present Offense
   presentOffenseChargedWith    String?   @db.Text

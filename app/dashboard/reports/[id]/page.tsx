@@ -179,6 +179,10 @@ export default function ViewReportPage({ params }: PageProps) {
               <p className="font-medium">{report.identifyingData.alias || 'N/A'}</p>
             </div>
             <div>
+              <p className="text-sm text-gray-500">True Name</p>
+              <p className="font-medium">{report.identifyingData.trueName || 'N/A'}</p>
+            </div>
+            <div>
               <p className="text-sm text-gray-500">Sex</p>
               <p className="font-medium">{report.identifyingData.sex}</p>
             </div>
@@ -230,6 +234,30 @@ export default function ViewReportPage({ params }: PageProps) {
               <p className="text-sm text-gray-500">Permanent Address</p>
               <p className="font-medium">{report.identifyingData.permanentAddress || 'N/A'}</p>
             </div>
+            <div>
+              <p className="text-sm text-gray-500">Letter Judge</p>
+              <p className="font-medium">{report.identifyingData.letterJudge || 'N/A'}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Letter Court</p>
+              <p className="font-medium">{report.identifyingData.letterCourt || 'N/A'}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Letter Position</p>
+              <p className="font-medium">{report.identifyingData.letterPosition || 'N/A'}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Investigation Docket Number</p>
+              <p className="font-medium">{report.identifyingData.investigationDocketNumber || 'N/A'}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Criminal Case Number</p>
+              <p className="font-medium">{report.identifyingData.criminalCaseNumber || 'N/A'}</p>
+            </div>
+            <div className="md:col-span-2 lg:col-span-3">
+              <p className="text-sm text-gray-500">Letter Address</p>
+              <p className="font-medium whitespace-pre-wrap">{report.identifyingData.letterAddress || 'N/A'}</p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -277,20 +305,6 @@ export default function ViewReportPage({ params }: PageProps) {
               <p className="font-medium">
                 {report.criminalHistory.presentOffense.sentence || 'N/A'}
               </p>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <p className="text-sm text-gray-500">Judge</p>
-                <p className="font-medium">
-                  {report.criminalHistory.presentOffense.judge || 'N/A'}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Court</p>
-                <p className="font-medium">
-                  {report.criminalHistory.presentOffense.court || 'N/A'}
-                </p>
-              </div>
             </div>
             <div>
               <p className="text-sm text-gray-500">Custodial Status</p>
