@@ -1,36 +1,176 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+﻿# PSIR Management System
 
-## Getting Started
+<p align="center">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=24&pause=1200&center=true&vCenter=true&width=900&lines=PSIR+Management+System;Next.js+%2B+Prisma+%2B+MySQL;Create%2C+Manage%2C+and+Export+PSIR+Reports" alt="Typing animation" />
+</p>
 
-First, run the development server:
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-16-black?logo=next.js" alt="Next.js" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" alt="React" />
+  <img src="https://img.shields.io/badge/Prisma-5-2D3748?logo=prisma" alt="Prisma" />
+  <img src="https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql&logoColor=white" alt="MySQL" />
+  <img src="https://img.shields.io/badge/License-Private-red" alt="License" />
+</p>
+
+Post-Sentence Investigation Report (PSIR) management app built with Next.js, Prisma, and MySQL.
+
+## 🚀 Prerequisites
+
+Install these on the new PC first:
+
+- Node.js 20+
+- pnpm (recommended) or npm
+- MySQL 8+
+- Git
+
+Optional but recommended:
+
+- VS Code
+- MySQL Workbench
+
+## 1) 📥 Clone the Repository
+
+Use the current repository location:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/TBRDevs/PSIR.git
+cd PSIR/psir
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+If your team still uses the old remote, update it after clone:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+git remote set-url origin https://github.com/TBRDevs/PSIR.git
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 2) 📦 Install Dependencies
 
-## Learn More
+If pnpm is not installed:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm i -g pnpm
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Install packages:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm install
+```
 
-## Deploy on Vercel
+## 3) 🔐 Configure Environment Variables
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Create `psir/.env.local` and set your values:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```env
+DATABASE_URL="mysql://USER:PASSWORD@HOST:3306/psir_db"
+GEMINI_API_KEY="your_gemini_api_key"
+```
+
+Notes:
+
+- `DATABASE_URL` must point to an existing MySQL database.
+- If your MySQL password contains special chars (like `@`), URL-encode them.
+  Example: `@` becomes `%40`.
+- Keep `.env.local` private; do not commit secrets.
+
+## 4) 🗄️ Create the Database
+
+In MySQL, create the DB if it does not exist:
+
+```sql
+CREATE DATABASE psir_db;
+```
+
+## 5) ⚙️ Initialize Prisma
+
+From `psir/`:
+
+```bash
+npx prisma generate
+npx prisma db push
+```
+
+Optional (seed sample data):
+
+```bash
+pnpm db:seed
+```
+
+## 6) ▶️ Run the App
+
+```bash
+pnpm dev
+```
+
+Open:
+
+- `http://localhost:3000`
+
+## 7) ✅ Verify Setup Quickly
+
+- Dashboard loads
+- Reports pages load
+- DB health check works: `http://localhost:3000/api/db-check`
+- AI endpoints work only if `GEMINI_API_KEY` is valid
+
+## 🛠️ Common Issues
+
+### 1) `Can't reach database server`
+
+- Check MySQL service is running
+- Recheck `DATABASE_URL`
+- Ensure `psir_db` exists
+
+### 2) Prisma client errors
+
+Run:
+
+```bash
+npx prisma generate
+```
+
+### 3) AI generation fails
+
+- Verify `GEMINI_API_KEY` in `.env.local`
+- Restart dev server after changing env vars
+
+### 4) Port already in use
+
+Run on another port:
+
+```bash
+pnpm dev -- -p 3001
+```
+
+## 💻 Useful Commands
+
+```bash
+pnpm dev          # Start dev server
+pnpm build        # Build production app
+pnpm start        # Run production build
+pnpm lint         # Lint project
+pnpm db:seed      # Seed sample data
+npx prisma studio # Open Prisma DB browser
+```
+
+## 🔀 Branch Workflow (Recommended)
+
+```bash
+git checkout dev
+git pull
+git checkout -b feature/PSIR-xxx-short-title
+```
+
+When done:
+
+```bash
+git add .
+git commit -m "feat(PSIR-xxx): short description"
+git push -u origin feature/PSIR-xxx-short-title
+```
+
+## ✨ README Notes
+
+- Emojis are supported by GitHub Markdown (`:rocket:`, `:sparkles:`, etc.).
+- The typing banner uses an SVG animation service.
+- Badges are powered by Shields.io.
