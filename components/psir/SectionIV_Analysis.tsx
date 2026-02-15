@@ -16,10 +16,11 @@ type ToneSuggestion = 'Objective' | 'Empathetic' | 'Firm';
 export function SectionIV_Analysis() {
   const { register, control, watch, setValue } = useFormContext<PSIRFormData>();
   const [selectedTone, setSelectedTone] = useState<ToneSuggestion>('Objective');
+  const [manualPrompt, setManualPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [summaries, setSummaries] = useState<{
     criminalHistory: string;
-    socioEconomic: string;
+    socioEconomicBackground: string;
   } | null>(null);
 
   // Watch form values for AI context
@@ -76,6 +77,7 @@ export function SectionIV_Analysis() {
           criminalHistory,
           socioEconomicBackground,
           tone: selectedTone.toLowerCase(),
+          manualPrompt,
         }),
       });
 
@@ -164,6 +166,21 @@ export function SectionIV_Analysis() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Manual Prompt Input */}
+            <div className="space-y-2">
+              <Label htmlFor="manualPrompt" className="text-xs text-gray-500">
+                MANUAL PROMPT (OPTIONAL):
+              </Label>
+              <Textarea
+                id="manualPrompt"
+                value={manualPrompt}
+                onChange={(e) => setManualPrompt(e.target.value)}
+                placeholder="Example: Emphasize restorative justice, include concrete supervision conditions, and keep the conclusion direct."
+                rows={4}
+                className="resize-none text-sm"
+              />
             </div>
 
             {/* Main Assessment Workspace */}
