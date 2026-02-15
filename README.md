@@ -33,14 +33,14 @@ Optional but recommended:
 Use the current repository location:
 
 ```bash
-git clone https://github.com/TBRDevs/PSIR.git
+git clone https://github.com/JoshTabsDEv/PSIR.git
 cd PSIR/psir
 ```
 
 If your team still uses the old remote, update it after clone:
 
 ```bash
-git remote set-url origin https://github.com/TBRDevs/PSIR.git
+git remote set-url origin https://github.com/JoshTabsDEv/PSIR.git
 ```
 
 ## 2) 📦 Install Dependencies
