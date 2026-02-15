@@ -1,0 +1,271 @@
+'use client';
+
+import { useFormContext, useWatch } from 'react-hook-form';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { PSIRFormData } from '@/types/psir';
+
+export function SectionII_CriminalHistory() {
+  const { register, control } = useFormContext<PSIRFormData>();
+
+  const custodialStatus = useWatch({
+    control,
+    name: 'criminalHistory.custodialStatus',
+  });
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white text-sm font-bold">
+            II
+          </span>
+          Criminal History
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* A. Present Offense */}
+        <div className="border rounded-lg p-4 bg-gray-50">
+          <h4 className="text-sm font-semibold text-gray-700 mb-4">A. Present Offense</h4>
+
+          {/* Charged with + Date */}
+          <div className="grid gap-4 md:grid-cols-[1fr_auto]">
+            <div className="space-y-2">
+              <Label htmlFor="chargedWith">Charged with</Label>
+              <Input
+                id="chargedWith"
+                {...register('criminalHistory.presentOffense.chargedWith')}
+                placeholder="e.g., Violation of R.A. 9165"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="chargedDate">Date</Label>
+              <Input
+                id="chargedDate"
+                type="date"
+                {...register('criminalHistory.presentOffense.chargedDate')}
+              />
+            </div>
+          </div>
+
+          {/* Convicted of + Date */}
+          <div className="mt-4 grid gap-4 md:grid-cols-[1fr_auto]">
+            <div className="space-y-2">
+              <Label htmlFor="convictedOf">Convicted of</Label>
+              <Input
+                id="convictedOf"
+                {...register('criminalHistory.presentOffense.convictedOf')}
+                placeholder="e.g., Illegal possession of dangerous drugs"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="convictedDate">Date</Label>
+              <Input
+                id="convictedDate"
+                type="date"
+                {...register('criminalHistory.presentOffense.convictedDate')}
+              />
+            </div>
+          </div>
+
+          {/* Sentence */}
+          <div className="mt-4 space-y-2">
+            <Label htmlFor="sentence">Sentence</Label>
+            <Input
+              id="sentence"
+              {...register('criminalHistory.presentOffense.sentence')}
+              placeholder="e.g., 6 years and 1 day to 12 years imprisonment"
+            />
+          </div>
+
+          {/* Judge + Court */}
+          <div className="mt-4 grid gap-4 md:grid-cols-[1fr_1fr]">
+            <div className="space-y-2">
+              <Label htmlFor="judge">Judge</Label>
+              <Input
+                id="judge"
+                {...register('criminalHistory.presentOffense.judge')}
+                placeholder="e.g., Hon. Juan Dela Cruz"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="court">Court</Label>
+              <Input
+                id="court"
+                {...register('criminalHistory.presentOffense.court')}
+                placeholder="e.g., RTC Branch 1, Manila"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Custodial Status */}
+        <div className="space-y-2">
+          <Label>Custodial Status</Label>
+          <div className="flex flex-wrap gap-4">
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                value="On Bail"
+                {...register('criminalHistory.custodialStatus')}
+                className="h-4 w-4 text-blue-600"
+              />
+              <span>On Bail</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                value="On Detention"
+                {...register('criminalHistory.custodialStatus')}
+                className="h-4 w-4 text-blue-600"
+              />
+              <span>On Detention</span>
+            </label>
+          </div>
+          <div className="flex items-center gap-2 mt-2">
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                value="ROR"
+                {...register('criminalHistory.custodialStatus')}
+                className="h-4 w-4 text-blue-600"
+              />
+              <span>ROR – Custodian:</span>
+            </label>
+            <Input
+              {...register('criminalHistory.rorCustodian')}
+              placeholder="Custodian name"
+              disabled={custodialStatus !== 'ROR'}
+              className="max-w-xs"
+            />
+          </div>
+        </div>
+
+        {/* Address */}
+        <div className="space-y-2">
+          <Label htmlFor="address">Address</Label>
+          <Textarea
+            id="address"
+            {...register('criminalHistory.address')}
+            placeholder="Complete address"
+            rows={2}
+          />
+        </div>
+
+        {/* B. Prior and Pending Records */}
+        <div className="border-t pt-4">
+          <h4 className="text-sm font-semibold text-gray-700 mb-4">B. Prior and Pending Records</h4>
+
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse border border-gray-300 text-sm">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Agency</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Criminal Case No.</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Offense</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Date Charged</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Decision/Status of the Case</th>
+                </tr>
+              </thead>
+              <tbody>
+                {/* NBI Row */}
+                <tr>
+                  <td className="border border-gray-300 px-3 py-2 font-medium">NBI</td>
+                  <td className="border border-gray-300 px-1 py-1">
+                    <Input
+                      {...register('criminalHistory.priorRecords.nbi.criminalCaseNo')}
+                      className="border-0 shadow-none h-8"
+                    />
+                  </td>
+                  <td className="border border-gray-300 px-1 py-1">
+                    <Input
+                      {...register('criminalHistory.priorRecords.nbi.offense')}
+                      className="border-0 shadow-none h-8"
+                    />
+                  </td>
+                  <td className="border border-gray-300 px-1 py-1">
+                    <Input
+                      type="date"
+                      {...register('criminalHistory.priorRecords.nbi.dateCharged')}
+                      className="border-0 shadow-none h-8"
+                    />
+                  </td>
+                  <td className="border border-gray-300 px-1 py-1">
+                    <Input
+                      {...register('criminalHistory.priorRecords.nbi.decisionStatus')}
+                      className="border-0 shadow-none h-8"
+                    />
+                  </td>
+                </tr>
+                {/* CMRD/CMRU Row */}
+                <tr>
+                  <td className="border border-gray-300 px-3 py-2 font-medium">CMRD/CMRU</td>
+                  <td className="border border-gray-300 px-1 py-1">
+                    <Input
+                      {...register('criminalHistory.priorRecords.cmrd.criminalCaseNo')}
+                      className="border-0 shadow-none h-8"
+                    />
+                  </td>
+                  <td className="border border-gray-300 px-1 py-1">
+                    <Input
+                      {...register('criminalHistory.priorRecords.cmrd.offense')}
+                      className="border-0 shadow-none h-8"
+                    />
+                  </td>
+                  <td className="border border-gray-300 px-1 py-1">
+                    <Input
+                      type="date"
+                      {...register('criminalHistory.priorRecords.cmrd.dateCharged')}
+                      className="border-0 shadow-none h-8"
+                    />
+                  </td>
+                  <td className="border border-gray-300 px-1 py-1">
+                    <Input
+                      {...register('criminalHistory.priorRecords.cmrd.decisionStatus')}
+                      className="border-0 shadow-none h-8"
+                    />
+                  </td>
+                </tr>
+                {/* Others Row */}
+                <tr>
+                  <td className="border border-gray-300 px-3 py-2 font-medium">Others</td>
+                  <td className="border border-gray-300 px-1 py-1">
+                    <Input
+                      {...register('criminalHistory.priorRecords.others.criminalCaseNo')}
+                      className="border-0 shadow-none h-8"
+                    />
+                  </td>
+                  <td className="border border-gray-300 px-1 py-1">
+                    <Input
+                      {...register('criminalHistory.priorRecords.others.offense')}
+                      className="border-0 shadow-none h-8"
+                    />
+                  </td>
+                  <td className="border border-gray-300 px-1 py-1">
+                    <Input
+                      type="date"
+                      {...register('criminalHistory.priorRecords.others.dateCharged')}
+                      className="border-0 shadow-none h-8"
+                    />
+                  </td>
+                  <td className="border border-gray-300 px-1 py-1">
+                    <Input
+                      {...register('criminalHistory.priorRecords.others.decisionStatus')}
+                      className="border-0 shadow-none h-8"
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p className="text-xs text-gray-500 mt-2 italic">
+            The Office reserves the right to submit supplemental report once records verification from the institution and/or law-enforcement agencies yields derogatory result or previous criminal records. Also attach the Sinumpaang Salaysay.
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

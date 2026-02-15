@@ -1,0 +1,133 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model PSIRReport {
+  id           Int      @id @default(autoincrement())
+  reportNumber String   @unique @db.VarChar(50)
+  status       Status   @default(draft)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  lastModifiedBy String @db.VarChar(255)
+
+  // Section I: Identifying Data
+  lastName              String   @db.VarChar(100)
+  firstName             String   @db.VarChar(100)
+  middleName            String?  @db.VarChar(100)
+  alias                 String?  @db.VarChar(100)
+  sex                   Sex
+  birthday              DateTime
+  birthplace            String?  @db.VarChar(255)
+  nationality           String   @default("Filipino") @db.VarChar(100)
+  religion              String?  @db.VarChar(100)
+  civilStatus           String?  @db.VarChar(50)
+  age                   Int
+  educationalAttainment String?  @db.VarChar(100)
+  occupation            String?  @db.VarChar(100)
+  spouseName            String?  @db.VarChar(255)
+  identifyingMarks      String?  @db.Text
+  presentAddress        String?  @db.Text
+  permanentAddress      String?  @db.Text
+
+  // Section II: Criminal History - A. Present Offense
+  presentOffenseChargedWith    String?   @db.Text
+  presentOffenseChargedDate    DateTime?
+  presentOffenseConvictedOf    String?   @db.Text
+  presentOffenseConvictedDate  DateTime?
+  presentOffenseSentence       String?   @db.Text
+  presentOffenseJudge          String?   @db.VarChar(255)
+  presentOffenseCourt          String?   @db.VarChar(255)
+  custodialStatus              CustodialStatus @default(ON_DETENTION)
+  rorCustodian                 String?   @db.VarChar(255)
+  address                      String?   @db.Text
+
+  // Section II: Criminal History - B. Prior and Pending Records
+  nbiCaseNo          String?  @db.VarChar(100)
+  nbiOffense         String?  @db.Text
+  nbiDateCharged     DateTime?
+  nbiDecisionStatus  String?  @default("No record on file") @db.VarChar(255)
+
+  cmrdCaseNo         String?  @db.VarChar(100)
+  cmrdOffense        String?  @db.Text
+  cmrdDateCharged    DateTime?
+  cmrdDecisionStatus String?  @default("No derogatory record") @db.VarChar(255)
+
+  othersCaseNo         String?  @db.VarChar(100)
+  othersOffense        String?  @db.Text
+  othersDateCharged    DateTime?
+  othersDecisionStatus String?  @default("None") @db.VarChar(255)
+
+  // Section III: Socio-Economic Background
+  familyEconomicStatus   FamilyEconomicStatus @default(POOR)
+  familyRelationship     SatisfactionLevel    @default(SATISFACTORY)
+  familyReputation       SatisfactionLevel    @default(SATISFACTORY)
+  familySupport          SatisfactionLevel    @default(SATISFACTORY)
+  communityAcceptability SatisfactionLevel    @default(SATISFACTORY)
+  overallWellBeing       SatisfactionLevel    @default(SATISFACTORY)
+
+  // Section IV: Analysis and Evaluation
+  circumstances   String? @db.Text
+  needs           String? @db.Text
+  attitude        String? @db.Text
+  recommendations String? @db.Text
+
+  // Community Service Recommendation
+  communityServiceHours Int?
+  communityServiceType  String? @db.Text
+
+  // Signature blocks (kept for future use, not displayed in UI)
+  preparedByName        String?   @db.VarChar(255)
+  preparedByDesignation String?   @db.VarChar(255)
+  preparedByDate        DateTime?
+
+  reviewedByName        String?   @db.VarChar(255)
+  reviewedByDesignation String?   @db.VarChar(255)
+  reviewedByDate        DateTime?
+
+  @@index([reportNumber])
+  @@index([status])
+  @@index([createdAt])
+  @@index([lastName, firstName])
+  @@map("psir_reports")
+}
+
+// Enums
+enum Status {
+  draft
+  completed
+}
+
+enum Sex {
+  Male
+  Female
+}
+
+enum CustodialStatus {
+  ON_BAIL      @map("On Bail")
+  ON_DETENTION @map("On Detention")
+  ROR          @map("ROR")
+}
+
+enum FamilyEconomicStatus {
+  POOR                              @map("Poor")
+  LOW_INCOME_NOT_POOR               @map("Low-income Class (but not poor)")
+  LOW_MIDDLE_INCOME                 @map("Low middle-income class")
+  MIDDLE_MIDDLE_INCOME              @map("Middle middle-income Class")
+  UPPER_MIDDLE_INCOME               @map("Upper middle-income Class")
+  UPPER_INCOME_NOT_RICH             @map("Upper-income Class (but not rich)")
+  RICH                              @map("Rich")
+}
+
+enum SatisfactionLevel {
+  VERY_SATISFACTORY @map("Very satisfactory")
+  SATISFACTORY      @map("Satisfactory")
+  POOR              @map("Poor")
+}
