@@ -48,7 +48,7 @@ export function formatDateForFilename(date: Date = new Date()): string {
 
 export function generateExportFilename(
   reportNumber: string,
-  extension: 'pdf' | 'docx'
+  extension: 'docx'
 ): string {
   const date = formatDateForFilename();
   return `PSIR-${reportNumber}-${date}.${extension}`;

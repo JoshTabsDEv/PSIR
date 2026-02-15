@@ -85,12 +85,12 @@ export default function ViewReportPage({ params }: PageProps) {
     }
   };
 
-  const handleExport = (format: 'pdf' | 'docx') => {
-    toast.info(`Generating ${format.toUpperCase()}...`, {
+  const handleExportDocx = () => {
+    toast.info('Generating DOCX...', {
       description: 'Your document will download shortly.',
       duration: 2000,
     });
-    window.open(`/api/reports/${id}/export/${format}`, '_blank');
+    window.open(`/api/reports/${id}/export/docx`, '_blank');
   };
 
   if (loading) {
@@ -136,11 +136,7 @@ export default function ViewReportPage({ params }: PageProps) {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => handleExport('pdf')}>
-            <FileDown className="mr-2 h-4 w-4" />
-            PDF
-          </Button>
-          <Button variant="outline" onClick={() => handleExport('docx')}>
+          <Button variant="outline" onClick={handleExportDocx}>
             <FileDown className="mr-2 h-4 w-4" />
             DOCX
           </Button>

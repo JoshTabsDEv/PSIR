@@ -89,7 +89,7 @@ export function generateDOCX(report: PSIRReport): Document {
           new Paragraph({
             alignment: AlignmentType.CENTER,
             spacing: { after: 400 },
-            children: [new TextRun({ text: `Report Number: ${report.reportNumber}`, size: 20 })],
+            children: [new TextRun({ text: `Report Number: ${report.identifyingData.lastName}, ${report.identifyingData.firstName}`, size: 20 })],
           }),
 
           // Section I: Identifying Data

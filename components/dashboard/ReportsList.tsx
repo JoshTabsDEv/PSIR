@@ -98,8 +98,8 @@ export function ReportsList({
                       <Button
                         variant="ghost"
                         size="icon"
-                        title="Export"
-                        onClick={() => window.open(`/api/reports/${report._id}/export/pdf`, '_blank')}
+                        title="Export DOCX"
+                        onClick={() => window.open(`/api/reports/${report._id}/export/docx`, '_blank')}
                       >
                         <FileDown className="h-4 w-4" />
                       </Button>

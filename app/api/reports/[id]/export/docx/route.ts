@@ -3,7 +3,6 @@ import prisma from '@/lib/prisma';
 import { prismaToFrontend } from '@/lib/prisma-converters';
 import { renderPSIRDocx } from '@/lib/docx/renderPSIRDocx';
 import { buildTemplateData } from '@/lib/docx/buildTemplateData';
-import { generateExportFilename } from '@/lib/utils/form-helpers';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -54,8 +53,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Generate filename
-    const filename = generateExportFilename(report.reportNumber, 'docx');
+    // Generate filename: PSIR - Lastname, FirstName.docx
+    const lastName = (report.identifyingData.lastName || 'Unknown').trim();
+    const firstName = (report.identifyingData.firstName || 'Unknown').trim();
+    const safe = (value: string) => value.replace(/[<>:"/\\|?*]/g, '');
+    const filename = `PSIR - ${safe(lastName)}, ${safe(firstName)}.docx`;
 
     // Convert Buffer to Uint8Array for NextResponse compatibility
     const uint8Array = new Uint8Array(buffer);
