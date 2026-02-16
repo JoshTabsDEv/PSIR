@@ -306,16 +306,84 @@ Include:
             {/* Type of Service */}
             <div className="border rounded-lg p-4 bg-gray-50">
               <div className="space-y-2">
-                <Label htmlFor="communityServiceType">Type of Community Service</Label>
+                <Label htmlFor="communityServiceType">How many to plant</Label>
                 <Textarea
                   id="communityServiceType"
                   {...register('analysisEvaluation.communityServiceType')}
-                  placeholder="e.g., Environmental cleanup, Youth mentoring program, Hospital assistance"
+                  placeholder="e.g., Fifty (50) fruit-bearing trees, trees that can be used as lumber"
                   rows={3}
                   className="resize-none"
                 />
-                <p className="text-xs text-gray-500">Describe the recommended type of community service</p>
+                <p className="text-xs text-gray-500">Describe how many trees to plant and their purpose</p>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Prepared By */}
+        <div className="border-t mt-8 pt-6">
+          <h4 className="text-sm font-semibold text-gray-700 mb-4">Prepared By</h4>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="space-y-2">
+              <Label htmlFor="preparedByName">Name</Label>
+              <Input
+                id="preparedByName"
+                {...register('analysisEvaluation.preparedBy.name')}
+                placeholder="Enter preparer name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="preparedByDesignation">Designation</Label>
+              <Input
+                id="preparedByDesignation"
+                {...register('analysisEvaluation.preparedBy.designation')}
+                placeholder="Enter preparer designation"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="preparedByDate">Date</Label>
+              <Input
+                id="preparedByDate"
+                type="date"
+                {...register('analysisEvaluation.preparedBy.date')}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Reviewed By */}
+        <div className="border-t mt-8 pt-6">
+          <h4 className="text-sm font-semibold text-gray-700 mb-4">Reviewed By</h4>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="space-y-2">
+              <Label htmlFor="reviewedByName">Name</Label>
+              <Input
+                id="reviewedByName"
+                {...register('analysisEvaluation.reviewedBy.name')}
+                placeholder="Enter reviewer name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="reviewedByDesignation">Designation</Label>
+              <Input
+                id="reviewedByDesignation"
+                {...register('analysisEvaluation.reviewedBy.designation')}
+                placeholder="Enter reviewer designation"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="reviewedByDate">Date</Label>
+              <Input
+                id="reviewedByDate"
+                type="date"
+                {...register('analysisEvaluation.reviewedBy.date')}
+              />
             </div>
           </div>
         </div>
