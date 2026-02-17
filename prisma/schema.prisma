@@ -85,6 +85,7 @@ model PSIRReport {
   needs           String? @db.Text
   attitude        String? @db.Text
   recommendations String? @db.Text
+  probationPeriod String? @db.VarChar(255)
 
   // Community Service Recommendation
   communityServiceHours Int?

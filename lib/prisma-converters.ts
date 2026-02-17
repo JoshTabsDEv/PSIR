@@ -93,6 +93,7 @@ export function prismaToFrontend(prismaReport: PrismaPSIRReport): PSIRReport {
       needs: prismaReport.needs || '',
       attitude: prismaReport.attitude || '',
       recommendations: prismaReport.recommendations || '',
+      probationPeriod: prismaReport.probationPeriod || undefined,
       communityServiceHours: prismaReport.communityServiceHours || undefined,
       communityServiceType: prismaReport.communityServiceType || undefined,
       preparedBy: {
@@ -188,6 +189,7 @@ export function frontendToPrisma(frontendReport: Partial<PSIRFormData>): Prisma.
     needs: analysis?.needs,
     attitude: analysis?.attitude,
     recommendations: analysis?.recommendations,
+    probationPeriod: analysis?.probationPeriod,
 
     // Community Service Recommendation
     communityServiceHours: analysis?.communityServiceHours,

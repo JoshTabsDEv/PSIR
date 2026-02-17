@@ -102,6 +102,7 @@ export const analysisEvaluationSchema = z.object({
   needs: z.string().default(''),
   attitude: z.string().default(''),
   recommendations: z.string().default(''),
+  probationPeriod: z.string().optional(),
   communityServiceHours: z.number().min(0).optional(),
   communityServiceType: z.string().default(''),
   preparedBy: signatureBlockSchema.default({ name: '', designation: '', date: null }),

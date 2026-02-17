@@ -78,6 +78,7 @@ export interface AnalysisEvaluation {
   needs: string;
   attitude: string;
   recommendations: string;
+  probationPeriod?: string;
   communityServiceHours?: number;
   communityServiceType?: string;
   preparedBy?: SignatureBlock;

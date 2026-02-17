@@ -280,6 +280,22 @@ Include:
           </div>
         </div>
 
+        {/* Probation Period */}
+        <div className="border-t mt-8 pt-6">
+          <h4 className="text-sm font-semibold text-gray-700 mb-4">Probation Period</h4>
+          <div className="border rounded-lg p-4 bg-gray-50">
+            <div className="space-y-2">
+              <Label htmlFor="probationPeriod">Probation Period</Label>
+              <Input
+                id="probationPeriod"
+                {...register('analysisEvaluation.probationPeriod')}
+                placeholder="e.g., 3 years, 6 months"
+              />
+              <p className="text-xs text-gray-500">Specify the recommended probation period duration</p>
+            </div>
+          </div>
+        </div>
+
         {/* Community Service Recommendation */}
         <div className="border-t mt-8 pt-6">
           <h4 className="text-sm font-semibold text-gray-700 mb-4">Community Service Recommendation</h4>
