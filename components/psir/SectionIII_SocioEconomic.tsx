@@ -1,8 +1,9 @@
 'use client';
 
-import { useFormContext } from 'react-hook-form';
-import { Label } from '@/components/ui/label';
+import { useFormContext, useController } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import type { PSIRFormData } from '@/types/psir';
 
 const economicStatusOptions = [
@@ -17,16 +18,44 @@ const economicStatusOptions = [
 
 const satisfactionOptions = ['Very satisfactory', 'Satisfactory', 'Poor'] as const;
 
+interface RadioSectionProps {
+  label: string;
+  fieldName: string;
+  options: readonly string[];
+}
+
+function RadioSection({ label, fieldName, options }: RadioSectionProps) {
+  const { control } = useFormContext<PSIRFormData>();
+  const { field } = useController({
+    name: fieldName as keyof PSIRFormData,
+    control,
+  });
+
+  return (
+    <div className="border rounded-lg p-4 bg-gray-50">
+      <h4 className="text-sm font-semibold text-gray-700 mb-4">{label}</h4>
+      <RadioGroup
+        value={field.value as string ?? ''}
+        onValueChange={field.onChange}
+        name={fieldName}
+      >
+        {options.map((option) => {
+          const id = `${fieldName}-${option}`;
+          return (
+            <div key={option} className="flex items-center gap-2">
+              <RadioGroupItem value={option} id={id} />
+              <Label htmlFor={id} className="cursor-pointer font-normal">
+                {option}
+              </Label>
+            </div>
+          );
+        })}
+      </RadioGroup>
+    </div>
+  );
+}
+
 export function SectionIII_SocioEconomic() {
-  const { register, watch } = useFormContext<PSIRFormData>();
-
-  const familyEconomicStatus = watch('socioEconomicBackground.familyEconomicStatus');
-  const familyRelationship = watch('socioEconomicBackground.familyRelationship');
-  const familyReputation = watch('socioEconomicBackground.familyReputation');
-  const familySupport = watch('socioEconomicBackground.familySupport');
-  const communityAcceptability = watch('socioEconomicBackground.communityAcceptability');
-  const overallWellBeing = watch('socioEconomicBackground.overallWellBeing');
-
   return (
     <Card>
       <CardHeader>
@@ -38,119 +67,36 @@ export function SectionIII_SocioEconomic() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* A. Family Economic Status */}
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <h4 className="text-sm font-semibold text-gray-700 mb-4">A. FAMILY ECONOMIC STATUS</h4>
-          <div className="space-y-2">
-            {economicStatusOptions.map((option) => (
-              <label key={option} className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  value={option}
-                  {...register('socioEconomicBackground.familyEconomicStatus')}
-                  checked={familyEconomicStatus === option}
-                  className="h-4 w-4"
-                />
-                <span className="text-sm">{option}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {/* B. Family Relationship */}
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <h4 className="text-sm font-semibold text-gray-700 mb-4">B. FAMILY RELATIONSHIP</h4>
-          <div className="space-y-2">
-            {satisfactionOptions.map((option) => (
-              <label key={option} className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  value={option}
-                  {...register('socioEconomicBackground.familyRelationship')}
-                  checked={familyRelationship === option}
-                  className="h-4 w-4"
-                />
-                <span className="text-sm">{option}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {/* C. Family Reputation */}
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <h4 className="text-sm font-semibold text-gray-700 mb-4">C. FAMILY REPUTATION</h4>
-          <div className="space-y-2">
-            {satisfactionOptions.map((option) => (
-              <label key={option} className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  value={option}
-                  {...register('socioEconomicBackground.familyReputation')}
-                  checked={familyReputation === option}
-                  className="h-4 w-4"
-                />
-                <span className="text-sm">{option}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {/* D. Family Support */}
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <h4 className="text-sm font-semibold text-gray-700 mb-4">D. FAMILY SUPPORT</h4>
-          <div className="space-y-2">
-            {satisfactionOptions.map((option) => (
-              <label key={option} className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  value={option}
-                  {...register('socioEconomicBackground.familySupport')}
-                  checked={familySupport === option}
-                  className="h-4 w-4"
-                />
-                <span className="text-sm">{option}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {/* E. Community Acceptability */}
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <h4 className="text-sm font-semibold text-gray-700 mb-4">E. COMMUNITY ACCEPTABILITY</h4>
-          <div className="space-y-2">
-            {satisfactionOptions.map((option) => (
-              <label key={option} className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  value={option}
-                  {...register('socioEconomicBackground.communityAcceptability')}
-                  checked={communityAcceptability === option}
-                  className="h-4 w-4"
-                />
-                <span className="text-sm">{option}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {/* F. Overall Well-Being */}
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <h4 className="text-sm font-semibold text-gray-700 mb-4">F. OVERALL WELL-BEING</h4>
-          <div className="space-y-2">
-            {satisfactionOptions.map((option) => (
-              <label key={option} className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  value={option}
-                  {...register('socioEconomicBackground.overallWellBeing')}
-                  checked={overallWellBeing === option}
-                  className="h-4 w-4"
-                />
-                <span className="text-sm">{option}</span>
-              </label>
-            ))}
-          </div>
-        </div>
+        <RadioSection
+          label="A. FAMILY ECONOMIC STATUS"
+          fieldName="socioEconomicBackground.familyEconomicStatus"
+          options={economicStatusOptions}
+        />
+        <RadioSection
+          label="B. FAMILY RELATIONSHIP"
+          fieldName="socioEconomicBackground.familyRelationship"
+          options={satisfactionOptions}
+        />
+        <RadioSection
+          label="C. FAMILY REPUTATION"
+          fieldName="socioEconomicBackground.familyReputation"
+          options={satisfactionOptions}
+        />
+        <RadioSection
+          label="D. FAMILY SUPPORT"
+          fieldName="socioEconomicBackground.familySupport"
+          options={satisfactionOptions}
+        />
+        <RadioSection
+          label="E. COMMUNITY ACCEPTABILITY"
+          fieldName="socioEconomicBackground.communityAcceptability"
+          options={satisfactionOptions}
+        />
+        <RadioSection
+          label="F. OVERALL WELL-BEING"
+          fieldName="socioEconomicBackground.overallWellBeing"
+          options={satisfactionOptions}
+        />
       </CardContent>
     </Card>
   );

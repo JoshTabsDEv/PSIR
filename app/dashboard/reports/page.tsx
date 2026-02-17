@@ -5,8 +5,10 @@ import Link from 'next/link';
 import { FilePlus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { ReportsList } from '@/components/dashboard/ReportsList';
 import { ReportsFilters } from '@/components/dashboard/ReportsFilters';
+import { ReportsListSkeleton } from '@/components/dashboard/ReportsListSkeleton';
 import {
   Dialog,
   DialogContent,
@@ -102,6 +104,13 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb
+        items={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Reports' },
+        ]}
+      />
+
       {/* Page Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -129,9 +138,7 @@ export default function ReportsPage() {
 
       {/* Reports List */}
       {loading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--brand-primary)]"></div>
-        </div>
+        <ReportsListSkeleton rows={8} />
       ) : (
         <>
           <ReportsList

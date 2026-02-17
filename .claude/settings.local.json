@@ -14,7 +14,8 @@
       "WebFetch(domain:shadcnblocks.com)",
       "WebFetch(domain:designrevision.com)",
       "WebFetch(domain:shadcn-admin.netlify.app)",
-      "WebFetch(domain:www.shadcnblocks.com)"
+      "WebFetch(domain:www.shadcnblocks.com)",
+      "Bash(pnpm tsc:*)"
     ]
   }
 }

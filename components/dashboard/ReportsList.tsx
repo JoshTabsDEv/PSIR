@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { Eye, Pencil, Trash2, FileDown } from 'lucide-react';
+import { Eye, Pencil, Trash2, FileDown, FolderOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/dashboard/EmptyState';
 import {
   Table,
   TableBody,
@@ -37,9 +38,13 @@ export function ReportsList({
           <CardTitle>{title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-center text-gray-500 py-8">
-            No reports found. Create your first report to get started.
-          </p>
+          <EmptyState
+            icon={FolderOpen}
+            title="No reports found"
+            description="There are no PSIR reports here yet. Create your first report to get started."
+            action={{ label: 'Create New Report', href: '/dashboard/reports/new' }}
+            secondaryAction={{ label: 'Browse all reports', href: '/dashboard/reports' }}
+          />
         </CardContent>
       </Card>
     );

@@ -1,18 +1,19 @@
 'use client';
 
-import { useFormContext, useWatch } from 'react-hook-form';
+import { useFormContext, useController } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { PSIRFormData } from '@/types/psir';
 
 export function SectionII_CriminalHistory() {
   const { register, control } = useFormContext<PSIRFormData>();
 
-  const custodialStatus = useWatch({
-    control,
+  const { field: custodialField } = useController({
     name: 'criminalHistory.custodialStatus',
+    control,
   });
 
   return (
@@ -85,43 +86,33 @@ export function SectionII_CriminalHistory() {
         {/* Custodial Status */}
         <div className="space-y-2">
           <Label>Custodial Status</Label>
-          <div className="flex flex-wrap gap-4">
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                value="On Bail"
-                {...register('criminalHistory.custodialStatus')}
-                className="h-4 w-4"
+          <RadioGroup
+            value={custodialField.value ?? ''}
+            onValueChange={custodialField.onChange}
+            name="criminalHistory.custodialStatus"
+            className="flex flex-wrap gap-x-6 gap-y-2"
+          >
+            {(['On Bail', 'On Detention'] as const).map((option) => (
+              <div key={option} className="flex items-center gap-2">
+                <RadioGroupItem value={option} id={`custodial-${option}`} />
+                <Label htmlFor={`custodial-${option}`} className="cursor-pointer font-normal">
+                  {option}
+                </Label>
+              </div>
+            ))}
+            <div className="flex items-center gap-2">
+              <RadioGroupItem value="ROR" id="custodial-ROR" />
+              <Label htmlFor="custodial-ROR" className="cursor-pointer font-normal">
+                ROR – Custodian:
+              </Label>
+              <Input
+                {...register('criminalHistory.rorCustodian')}
+                placeholder="Custodian name"
+                disabled={custodialField.value !== 'ROR'}
+                className="max-w-xs"
               />
-              <span>On Bail</span>
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                value="On Detention"
-                {...register('criminalHistory.custodialStatus')}
-                className="h-4 w-4"
-              />
-              <span>On Detention</span>
-            </label>
-          </div>
-          <div className="flex items-center gap-2 mt-2">
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                value="ROR"
-                {...register('criminalHistory.custodialStatus')}
-                className="h-4 w-4"
-              />
-              <span>ROR – Custodian:</span>
-            </label>
-            <Input
-              {...register('criminalHistory.rorCustodian')}
-              placeholder="Custodian name"
-              disabled={custodialStatus !== 'ROR'}
-              className="max-w-xs"
-            />
-          </div>
+            </div>
+          </RadioGroup>
         </div>
 
         {/* Address */}

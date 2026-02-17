@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Pencil, FileDown, Trash2, Loader2 } from 'lucide-react';
+import { Pencil, FileDown, Trash2, MoreVertical } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,12 +16,54 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import { Tooltip } from '@/components/ui/tooltip';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import type { PSIRReport } from '@/types/psir';
 import { formatDateDisplay } from '@/lib/utils/date-formatters';
 import { formatFullName } from '@/lib/utils/form-helpers';
 
 interface PageProps {
   params: Promise<{ id: string }>;
+}
+
+function ViewReportSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-48" />
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-4 w-32" />
+        </div>
+        <Skeleton className="h-9 w-32" />
+      </div>
+      {[1, 2, 3, 4].map((i) => (
+        <Card key={i}>
+          <CardHeader>
+            <Skeleton className="h-6 w-40" />
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, j) => (
+                <div key={j} className="space-y-1">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-5 w-32" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
 }
 
 export default function ViewReportPage({ params }: PageProps) {
@@ -94,11 +136,7 @@ export default function ViewReportPage({ params }: PageProps) {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-[var(--brand-primary)]" />
-      </div>
-    );
+    return <ViewReportSkeleton />;
   }
 
   if (!report) {
@@ -115,41 +153,79 @@ export default function ViewReportPage({ params }: PageProps) {
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb */}
+      <Breadcrumb
+        items={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Reports', href: '/dashboard/reports' },
+          { label: report.reportNumber },
+        ]}
+      />
+
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard/reports">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold">{report.reportNumber}</h1>
-              <Badge variant={report.status === 'completed' ? 'success' : 'warning'}>
-                {report.status === 'completed' ? 'Completed' : 'Draft'}
-              </Badge>
-            </div>
-            <p className="text-gray-500">
-              Created {formatDateDisplay(report.createdAt)}
-            </p>
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold">{report.reportNumber}</h1>
+            <Badge variant={report.status === 'completed' ? 'success' : 'warning'}>
+              {report.status === 'completed' ? 'Completed' : 'Draft'}
+            </Badge>
           </div>
+          <p className="text-gray-500 text-sm mt-0.5">
+            Created {formatDateDisplay(report.createdAt)}
+          </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExportDocx}>
-            <FileDown className="mr-2 h-4 w-4" />
-            DOCX
-          </Button>
-          <Link href={`/dashboard/reports/${id}/edit`}>
-            <Button variant="secondary">
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit
+
+        {/* Desktop actions */}
+        <div className="hidden sm:flex gap-2">
+          <Tooltip content="Export as DOCX">
+            <Button variant="outline" onClick={handleExportDocx}>
+              <FileDown className="mr-2 h-4 w-4" />
+              DOCX
             </Button>
-          </Link>
-          <Button variant="destructive" onClick={() => setShowDelete(true)}>
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-          </Button>
+          </Tooltip>
+          <Tooltip content="Edit report">
+            <Link href={`/dashboard/reports/${id}/edit`}>
+              <Button variant="secondary">
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit
+              </Button>
+            </Link>
+          </Tooltip>
+          <Tooltip content="Delete report">
+            <Button variant="destructive" onClick={() => setShowDelete(true)}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </Button>
+          </Tooltip>
+        </div>
+
+        {/* Mobile actions — dropdown */}
+        <div className="sm:hidden">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" aria-label="Actions">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleExportDocx}>
+                <FileDown className="h-4 w-4" />
+                Export DOCX
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => router.push(`/dashboard/reports/${id}/edit`)}
+              >
+                <Pencil className="h-4 w-4" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem destructive onClick={() => setShowDelete(true)}>
+                <Trash2 className="h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 

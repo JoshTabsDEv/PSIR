@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FilePlus, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton';
 import { StatsCards } from '@/components/dashboard/StatsCards';
 import { ReportsList } from '@/components/dashboard/ReportsList';
 import type { DashboardStats, PSIRReport } from '@/types/psir';
@@ -36,11 +37,7 @@ export default function DashboardPage() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--brand-primary)]"></div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (

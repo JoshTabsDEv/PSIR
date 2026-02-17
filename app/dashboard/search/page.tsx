@@ -2,12 +2,15 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Search as SearchIcon, Loader2 } from 'lucide-react';
+import { Search as SearchIcon, Loader2, SearchX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { EmptyState } from '@/components/dashboard/EmptyState';
+import { Skeleton } from '@/components/ui/skeleton';
 import type { PSIRReport } from '@/types/psir';
 import { formatDateDisplay } from '@/lib/utils/date-formatters';
 import { formatFullName } from '@/lib/utils/form-helpers';
@@ -53,6 +56,13 @@ export default function SearchPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb
+        items={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Search' },
+        ]}
+      />
+
       <div>
         <h1 className="text-2xl font-bold">Search Reports</h1>
         <p className="text-gray-500">
@@ -97,7 +107,28 @@ export default function SearchPage() {
       </Card>
 
       {/* Search Results */}
-      {searched && (
+      {/* Loading skeleton */}
+      {loading && searched && (
+        <Card>
+          <CardContent className="p-0">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex items-center justify-between gap-4 border-b px-6 py-4 last:border-0">
+                <div className="space-y-2 flex-1">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                  </div>
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-3.5 w-64" />
+                </div>
+                <Skeleton className="h-4 w-24 shrink-0" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {searched && !loading && (
         <div>
           <h2 className="text-lg font-semibold mb-4">
             {results.length} result{results.length !== 1 ? 's' : ''} found
@@ -105,10 +136,14 @@ export default function SearchPage() {
 
           {results.length === 0 ? (
             <Card>
-              <CardContent className="py-12 text-center">
-                <p className="text-gray-500">
-                  No reports found matching your search criteria.
-                </p>
+              <CardContent>
+                <EmptyState
+                  icon={SearchX}
+                  title="No results found"
+                  description="No reports match your search. Try different keywords or clear the filters."
+                  action={{ label: 'Create New Report', href: '/dashboard/reports/new' }}
+                  secondaryAction={{ label: 'View all reports', href: '/dashboard/reports' }}
+                />
               </CardContent>
             </Card>
           ) : (
