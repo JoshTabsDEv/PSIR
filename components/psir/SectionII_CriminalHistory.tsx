@@ -91,7 +91,7 @@ export function SectionII_CriminalHistory() {
                 type="radio"
                 value="On Bail"
                 {...register('criminalHistory.custodialStatus')}
-                className="h-4 w-4 text-blue-600"
+                className="h-4 w-4"
               />
               <span>On Bail</span>
             </label>
@@ -100,7 +100,7 @@ export function SectionII_CriminalHistory() {
                 type="radio"
                 value="On Detention"
                 {...register('criminalHistory.custodialStatus')}
-                className="h-4 w-4 text-blue-600"
+                className="h-4 w-4"
               />
               <span>On Detention</span>
             </label>
@@ -111,7 +111,7 @@ export function SectionII_CriminalHistory() {
                 type="radio"
                 value="ROR"
                 {...register('criminalHistory.custodialStatus')}
-                className="h-4 w-4 text-blue-600"
+                className="h-4 w-4"
               />
               <span>ROR – Custodian:</span>
             </label>

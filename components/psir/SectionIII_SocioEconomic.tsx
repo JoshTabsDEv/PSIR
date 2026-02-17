@@ -49,7 +49,7 @@ export function SectionIII_SocioEconomic() {
                   value={option}
                   {...register('socioEconomicBackground.familyEconomicStatus')}
                   checked={familyEconomicStatus === option}
-                  className="h-4 w-4 text-blue-600"
+                  className="h-4 w-4"
                 />
                 <span className="text-sm">{option}</span>
               </label>
@@ -68,7 +68,7 @@ export function SectionIII_SocioEconomic() {
                   value={option}
                   {...register('socioEconomicBackground.familyRelationship')}
                   checked={familyRelationship === option}
-                  className="h-4 w-4 text-blue-600"
+                  className="h-4 w-4"
                 />
                 <span className="text-sm">{option}</span>
               </label>
@@ -87,7 +87,7 @@ export function SectionIII_SocioEconomic() {
                   value={option}
                   {...register('socioEconomicBackground.familyReputation')}
                   checked={familyReputation === option}
-                  className="h-4 w-4 text-blue-600"
+                  className="h-4 w-4"
                 />
                 <span className="text-sm">{option}</span>
               </label>
@@ -106,7 +106,7 @@ export function SectionIII_SocioEconomic() {
                   value={option}
                   {...register('socioEconomicBackground.familySupport')}
                   checked={familySupport === option}
-                  className="h-4 w-4 text-blue-600"
+                  className="h-4 w-4"
                 />
                 <span className="text-sm">{option}</span>
               </label>
@@ -125,7 +125,7 @@ export function SectionIII_SocioEconomic() {
                   value={option}
                   {...register('socioEconomicBackground.communityAcceptability')}
                   checked={communityAcceptability === option}
-                  className="h-4 w-4 text-blue-600"
+                  className="h-4 w-4"
                 />
                 <span className="text-sm">{option}</span>
               </label>
@@ -144,7 +144,7 @@ export function SectionIII_SocioEconomic() {
                   value={option}
                   {...register('socioEconomicBackground.overallWellBeing')}
                   checked={overallWellBeing === option}
-                  className="h-4 w-4 text-blue-600"
+                  className="h-4 w-4"
                 />
                 <span className="text-sm">{option}</span>
               </label>

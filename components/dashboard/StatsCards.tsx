@@ -15,8 +15,8 @@ export function StatsCards({ totalReports, draftReports, completedReports }: Sta
       title: 'Total Reports',
       value: totalReports,
       icon: FileText,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
+      color: 'text-[var(--brand-primary)]',
+      bgColor: 'bg-[#fef2f4]',
     },
     {
       title: 'Draft Reports',

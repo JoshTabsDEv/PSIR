@@ -121,7 +121,7 @@ export function SectionIV_Analysis() {
           <div className="space-y-4">
             <div className="flex items-center justify-between border-b pb-3">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-blue-600" />
+                <Sparkles className="h-5 w-5 text-[var(--brand-primary)]" />
                 <h3 className="text-sm font-semibold text-gray-900">
                   Investigator&apos;s Assessment Workspace
                 </h3>

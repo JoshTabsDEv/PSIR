@@ -5,7 +5,16 @@
       "Bash(npx tsc:*)",
       "Bash(pnpm build:*)",
       "Bash(pnpm run build:*)",
-      "Bash(pnpm add:*)"
+      "Bash(pnpm add:*)",
+      "WebSearch",
+      "WebFetch(domain:www.designstudiouiux.com)",
+      "WebFetch(domain:ui.shadcn.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.palantir.net)",
+      "WebFetch(domain:shadcnblocks.com)",
+      "WebFetch(domain:designrevision.com)",
+      "WebFetch(domain:shadcn-admin.netlify.app)",
+      "WebFetch(domain:www.shadcnblocks.com)"
     ]
   }
 }

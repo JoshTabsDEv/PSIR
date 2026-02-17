@@ -3,10 +3,30 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Brand */
   --brand-primary: #ce1126;
   --brand-primary-hover: #a60e1f;
   --brand-accent: #d4af37;
   --brand-accent-ink: #663206;
+
+  /* Functional colors */
+  --color-success: #16a34a;
+  --color-success-bg: #f0fdf4;
+  --color-warning: #ea580c;
+  --color-warning-bg: #fff7ed;
+  --color-danger: #dc2626;
+  --color-danger-bg: #fef2f2;
+  --color-info: #2563eb;
+  --color-info-bg: #eff6ff;
+  --color-muted: #6b7280;
+
+  /* Form element tokens */
+  --ring-color: var(--brand-primary);
+  --input-border: #d1d5db;
+  --input-bg: #ffffff;
+  --input-placeholder: #9ca3af;
+
   --font-primary: var(--font-primary-family), "Times New Roman", serif;
   --font-secondary: var(--font-secondary-family), "Segoe UI", Arial, sans-serif;
 }
@@ -29,4 +49,10 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-primary);
+}
+
+/* Global radio/checkbox accent color uses brand primary */
+input[type="radio"],
+input[type="checkbox"] {
+  accent-color: var(--brand-primary);
 }

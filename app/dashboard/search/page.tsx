@@ -115,12 +115,12 @@ export default function SearchPage() {
             <div className="space-y-4">
               {results.map((report) => (
                 <Link key={report._id} href={`/dashboard/reports/${report._id}`}>
-                  <Card className="hover:border-blue-300 transition-colors cursor-pointer">
+                  <Card className="hover:border-[var(--brand-primary)] transition-colors cursor-pointer">
                     <CardContent className="py-4">
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-sm text-blue-600">
+                            <span className="font-mono text-sm text-[var(--brand-primary)]">
                               {report.reportNumber}
                             </span>
                             <Badge variant={report.status === 'completed' ? 'success' : 'warning'}>
