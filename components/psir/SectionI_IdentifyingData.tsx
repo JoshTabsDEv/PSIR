@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { PSIRFormData } from '@/types/psir';
 import { civilStatusOptions, educationalAttainmentOptions, religionOptions } from '@/lib/utils/form-helpers';
@@ -96,32 +97,50 @@ export function SectionI_IdentifyingData() {
         </div>
 
         {/* Birthday, Age, Birthplace */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="space-y-2">
-            <Label htmlFor="birthday">Birthday *</Label>
-            <Input
-              id="birthday"
-              type="date"
-              defaultValue={birthday ? new Date(birthday).toISOString().split('T')[0] : ''}
-              onChange={handleBirthdayChange}
-            />
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 items-end">
+          {/* Birthday Field */}
+          <div className="flex flex-col space-y-2">
+            <Label htmlFor="birthday" className="text-sm font-medium">
+              Birthday *
+            </Label>
+            <div className="w-full">
+              <DatePicker
+                value={birthday ? new Date(birthday) : undefined}
+                onChange={(date) => {
+                  setValue('identifyingData.birthday', date as Date);
+                  setValue('identifyingData.age', date ? calculateAge(date.toISOString()) : 0);
+                }}
+                placeholder="Select date of birth"
+                // Ensure your DatePicker component accepts a className to set w-full
+                className="w-full"
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="age">Age</Label>
+
+          {/* Age Field */}
+          <div className="flex flex-col space-y-2">
+            <Label htmlFor="age" className="text-sm font-medium">
+              Age
+            </Label>
             <Input
               id="age"
               type="number"
               {...register('identifyingData.age', { valueAsNumber: true })}
               readOnly
-              className="bg-gray-50"
+              className="bg-gray-50 h-10" // Force height if DatePicker is taller
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="birthplace">Birthplace</Label>
+
+          {/* Birthplace Field */}
+          <div className="flex flex-col space-y-2">
+            <Label htmlFor="birthplace" className="text-sm font-medium">
+              Birthplace
+            </Label>
             <Input
               id="birthplace"
               {...register('identifyingData.birthplace')}
               placeholder="e.g., Manila"
+              className="h-10"
             />
           </div>
         </div>

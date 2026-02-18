@@ -277,16 +277,19 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
         />
 
         {/* Current Section */}
-        {renderSection()}
+        <div className="page-transition">
+          {renderSection()}
+        </div>
 
         {/* Navigation Buttons */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-t pt-6">
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Button
               type="button"
               variant="outline"
               onClick={handlePrevious}
               disabled={currentSection === 1}
+              className="w-full sm:w-auto"
             >
               <ChevronLeft className="mr-2 h-4 w-4" />
               Previous
@@ -296,18 +299,20 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
               variant="outline"
               onClick={handleNext}
               disabled={currentSection === 4}
+              className="w-full sm:w-auto"
             >
               Next
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Button
               type="button"
               variant="secondary"
               onClick={handleSaveDraft}
               disabled={isSaving}
+              className="w-full sm:w-auto"
             >
               {isSaving ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -318,7 +323,7 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
             </Button>
 
             {currentSection === 4 && (
-              <Button type="submit" disabled={isSaving}>
+              <Button type="submit" disabled={isSaving} className="w-full sm:w-auto">
                 {isSaving ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (

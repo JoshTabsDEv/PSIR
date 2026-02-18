@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FilePlus, Search } from 'lucide-react';
+import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton';
 import { StatsCards } from '@/components/dashboard/StatsCards';
@@ -45,9 +46,9 @@ export default function DashboardPage() {
       {/* Page Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <h1 className="text-2xl font-bold">Welcome back!</h1>
           <p className="text-gray-500">
-            Welcome to the PSIR Management System
+            {format(new Date(), 'EEEE, MMMM d, yyyy')}
           </p>
         </div>
         <div className="flex gap-2">
@@ -55,12 +56,18 @@ export default function DashboardPage() {
             <Button variant="outline">
               <Search className="mr-2 h-4 w-4" />
               Search
+              <kbd className="ml-2 hidden sm:inline-block px-1.5 py-0.5 text-xs bg-gray-100 border rounded">
+                S
+              </kbd>
             </Button>
           </Link>
           <Link href="/dashboard/reports/new">
             <Button>
               <FilePlus className="mr-2 h-4 w-4" />
               New Report
+              <kbd className="ml-2 hidden sm:inline-block px-1.5 py-0.5 text-xs bg-white/20 border border-white/30 rounded">
+                N
+              </kbd>
             </Button>
           </Link>
         </div>

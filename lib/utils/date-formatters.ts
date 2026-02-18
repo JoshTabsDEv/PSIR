@@ -1,4 +1,4 @@
-import { format, parseISO, differenceInYears, isValid } from 'date-fns';
+import { format, parseISO, differenceInYears, isValid, formatDistanceToNow } from 'date-fns';
 
 export function formatDateDisplay(date: Date | string | null | undefined): string {
   if (!date) return '';
@@ -40,3 +40,11 @@ export function isValidDate(date: unknown): boolean {
   if (typeof date === 'string') return isValid(parseISO(date));
   return false;
 }
+
+export function formatRelativeTime(date: Date | string | null | undefined): string {
+  if (!date) return '';
+  const parsedDate = typeof date === 'string' ? parseISO(date) : date;
+  if (!isValid(parsedDate)) return '';
+  return formatDistanceToNow(parsedDate, { addSuffix: true });
+}
+

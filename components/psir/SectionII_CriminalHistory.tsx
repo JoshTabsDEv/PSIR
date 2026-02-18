@@ -4,12 +4,13 @@ import { useFormContext, useController } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { PSIRFormData } from '@/types/psir';
 
 export function SectionII_CriminalHistory() {
-  const { register, control } = useFormContext<PSIRFormData>();
+  const { register, control, watch, setValue } = useFormContext<PSIRFormData>();
 
   const { field: custodialField } = useController({
     name: 'criminalHistory.custodialStatus',
@@ -31,9 +32,9 @@ export function SectionII_CriminalHistory() {
         <div className="border rounded-lg p-4 bg-gray-50">
           <h4 className="text-sm font-semibold text-gray-700 mb-4">A. Present Offense</h4>
 
-          {/* Charged with + Date */}
-          <div className="grid gap-4 md:grid-cols-[1fr_auto]">
-            <div className="space-y-2">
+          <div className="grid gap-4 md:grid-cols-4">
+            {/* Takes up 3 columns */}
+            <div className="space-y-2 md:col-span-3">
               <Label htmlFor="chargedWith">Charged with</Label>
               <Input
                 id="chargedWith"
@@ -41,36 +42,48 @@ export function SectionII_CriminalHistory() {
                 placeholder="e.g., Violation of R.A. 9165"
               />
             </div>
+
+            {/* Takes up 1 column */}
             <div className="space-y-2">
               <Label htmlFor="chargedDate">Date</Label>
-              <Input
-                id="chargedDate"
-                type="date"
-                {...register('criminalHistory.presentOffense.chargedDate')}
-              />
+              <div className="w-full">
+                <DatePicker
+                  value={watch('criminalHistory.presentOffense.chargedDate') ? new Date(watch('criminalHistory.presentOffense.chargedDate')!) : undefined}
+                  onChange={(date) => setValue('criminalHistory.presentOffense.chargedDate', date ?? null)}
+                  placeholder="Select date"
+                  className="w-full" // Ensure the button inside fills the column
+                />
+              </div>
             </div>
           </div>
 
           {/* Convicted of + Date */}
-          <div className="mt-4 grid gap-4 md:grid-cols-[1fr_auto]">
-            <div className="space-y-2">
+          <div className="mt-4 grid gap-4 md:grid-cols-4">
+            {/* Convicted Of - Spans 75% of the row */}
+            <div className="space-y-2 md:col-span-3">
               <Label htmlFor="convictedOf">Convicted of</Label>
               <Input
                 id="convictedOf"
                 {...register('criminalHistory.presentOffense.convictedOf')}
                 placeholder="e.g., Illegal possession of dangerous drugs"
+                className="h-10" // Ensures height consistency
               />
             </div>
+
+            {/* Date - Spans 25% of the row */}
             <div className="space-y-2">
               <Label htmlFor="convictedDate">Date</Label>
-              <Input
-                id="convictedDate"
-                type="date"
-                {...register('criminalHistory.presentOffense.convictedDate')}
-              />
+              <div className="w-full">
+                <DatePicker
+                  value={watch('criminalHistory.presentOffense.convictedDate') ? new Date(watch('criminalHistory.presentOffense.convictedDate')!) : undefined}
+                  onChange={(date) => setValue('criminalHistory.presentOffense.convictedDate', date ?? null)}
+                  placeholder="Select date"
+                  // Force the DatePicker to fill its 1/4th of the grid
+                  className="w-full h-10"
+                />
+              </div>
             </div>
           </div>
-
           {/* Sentence */}
           <div className="mt-4 space-y-2">
             <Label htmlFor="sentence">Sentence</Label>

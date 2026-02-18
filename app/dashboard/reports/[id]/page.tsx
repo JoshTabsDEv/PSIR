@@ -27,8 +27,16 @@ import { Tooltip } from '@/components/ui/tooltip';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import type { PSIRReport } from '@/types/psir';
-import { formatDateDisplay } from '@/lib/utils/date-formatters';
+import { formatDateDisplay, formatRelativeTime } from '@/lib/utils/date-formatters';
 import { formatFullName } from '@/lib/utils/form-helpers';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -171,9 +179,10 @@ export default function ViewReportPage({ params }: PageProps) {
               {report.status === 'completed' ? 'Completed' : 'Draft'}
             </Badge>
           </div>
-          <p className="text-gray-500 text-sm mt-0.5">
-            Created {formatDateDisplay(report.createdAt)}
-          </p>
+          <div className="text-gray-500 text-sm mt-0.5 space-y-0.5">
+            <p>Created {formatDateDisplay(report.createdAt)}</p>
+            <p className="text-xs">Last updated {formatRelativeTime(report.updatedAt)}</p>
+          </div>
         </div>
 
         {/* Desktop actions */}
@@ -232,7 +241,12 @@ export default function ViewReportPage({ params }: PageProps) {
       {/* Section I: Identifying Data */}
       <Card>
         <CardHeader>
-          <CardTitle>I. Identifying Data</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-primary)] text-white text-sm font-bold">
+              I
+            </span>
+            Identifying Data
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -337,7 +351,12 @@ export default function ViewReportPage({ params }: PageProps) {
       {/* Section II: Criminal History */}
       <Card>
         <CardHeader>
-          <CardTitle>II. Criminal History</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-primary)] text-white text-sm font-bold">
+              II
+            </span>
+            Criminal History
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -393,42 +412,40 @@ export default function ViewReportPage({ params }: PageProps) {
             </div>
 
             <h4 className="font-semibold text-sm text-gray-600 pt-2">B. Prior and Pending Records</h4>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300 text-sm">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="border border-gray-300 px-3 py-2 text-left">Agency</th>
-                    <th className="border border-gray-300 px-3 py-2 text-left">Criminal Case No.</th>
-                    <th className="border border-gray-300 px-3 py-2 text-left">Offense</th>
-                    <th className="border border-gray-300 px-3 py-2 text-left">Date Charged</th>
-                    <th className="border border-gray-300 px-3 py-2 text-left">Decision/Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="border border-gray-300 px-3 py-2 font-medium">NBI</td>
-                    <td className="border border-gray-300 px-3 py-2">{report.criminalHistory.priorRecords.nbi.criminalCaseNo || '-'}</td>
-                    <td className="border border-gray-300 px-3 py-2">{report.criminalHistory.priorRecords.nbi.offense || '-'}</td>
-                    <td className="border border-gray-300 px-3 py-2">{report.criminalHistory.priorRecords.nbi.dateCharged ? formatDateDisplay(report.criminalHistory.priorRecords.nbi.dateCharged) : '-'}</td>
-                    <td className="border border-gray-300 px-3 py-2">{report.criminalHistory.priorRecords.nbi.decisionStatus}</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 px-3 py-2 font-medium">CMRD/CMRU</td>
-                    <td className="border border-gray-300 px-3 py-2">{report.criminalHistory.priorRecords.cmrd.criminalCaseNo || '-'}</td>
-                    <td className="border border-gray-300 px-3 py-2">{report.criminalHistory.priorRecords.cmrd.offense || '-'}</td>
-                    <td className="border border-gray-300 px-3 py-2">{report.criminalHistory.priorRecords.cmrd.dateCharged ? formatDateDisplay(report.criminalHistory.priorRecords.cmrd.dateCharged) : '-'}</td>
-                    <td className="border border-gray-300 px-3 py-2">{report.criminalHistory.priorRecords.cmrd.decisionStatus}</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 px-3 py-2 font-medium">Others</td>
-                    <td className="border border-gray-300 px-3 py-2">{report.criminalHistory.priorRecords.others.criminalCaseNo || '-'}</td>
-                    <td className="border border-gray-300 px-3 py-2">{report.criminalHistory.priorRecords.others.offense || '-'}</td>
-                    <td className="border border-gray-300 px-3 py-2">{report.criminalHistory.priorRecords.others.dateCharged ? formatDateDisplay(report.criminalHistory.priorRecords.others.dateCharged) : '-'}</td>
-                    <td className="border border-gray-300 px-3 py-2">{report.criminalHistory.priorRecords.others.decisionStatus}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Agency</TableHead>
+                  <TableHead>Criminal Case No.</TableHead>
+                  <TableHead>Offense</TableHead>
+                  <TableHead>Date Charged</TableHead>
+                  <TableHead>Decision/Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="font-medium">NBI</TableCell>
+                  <TableCell>{report.criminalHistory.priorRecords.nbi.criminalCaseNo || '-'}</TableCell>
+                  <TableCell>{report.criminalHistory.priorRecords.nbi.offense || '-'}</TableCell>
+                  <TableCell>{report.criminalHistory.priorRecords.nbi.dateCharged ? formatDateDisplay(report.criminalHistory.priorRecords.nbi.dateCharged) : '-'}</TableCell>
+                  <TableCell>{report.criminalHistory.priorRecords.nbi.decisionStatus || '-'}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">CMRD/CMRU</TableCell>
+                  <TableCell>{report.criminalHistory.priorRecords.cmrd.criminalCaseNo || '-'}</TableCell>
+                  <TableCell>{report.criminalHistory.priorRecords.cmrd.offense || '-'}</TableCell>
+                  <TableCell>{report.criminalHistory.priorRecords.cmrd.dateCharged ? formatDateDisplay(report.criminalHistory.priorRecords.cmrd.dateCharged) : '-'}</TableCell>
+                  <TableCell>{report.criminalHistory.priorRecords.cmrd.decisionStatus || '-'}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Others</TableCell>
+                  <TableCell>{report.criminalHistory.priorRecords.others.criminalCaseNo || '-'}</TableCell>
+                  <TableCell>{report.criminalHistory.priorRecords.others.offense || '-'}</TableCell>
+                  <TableCell>{report.criminalHistory.priorRecords.others.dateCharged ? formatDateDisplay(report.criminalHistory.priorRecords.others.dateCharged) : '-'}</TableCell>
+                  <TableCell>{report.criminalHistory.priorRecords.others.decisionStatus || '-'}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
           </div>
         </CardContent>
       </Card>
@@ -436,7 +453,12 @@ export default function ViewReportPage({ params }: PageProps) {
       {/* Section III: Socio-Economic Background */}
       <Card>
         <CardHeader>
-          <CardTitle>III. Socio-Economic Background</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-primary)] text-white text-sm font-bold">
+              III
+            </span>
+            Socio-Economic Background
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -471,7 +493,12 @@ export default function ViewReportPage({ params }: PageProps) {
       {/* Section IV: Analysis and Evaluation */}
       <Card>
         <CardHeader>
-          <CardTitle>IV. Analysis and Evaluation</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-primary)] text-white text-sm font-bold">
+              IV
+            </span>
+            Analysis and Evaluation
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">

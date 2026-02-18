@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DatePicker } from '@/components/ui/date-picker'; // Ensure this path is correct
 import { Sparkles, Loader2 } from 'lucide-react';
 import type { PSIRFormData } from '@/types/psir';
 
@@ -23,10 +24,13 @@ export function SectionIV_Analysis() {
     socioEconomicBackground: string;
   } | null>(null);
 
-  // Watch form values for AI context
+  // Watch form values for AI context and DatePicker values
   const identifyingData = useWatch({ control, name: 'identifyingData' });
   const criminalHistory = useWatch({ control, name: 'criminalHistory' });
   const socioEconomicBackground = useWatch({ control, name: 'socioEconomicBackground' });
+
+  const preparedByDate = watch('analysisEvaluation.preparedBy.date');
+  const reviewedByDate = watch('analysisEvaluation.reviewedBy.date');
 
   // Watch the circumstances field for character count
   const circumstances = watch('analysisEvaluation.circumstances') || '';
@@ -83,7 +87,6 @@ export function SectionIV_Analysis() {
 
       const result = await response.json();
       if (result.success) {
-        // Append recommendations to the existing content
         const currentContent = circumstances;
         const newContent = currentContent
           ? `${currentContent}\n\n--- AI-Generated Recommendations ---\n${result.data.recommendations}`
@@ -149,18 +152,17 @@ export function SectionIV_Analysis() {
 
             {/* Tone Suggestions */}
             <div>
-              <Label className="text-xs text-gray-500 mb-2 block">TONE SUGGESTIONS:</Label>
+              <Label className="text-xs text-gray-500 mb-2 block uppercase">Tone Suggestions:</Label>
               <div className="flex gap-2">
                 {(['Objective', 'Empathetic', 'Firm'] as ToneSuggestion[]).map((tone) => (
                   <button
                     key={tone}
                     type="button"
                     onClick={() => setSelectedTone(tone)}
-                    className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                      selectedTone === tone
-                        ? 'bg-[var(--brand-primary)] text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
+                    className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${selectedTone === tone
+                      ? 'bg-[var(--brand-primary)] text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
                   >
                     {tone}
                   </button>
@@ -170,8 +172,8 @@ export function SectionIV_Analysis() {
 
             {/* Manual Prompt Input */}
             <div className="space-y-2">
-              <Label htmlFor="manualPrompt" className="text-xs text-gray-500">
-                MANUAL PROMPT (OPTIONAL):
+              <Label htmlFor="manualPrompt" className="text-xs text-gray-500 uppercase">
+                Manual Prompt (Optional):
               </Label>
               <Textarea
                 id="manualPrompt"
@@ -188,13 +190,7 @@ export function SectionIV_Analysis() {
               <Textarea
                 id="circumstances"
                 {...register('analysisEvaluation.circumstances')}
-                placeholder="Synthesize your findings here... Use the AI assistant on the right for summaries of previous sections.
-
-Include:
-• Circumstances of the offense
-• Identified needs and rehabilitative requirements
-• Attitude towards the offense and willingness to change
-• Recommendations for supervision and rehabilitation programs"
+                placeholder="Synthesize your findings here..."
                 rows={20}
                 className="resize-none font-mono text-sm"
               />
@@ -212,10 +208,9 @@ Include:
           <div className="space-y-4">
             <div className="flex items-center gap-2 border-b pb-3">
               <Sparkles className="h-5 w-5 text-purple-600" />
-              <h3 className="text-sm font-semibold text-purple-900">AI ASSISTANT</h3>
+              <h3 className="text-sm font-semibold text-purple-900 uppercase">AI Assistant</h3>
             </div>
 
-            {/* Generate Summaries Button */}
             {!summaries && (
               <Button
                 type="button"
@@ -235,45 +230,25 @@ Include:
               </Button>
             )}
 
-            {/* Summaries */}
             {summaries && (
               <div className="space-y-4">
-                {/* Criminal History Summary */}
                 <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-2">
-                    Summary: Criminal History
-                  </h4>
-                  <p className="text-xs text-gray-600 leading-relaxed">
-                    {summaries.criminalHistory}
-                  </p>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Summary: Criminal History</h4>
+                  <p className="text-xs text-gray-600 leading-relaxed">{summaries.criminalHistory}</p>
                 </div>
 
-                {/* Socio-Economic Summary */}
                 <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-2">
-                    Summary: Socio-Economic
-                  </h4>
-                  <p className="text-xs text-gray-600 leading-relaxed">
-                    {summaries.socioEconomicBackground}
-                  </p>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Summary: Socio-Economic</h4>
+                  <p className="text-xs text-gray-600 leading-relaxed">{summaries.socioEconomicBackground}</p>
                 </div>
 
-                {/* Generate Recommendations Preview */}
                 <Button
                   type="button"
-                  variant="default"
-                  className="w-full bg-purple-600 hover:bg-purple-700"
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white"
                   onClick={generateRecommendations}
                   disabled={isGenerating}
                 >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    'Generate Recommendations Preview'
-                  )}
+                  {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Generate Recommendations Preview'}
                 </Button>
               </div>
             )}
@@ -282,10 +257,10 @@ Include:
 
         {/* Probation Period */}
         <div className="border-t mt-8 pt-6">
-          <h4 className="text-sm font-semibold text-gray-700 mb-4">Probation Period</h4>
-          <div className="border rounded-lg p-4 bg-gray-50">
+          <h4 className="text-sm font-semibold text-gray-700 mb-4 uppercase">Probation Period</h4>
+          <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="probationPeriod">Probation Period</Label>
+              <Label htmlFor="probationPeriod">Recommended Duration</Label>
               <Input
                 id="probationPeriod"
                 {...register('analysisEvaluation.probationPeriod')}
@@ -298,108 +273,110 @@ Include:
 
         {/* Community Service Recommendation */}
         <div className="border-t mt-8 pt-6">
-          <h4 className="text-sm font-semibold text-gray-700 mb-4">Community Service Recommendation</h4>
-
+          <h4 className="text-sm font-semibold text-gray-700 mb-4 uppercase">Community Service Recommendation</h4>
           <div className="grid gap-6 md:grid-cols-2">
-            {/* Hours */}
-            <div className="border rounded-lg p-4 bg-gray-50">
-              <div className="space-y-2">
-                <Label htmlFor="communityServiceHours">Hours Required</Label>
-                <Input
-                  id="communityServiceHours"
-                  type="number"
-                  {...register('analysisEvaluation.communityServiceHours', {
-                    valueAsNumber: true,
-                    min: 0
-                  })}
-                  placeholder="e.g., 40"
-                  min="0"
-                />
-                <p className="text-xs text-gray-500">Total hours of community service recommended</p>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="communityServiceHours">Hours Required</Label>
+              <Input
+                id="communityServiceHours"
+                type="number"
+                {...register('analysisEvaluation.communityServiceHours', { valueAsNumber: true })}
+                placeholder="e.g., 40"
+              />
             </div>
 
-            {/* Type of Service */}
-            <div className="border rounded-lg p-4 bg-gray-50">
-              <div className="space-y-2">
-                <Label htmlFor="communityServiceType">How many to plant</Label>
-                <Textarea
-                  id="communityServiceType"
-                  {...register('analysisEvaluation.communityServiceType')}
-                  placeholder="e.g., Fifty (50) fruit-bearing trees, trees that can be used as lumber"
-                  rows={3}
-                  className="resize-none"
-                />
-                <p className="text-xs text-gray-500">Describe how many trees to plant and their purpose</p>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="communityServiceType">How many to plant</Label>
+              <Textarea
+                id="communityServiceType"
+                {...register('analysisEvaluation.communityServiceType')}
+                placeholder="e.g., Fifty (50) fruit-bearing trees..."
+                rows={3}
+              />
             </div>
           </div>
         </div>
 
-        {/* Prepared By */}
+        {/* Prepared By Section with DatePicker */}
         <div className="border-t mt-8 pt-6">
-          <h4 className="text-sm font-semibold text-gray-700 mb-4">Prepared By</h4>
-
-          <div className="grid gap-4 md:grid-cols-3">
+          <h4 className="text-sm font-semibold text-gray-700 mb-4 uppercase">Prepared By</h4>
+          <div className="grid gap-4 md:grid-cols-3 items-end">
+            {/* Name */}
             <div className="space-y-2">
               <Label htmlFor="preparedByName">Name</Label>
               <Input
                 id="preparedByName"
                 {...register('analysisEvaluation.preparedBy.name')}
                 placeholder="Enter preparer name"
+                className="h-10" // Standardize height
               />
             </div>
 
+            {/* Designation */}
             <div className="space-y-2">
               <Label htmlFor="preparedByDesignation">Designation</Label>
               <Input
                 id="preparedByDesignation"
                 {...register('analysisEvaluation.preparedBy.designation')}
                 placeholder="Enter preparer designation"
+                className="h-10" // Standardize height
               />
             </div>
 
+            {/* Date */}
             <div className="space-y-2">
-              <Label htmlFor="preparedByDate">Date</Label>
-              <Input
-                id="preparedByDate"
-                type="date"
-                {...register('analysisEvaluation.preparedBy.date')}
-              />
+              <Label>Date</Label>
+              <div className="w-full">
+                <DatePicker
+                  value={preparedByDate ? new Date(preparedByDate) : undefined}
+                  onChange={(date) => setValue('analysisEvaluation.preparedBy.date', date?.toISOString() || '')}
+                  placeholder="Select date"
+                  // Ensure className is passed to the internal button trigger
+                  className="w-full h-10"
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Reviewed By */}
+        {/* Reviewed By Section with DatePicker */}
         <div className="border-t mt-8 pt-6">
-          <h4 className="text-sm font-semibold text-gray-700 mb-4">Reviewed By</h4>
-
-          <div className="grid gap-4 md:grid-cols-3">
+          <h4 className="text-sm font-semibold text-gray-700 mb-4 uppercase">Reviewed By</h4>
+          <div className="grid gap-4 md:grid-cols-3 items-end">
+            {/* Name Field */}
             <div className="space-y-2">
               <Label htmlFor="reviewedByName">Name</Label>
               <Input
                 id="reviewedByName"
                 {...register('analysisEvaluation.reviewedBy.name')}
                 placeholder="Enter reviewer name"
+                className="h-10" // Force standard height
               />
             </div>
 
+            {/* Designation Field */}
             <div className="space-y-2">
               <Label htmlFor="reviewedByDesignation">Designation</Label>
               <Input
                 id="reviewedByDesignation"
                 {...register('analysisEvaluation.reviewedBy.designation')}
                 placeholder="Enter reviewer designation"
+                className="h-10" // Force standard height
               />
             </div>
 
+            {/* Date Picker Field */}
             <div className="space-y-2">
-              <Label htmlFor="reviewedByDate">Date</Label>
-              <Input
-                id="reviewedByDate"
-                type="date"
-                {...register('analysisEvaluation.reviewedBy.date')}
-              />
+              <Label>Date</Label>
+              <div className="w-full">
+                <DatePicker
+                  value={reviewedByDate ? new Date(reviewedByDate) : undefined}
+                  onChange={(date) => setValue('analysisEvaluation.reviewedBy.date', date?.toISOString() || '')}
+                  placeholder="Select date"
+                  // Ensure the DatePicker trigger itself has h-10 and w-full inside the component
+                  className="w-full h-10"
+                />
+              </div>
             </div>
           </div>
         </div>

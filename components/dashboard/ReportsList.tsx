@@ -80,9 +80,15 @@ export function ReportsList({
                   )}
                 </TableCell>
                 <TableCell>
-                  <Badge variant={report.status === 'completed' ? 'success' : 'warning'}>
-                    {report.status === 'completed' ? 'Completed' : 'Draft'}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`h-2 w-2 rounded-full ${report.status === 'completed' ? 'bg-green-500' : 'bg-orange-500'
+                        }`}
+                    />
+                    <span className="text-sm font-medium">
+                      {report.status === 'completed' ? 'Completed' : 'Draft'}
+                    </span>
+                  </div>
                 </TableCell>
                 <TableCell className="text-sm text-gray-500">
                   {formatDateDisplay(report.createdAt)}
