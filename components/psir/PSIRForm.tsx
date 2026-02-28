@@ -255,7 +255,7 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
         {/* Header with report number and auto-save indicator */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-lg font-semibold">
+            <h2 className="text-lg font-semibold text-gray-900">
               {reportId ? 'Edit Report' : 'New Report'}
             </h2>
             <p className="text-sm text-gray-500 font-mono">
@@ -283,7 +283,7 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
 
         {/* Navigation Buttons */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-t pt-6">
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto text-gray-900">
             <Button
               type="button"
               variant="outline"
@@ -299,7 +299,7 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
               variant="outline"
               onClick={handleNext}
               disabled={currentSection === 4}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto "
             >
               Next
               <ChevronRight className="ml-2 h-4 w-4" />

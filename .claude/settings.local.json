@@ -15,7 +15,9 @@
       "WebFetch(domain:designrevision.com)",
       "WebFetch(domain:shadcn-admin.netlify.app)",
       "WebFetch(domain:www.shadcnblocks.com)",
-      "Bash(pnpm tsc:*)"
+      "Bash(pnpm tsc:*)",
+      "Bash(ls:*)",
+      "Bash(cd /c/Users/New/Documents/capitol/psir && pnpm approve-builds 2>&1)"
     ]
   }
 }

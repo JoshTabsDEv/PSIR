@@ -135,6 +135,7 @@ export function SectionIV_Analysis() {
                 size="sm"
                 onClick={generateRecommendations}
                 disabled={isGenerating}
+                className='text-gray-900'
               >
                 {isGenerating ? (
                   <>
@@ -143,7 +144,7 @@ export function SectionIV_Analysis() {
                   </>
                 ) : (
                   <>
-                    <Sparkles className="mr-2 h-4 w-4" />
+                    <Sparkles className="mr-2 h-4 w-4 text-purple-600" />
                     Draft with AI
                   </>
                 )}
@@ -171,7 +172,7 @@ export function SectionIV_Analysis() {
             </div>
 
             {/* Manual Prompt Input */}
-            <div className="space-y-2">
+            <div className="space-y-2 text-gray-900">
               <Label htmlFor="manualPrompt" className="text-xs text-gray-500 uppercase">
                 Manual Prompt (Optional):
               </Label>
@@ -186,7 +187,7 @@ export function SectionIV_Analysis() {
             </div>
 
             {/* Main Assessment Workspace */}
-            <div className="space-y-2">
+            <div className="space-y-2 text-gray-900">
               <Textarea
                 id="circumstances"
                 {...register('analysisEvaluation.circumstances')}
@@ -205,7 +206,7 @@ export function SectionIV_Analysis() {
           </div>
 
           {/* Right Panel: AI Assistant */}
-          <div className="space-y-4">
+          <div className="space-y-4 text-gray-900">
             <div className="flex items-center gap-2 border-b pb-3">
               <Sparkles className="h-5 w-5 text-purple-600" />
               <h3 className="text-sm font-semibold text-purple-900 uppercase">AI Assistant</h3>
@@ -256,7 +257,7 @@ export function SectionIV_Analysis() {
         </div>
 
         {/* Probation Period */}
-        <div className="border-t mt-8 pt-6">
+        <div className="border-t mt-8 pt-6 text-gray-900">
           <h4 className="text-sm font-semibold text-gray-700 mb-4 uppercase">Probation Period</h4>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
@@ -272,7 +273,7 @@ export function SectionIV_Analysis() {
         </div>
 
         {/* Community Service Recommendation */}
-        <div className="border-t mt-8 pt-6">
+        <div className="border-t mt-8 pt-6 text-gray-900">
           <h4 className="text-sm font-semibold text-gray-700 mb-4 uppercase">Community Service Recommendation</h4>
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
@@ -298,7 +299,7 @@ export function SectionIV_Analysis() {
         </div>
 
         {/* Prepared By Section with DatePicker */}
-        <div className="border-t mt-8 pt-6">
+        <div className="border-t mt-8 pt-6 text-gray-900">
           <h4 className="text-sm font-semibold text-gray-700 mb-4 uppercase">Prepared By</h4>
           <div className="grid gap-4 md:grid-cols-3 items-end">
             {/* Name */}
@@ -340,10 +341,10 @@ export function SectionIV_Analysis() {
         </div>
 
         {/* Reviewed By Section with DatePicker */}
-        <div className="border-t mt-8 pt-6">
+        {/* <div className="border-t mt-8 pt-6">
           <h4 className="text-sm font-semibold text-gray-700 mb-4 uppercase">Reviewed By</h4>
           <div className="grid gap-4 md:grid-cols-3 items-end">
-            {/* Name Field */}
+           
             <div className="space-y-2">
               <Label htmlFor="reviewedByName">Name</Label>
               <Input
@@ -354,7 +355,7 @@ export function SectionIV_Analysis() {
               />
             </div>
 
-            {/* Designation Field */}
+           
             <div className="space-y-2">
               <Label htmlFor="reviewedByDesignation">Designation</Label>
               <Input
@@ -365,7 +366,7 @@ export function SectionIV_Analysis() {
               />
             </div>
 
-            {/* Date Picker Field */}
+      
             <div className="space-y-2">
               <Label>Date</Label>
               <div className="w-full">
@@ -379,7 +380,7 @@ export function SectionIV_Analysis() {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </CardContent>
     </Card>
   );

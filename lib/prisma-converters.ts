@@ -1,4 +1,4 @@
-import type { PSIRReport as PrismaPSIRReport, Prisma } from '@prisma/client';
+import type { PSIRReport as PrismaPSIRReport } from '@prisma/client';
 import type { PSIRReport, PSIRFormData } from '@/types/psir';
 
 /**
@@ -113,7 +113,8 @@ export function prismaToFrontend(prismaReport: PrismaPSIRReport): PSIRReport {
 /**
  * Convert frontend nested structure to Prisma's flat database model
  */
-export function frontendToPrisma(frontendReport: Partial<PSIRFormData>): Prisma.PSIRReportCreateInput {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function frontendToPrisma(frontendReport: Partial<PSIRFormData>): any {
   const id = frontendReport.identifyingData;
   const crim = frontendReport.criminalHistory;
   const socio = frontendReport.socioEconomicBackground;

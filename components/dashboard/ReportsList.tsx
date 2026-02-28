@@ -69,10 +69,10 @@ export function ReportsList({
           <TableBody>
             {reports.map((report) => (
               <TableRow key={report._id}>
-                <TableCell className="font-mono text-sm">
+                <TableCell className="font-mono text-sm text-gray-900">
                   {report.reportNumber}
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-gray-900">
                   {formatFullName(
                     report.identifyingData.lastName,
                     report.identifyingData.firstName,
@@ -85,16 +85,16 @@ export function ReportsList({
                       className={`h-2 w-2 rounded-full ${report.status === 'completed' ? 'bg-green-500' : 'bg-orange-500'
                         }`}
                     />
-                    <span className="text-sm font-medium">
+                    <span className="text-sm font-medium text-gray-900">
                       {report.status === 'completed' ? 'Completed' : 'Draft'}
                     </span>
                   </div>
                 </TableCell>
-                <TableCell className="text-sm text-gray-500">
+                <TableCell className="text-sm text-gray-700">
                   {formatDateDisplay(report.createdAt)}
                 </TableCell>
                 {showActions && (
-                  <TableCell className="text-right">
+                  <TableCell className="text-right text-sm text-gray-700 hover:cursor-pointer">
                     <div className="flex justify-end gap-2">
                       <Link href={`/dashboard/reports/${report._id}`}>
                         <Button variant="ghost" size="icon" title="View">

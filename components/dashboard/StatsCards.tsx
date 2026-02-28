@@ -61,7 +61,7 @@ export function StatsCards({ totalReports, draftReports, completedReports }: Sta
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stat.value}</div>
+            <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
             <div className="flex items-center gap-1 text-xs mt-1">
               {stat.trend.isPositive ? (
                 <TrendingUp className="h-3 w-3 text-green-600" />

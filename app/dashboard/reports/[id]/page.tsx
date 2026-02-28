@@ -249,7 +249,7 @@ export default function ViewReportPage({ params }: PageProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 text-gray-900">
             <div>
               <p className="text-sm text-gray-500">Full Name</p>
               <p className="font-medium">
@@ -351,7 +351,7 @@ export default function ViewReportPage({ params }: PageProps) {
       {/* Section II: Criminal History */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-gray-900">
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-primary)] text-white text-sm font-bold">
               II
             </span>
@@ -359,7 +359,7 @@ export default function ViewReportPage({ params }: PageProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-4 text-gray-900">
             <h4 className="font-semibold text-sm text-gray-600">A. Present Offense</h4>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
@@ -461,7 +461,7 @@ export default function ViewReportPage({ params }: PageProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-4 text-gray-900">
             <div>
               <p className="text-sm text-gray-500">A. Family Economic Status</p>
               <p className="font-medium">{report.socioEconomicBackground.familyEconomicStatus}</p>
@@ -501,7 +501,7 @@ export default function ViewReportPage({ params }: PageProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-4 text-gray-900">
             <div>
               <p className="text-sm text-gray-500">Circumstances</p>
               <p className="font-medium whitespace-pre-wrap">

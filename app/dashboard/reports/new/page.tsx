@@ -68,8 +68,8 @@ export default function NewReportPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Create New PSIR Report</h1>
-        <p className="text-gray-500">
+        <h1 className="text-2xl font-bold text-gray-900">Create New PSIR Report</h1>
+        <p className="text-gray-600">
           Fill out the Post-Sentence Investigation Report form
         </p>
       </div>

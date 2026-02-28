@@ -23,13 +23,13 @@ export async function GET(request: NextRequest) {
 
     if (query) {
       where.OR = [
-        { reportNumber: { contains: query, mode: 'insensitive' } },
-        { lastName: { contains: query, mode: 'insensitive' } },
-        { firstName: { contains: query, mode: 'insensitive' } },
-        { middleName: { contains: query, mode: 'insensitive' } },
-        { alias: { contains: query, mode: 'insensitive' } },
-        { presentOffenseChargedWith: { contains: query, mode: 'insensitive' } },
-        { presentOffenseConvictedOf: { contains: query, mode: 'insensitive' } },
+        { reportNumber: { contains: query } },
+        { lastName: { contains: query } },
+        { firstName: { contains: query } },
+        { middleName: { contains: query } },
+        { alias: { contains: query } },
+        { presentOffenseChargedWith: { contains: query } },
+        { presentOffenseConvictedOf: { contains: query } },
       ];
     }
 

@@ -46,15 +46,15 @@ export default function DashboardPage() {
       {/* Page Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Welcome back!</h1>
-          <p className="text-gray-500">
+          <h1 className="text-2xl font-bold text-gray-900">Welcome back!</h1>
+          <p className="text-gray-600">
             {format(new Date(), 'EEEE, MMMM d, yyyy')}
           </p>
         </div>
         <div className="flex gap-2">
           <Link href="/dashboard/search">
-            <Button variant="outline">
-              <Search className="mr-2 h-4 w-4" />
+            <Button variant="outline" className='text-gray-900'>
+              <Search className="mr-2 h-4 w-4 text-gray-900" />
               Search
               <kbd className="ml-2 hidden sm:inline-block px-1.5 py-0.5 text-xs bg-gray-100 border rounded">
                 S
@@ -90,16 +90,16 @@ export default function DashboardPage() {
       {/* Quick Info */}
       <div className="grid gap-4 md:grid-cols-2">
         <div className="rounded-lg border bg-white p-6">
-          <h3 className="font-semibold mb-2">About PSIR</h3>
-          <p className="text-sm text-gray-600">
+          <h3 className="font-semibold mb-2 text-gray-900">About PSIR</h3>
+          <p className="text-sm text-gray-700">
             The Post-Sentence Investigation Report (PSIR) is a comprehensive
             document used by the Bureau of Corrections to assess offenders
             for rehabilitation and eventual reintegration into society.
           </p>
         </div>
         <div className="rounded-lg border bg-white p-6">
-          <h3 className="font-semibold mb-2">Quick Tips</h3>
-          <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
+          <h3 className="font-semibold mb-2 text-gray-900">Quick Tips</h3>
+          <ul className="text-sm text-gray-700 list-disc list-inside space-y-1">
             <li>Auto-save is enabled for all reports</li>
             <li>Save drafts to continue later</li>
             <li>Export completed reports as PDF or DOCX</li>

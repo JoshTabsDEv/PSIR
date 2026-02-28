@@ -2,12 +2,60 @@
   "name": "psir",
   "version": "0.1.0",
   "private": true,
+  "description": "A brief description of your app",
+  "author": "Your Name <your.email@example.com>",
+  "main": "electron/main.js",
+  "pnpm": {
+    "onlyBuiltDependencies": ["electron", "electron-winstaller", "@prisma/client", "@prisma/engines", "prisma", "esbuild"]
+  },
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --hostname 0.0.0.0",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:seed": "tsx scripts/seed.ts"
+    "db:seed": "tsx scripts/seed.ts",
+    "electron:dev": "concurrently -n NEXT,ELECTRON -c blue,yellow \"next dev --hostname 0.0.0.0\" \"wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .\"",
+    "electron:build": "next build && node scripts/copy-static.js && electron-builder --win --x64"
+  },
+  "build": {
+    "appId": "ph.gov.ppa.psir",
+    "productName": "PSIR Management System",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      ".next/standalone/**/*",
+      ".next/static/**/*",
+      "public/**/*",
+      "templates/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "psir-seed.db",
+        "to": "psir-seed.db"
+      }
+    ],
+    "asar": true,
+    "asarUnpack": [
+      ".next/standalone/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "forceCodeSigning": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "PSIR System"
+    }
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -40,11 +88,16 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^38.2.0",
+    "electron-builder": "^26.8.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "prisma": "5.22.0",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wait-on": "^9.0.4"
   }
 }

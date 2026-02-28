@@ -36,11 +36,11 @@ export function ReportsFilters({
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           onKeyDown={handleKeyPress}
-          className="pl-10"
+          className="pl-10 text-gray-900"
         />
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 text-gray-900">
         <Select
           value={status}
           onChange={(e) => onStatusChange(e.target.value)}

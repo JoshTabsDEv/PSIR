@@ -2,102 +2,103 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows"]
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 model PSIRReport {
   id           Int      @id @default(autoincrement())
-  reportNumber String   @unique @db.VarChar(50)
-  status       Status   @default(draft)
+  reportNumber String   @unique
+  status       String   @default("draft")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  lastModifiedBy String @db.VarChar(255)
+  lastModifiedBy String
 
   // Section I: Identifying Data
-  lastName              String   @db.VarChar(100)
-  firstName             String   @db.VarChar(100)
-  middleName            String?  @db.VarChar(100)
-  trueName              String?  @db.VarChar(255)
-  alias                 String?  @db.VarChar(100)
-  sex                   Sex
+  lastName              String
+  firstName             String
+  middleName            String?
+  trueName              String?
+  alias                 String?
+  sex                   String   @default("Male")
   birthday              DateTime
-  birthplace            String?  @db.VarChar(255)
-  nationality           String   @default("Filipino") @db.VarChar(100)
-  religion              String?  @db.VarChar(100)
-  civilStatus           String?  @db.VarChar(50)
+  birthplace            String?
+  nationality           String   @default("Filipino")
+  religion              String?
+  civilStatus           String?
   age                   Int
-  educationalAttainment String?  @db.VarChar(100)
-  occupation            String?  @db.VarChar(100)
-  spouseName            String?  @db.VarChar(255)
-  identifyingMarks      String?  @db.Text
-  presentAddress        String?  @db.Text
-  permanentAddress      String?  @db.Text
-  letterJudge                   String?  @db.VarChar(255)
-  letterCourt                   String?  @db.VarChar(255)
-  letterPosition                String?  @db.VarChar(255)
-  letterAddress                 String?  @db.Text
-  investigationDocketNumber     String?  @db.VarChar(100)
-  criminalCaseNumber            String?  @db.VarChar(100)
+  educationalAttainment String?
+  occupation            String?
+  spouseName            String?
+  identifyingMarks      String?
+  presentAddress        String?
+  permanentAddress      String?
+  letterJudge           String?
+  letterCourt           String?
+  letterPosition        String?
+  letterAddress         String?
+  investigationDocketNumber String?
+  criminalCaseNumber    String?
 
   // Section II: Criminal History - A. Present Offense
-  presentOffenseChargedWith    String?   @db.Text
+  presentOffenseChargedWith    String?
   presentOffenseChargedDate    DateTime?
-  presentOffenseConvictedOf    String?   @db.Text
+  presentOffenseConvictedOf    String?
   presentOffenseConvictedDate  DateTime?
-  presentOffenseSentence       String?   @db.Text
-  presentOffenseJudge          String?   @db.VarChar(255)
-  presentOffenseCourt          String?   @db.VarChar(255)
-  custodialStatus              CustodialStatus @default(ON_DETENTION)
-  rorCustodian                 String?   @db.VarChar(255)
-  address                      String?   @db.Text
+  presentOffenseSentence       String?
+  presentOffenseJudge          String?
+  presentOffenseCourt          String?
+  custodialStatus              String   @default("ON_DETENTION")
+  rorCustodian                 String?
+  address                      String?
 
   // Section II: Criminal History - B. Prior and Pending Records
-  nbiCaseNo          String?  @db.VarChar(100)
-  nbiOffense         String?  @db.Text
+  nbiCaseNo          String?
+  nbiOffense         String?
   nbiDateCharged     DateTime?
-  nbiDecisionStatus  String?  @default("No record on file") @db.VarChar(255)
+  nbiDecisionStatus  String?   @default("No record on file")
 
-  cmrdCaseNo         String?  @db.VarChar(100)
-  cmrdOffense        String?  @db.Text
+  cmrdCaseNo         String?
+  cmrdOffense        String?
   cmrdDateCharged    DateTime?
-  cmrdDecisionStatus String?  @default("No derogatory record") @db.VarChar(255)
+  cmrdDecisionStatus String?   @default("No derogatory record")
 
-  othersCaseNo         String?  @db.VarChar(100)
-  othersOffense        String?  @db.Text
+  othersCaseNo         String?
+  othersOffense        String?
   othersDateCharged    DateTime?
-  othersDecisionStatus String?  @default("None") @db.VarChar(255)
+  othersDecisionStatus String?   @default("None")
 
   // Section III: Socio-Economic Background
-  familyEconomicStatus   FamilyEconomicStatus @default(POOR)
-  familyRelationship     SatisfactionLevel    @default(SATISFACTORY)
-  familyReputation       SatisfactionLevel    @default(SATISFACTORY)
-  familySupport          SatisfactionLevel    @default(SATISFACTORY)
-  communityAcceptability SatisfactionLevel    @default(SATISFACTORY)
-  overallWellBeing       SatisfactionLevel    @default(SATISFACTORY)
+  familyEconomicStatus   String   @default("POOR")
+  familyRelationship     String   @default("SATISFACTORY")
+  familyReputation       String   @default("SATISFACTORY")
+  familySupport          String   @default("SATISFACTORY")
+  communityAcceptability String   @default("SATISFACTORY")
+  overallWellBeing       String   @default("SATISFACTORY")
 
   // Section IV: Analysis and Evaluation
-  circumstances   String? @db.Text
-  needs           String? @db.Text
-  attitude        String? @db.Text
-  recommendations String? @db.Text
-  probationPeriod String? @db.VarChar(255)
+  circumstances   String?
+  needs           String?
+  attitude        String?
+  recommendations String?
+  probationPeriod String?
 
   // Community Service Recommendation
   communityServiceHours Int?
-  communityServiceType  String? @db.Text
+  communityServiceType  String?
 
-  // Signature blocks (kept for future use, not displayed in UI)
-  preparedByName        String?   @db.VarChar(255)
-  preparedByDesignation String?   @db.VarChar(255)
+  // Signature blocks
+  preparedByName        String?
+  preparedByDesignation String?
   preparedByDate        DateTime?
 
-  reviewedByName        String?   @db.VarChar(255)
-  reviewedByDesignation String?   @db.VarChar(255)
+  reviewedByName        String?
+  reviewedByDesignation String?
   reviewedByDate        DateTime?
 
   @@index([reportNumber])
@@ -105,37 +106,4 @@ model PSIRReport {
   @@index([createdAt])
   @@index([lastName, firstName])
   @@map("psir_reports")
-}
-
-// Enums
-enum Status {
-  draft
-  completed
-}
-
-enum Sex {
-  Male
-  Female
-}
-
-enum CustodialStatus {
-  ON_BAIL      @map("On Bail")
-  ON_DETENTION @map("On Detention")
-  ROR          @map("ROR")
-}
-
-enum FamilyEconomicStatus {
-  POOR                              @map("Poor")
-  LOW_INCOME_NOT_POOR               @map("Low-income Class (but not poor)")
-  LOW_MIDDLE_INCOME                 @map("Low middle-income class")
-  MIDDLE_MIDDLE_INCOME              @map("Middle middle-income Class")
-  UPPER_MIDDLE_INCOME               @map("Upper middle-income Class")
-  UPPER_INCOME_NOT_RICH             @map("Upper-income Class (but not rich)")
-  RICH                              @map("Rich")
-}
-
-enum SatisfactionLevel {
-  VERY_SATISFACTORY @map("Very satisfactory")
-  SATISFACTORY      @map("Satisfactory")
-  POOR              @map("Poor")
 }

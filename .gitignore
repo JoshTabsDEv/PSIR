@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Electron build output
+/dist/
+
+# Local databases
+prisma/psir.db
+psir-seed.db
+*.db

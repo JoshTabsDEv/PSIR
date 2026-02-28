@@ -32,7 +32,7 @@ export function SectionII_CriminalHistory() {
         <div className="border rounded-lg p-4 bg-gray-50">
           <h4 className="text-sm font-semibold text-gray-700 mb-4">A. Present Offense</h4>
 
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-4 text-gray-900">
             {/* Takes up 3 columns */}
             <div className="space-y-2 md:col-span-3">
               <Label htmlFor="chargedWith">Charged with</Label>
@@ -58,7 +58,7 @@ export function SectionII_CriminalHistory() {
           </div>
 
           {/* Convicted of + Date */}
-          <div className="mt-4 grid gap-4 md:grid-cols-4">
+          <div className="mt-4 grid gap-4 md:grid-cols-4 text-gray-900">
             {/* Convicted Of - Spans 75% of the row */}
             <div className="space-y-2 md:col-span-3">
               <Label htmlFor="convictedOf">Convicted of</Label>
@@ -85,7 +85,7 @@ export function SectionII_CriminalHistory() {
             </div>
           </div>
           {/* Sentence */}
-          <div className="mt-4 space-y-2">
+          <div className="mt-4 space-y-2 text-gray-900">
             <Label htmlFor="sentence">Sentence</Label>
             <Input
               id="sentence"
@@ -97,7 +97,7 @@ export function SectionII_CriminalHistory() {
         </div>
 
         {/* Custodial Status */}
-        <div className="space-y-2">
+        <div className="space-y-2 text-gray-900">
           <Label>Custodial Status</Label>
           <RadioGroup
             value={custodialField.value ?? ''}
@@ -129,7 +129,7 @@ export function SectionII_CriminalHistory() {
         </div>
 
         {/* Address */}
-        <div className="space-y-2">
+        <div className="space-y-2 text-gray-900">
           <Label htmlFor="address">Address</Label>
           <Textarea
             id="address"
@@ -140,7 +140,7 @@ export function SectionII_CriminalHistory() {
         </div>
 
         {/* B. Prior and Pending Records */}
-        <div className="border-t pt-4">
+        <div className="border-t pt-4 text-gray-900">
           <h4 className="text-sm font-semibold text-gray-700 mb-4">B. Prior and Pending Records</h4>
 
           <div className="overflow-x-auto">

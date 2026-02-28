@@ -58,10 +58,10 @@ export async function GET(request: NextRequest) {
 
     if (filters.search) {
       where.OR = [
-        { reportNumber: { contains: filters.search, mode: 'insensitive' } },
-        { lastName: { contains: filters.search, mode: 'insensitive' } },
-        { firstName: { contains: filters.search, mode: 'insensitive' } },
-        { presentOffenseChargedWith: { contains: filters.search, mode: 'insensitive' } },
+        { reportNumber: { contains: filters.search } },
+        { lastName: { contains: filters.search } },
+        { firstName: { contains: filters.search } },
+        { presentOffenseChargedWith: { contains: filters.search } },
       ];
     }
 

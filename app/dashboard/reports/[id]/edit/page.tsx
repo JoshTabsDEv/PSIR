@@ -89,14 +89,14 @@ export default function EditReportPage({ params }: PageProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 text-gray-900">
         <Link href={`/dashboard/reports/${id}`}>
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold">Edit Report</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Edit Report</h1>
           <p className="text-gray-500 font-mono">{report.reportNumber}</p>
         </div>
       </div>

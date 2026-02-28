@@ -29,14 +29,14 @@ export function Header({ onMenuToggle }: HeaderProps) {
           height={28}
           priority
         />
-        <h1 className="text-lg font-semibold">PSIR Management System</h1>
+        <h1 className="text-lg font-semibold text-gray-900">PSIR Management System</h1>
       </div>
 
       <div className="flex-1" />
 
       <div className="flex items-center gap-4">
         <span className="text-sm text-gray-600">
-          Bureau of Corrections
+          DOJ/PPA
         </span>
       </div>
     </header>

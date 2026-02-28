@@ -33,9 +33,65 @@ export function SectionI_IdentifyingData() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Letter Information */}
+        <div className="border-t pt-4">
+          <h4 className="text-sm font-medium text-gray-700 mb-3">Letter Information</h4>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2 text-gray-900">
+              <Label htmlFor="letterJudge">Judge</Label>
+              <Input
+                id="letterJudge"
+                {...register('identifyingData.letterJudge')}
+                placeholder="Judge name for letter heading"
+              />
+            </div>
+            <div className="space-y-2 text-gray-900">
+              <Label htmlFor="letterCourt">Court</Label>
+              <Input
+                id="letterCourt"
+                {...register('identifyingData.letterCourt')}
+                placeholder="e.g., RTC Branch 1, Manila"
+              />
+            </div>
+            <div className="space-y-2 text-gray-900">
+              <Label htmlFor="letterPosition">Position</Label>
+              <Input
+                id="letterPosition"
+                {...register('identifyingData.letterPosition')}
+                placeholder="e.g., Presiding Judge"
+              />
+            </div>
+            <div className="space-y-2 md:col-span-2 text-gray-900">
+              <Label htmlFor="letterAddress">Address</Label>
+              <Textarea
+                id="letterAddress"
+                {...register('identifyingData.letterAddress')}
+                placeholder="Court/office address for letter"
+                rows={2}
+              />
+            </div>
+            <div className="space-y-2 text-gray-900">
+              <Label htmlFor="investigationDocketNumber">Investigation Docket Number</Label>
+              <Input
+                id="investigationDocketNumber"
+                {...register('identifyingData.investigationDocketNumber')}
+                placeholder="Enter investigation docket number"
+              />
+            </div>
+            <div className="space-y-2 text-gray-900">
+              <Label htmlFor="criminalCaseNumber">Criminal Case Number</Label>
+              <Input
+                id="criminalCaseNumber"
+                {...register('identifyingData.criminalCaseNumber')}
+                placeholder="Enter criminal case number"
+              />
+            </div>
+          </div>
+        </div>
+        <div className="border-t pt-4"></div>
         {/* Name Fields */}
         <div className="grid gap-4 md:grid-cols-3">
-          <div className="space-y-2">
+          <div className="space-y-2 text-gray-900">
             <Label htmlFor="lastName">Last Name *</Label>
             <Input
               id="lastName"
@@ -46,7 +102,7 @@ export function SectionI_IdentifyingData() {
               <p className="text-sm text-red-500">{errors.identifyingData.lastName.message}</p>
             )}
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 text-gray-900">
             <Label htmlFor="firstName">First Name *</Label>
             <Input
               id="firstName"
@@ -57,7 +113,7 @@ export function SectionI_IdentifyingData() {
               <p className="text-sm text-red-500">{errors.identifyingData.firstName.message}</p>
             )}
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 text-gray-900">
             <Label htmlFor="middleName">Middle Name</Label>
             <Input
               id="middleName"
@@ -68,7 +124,7 @@ export function SectionI_IdentifyingData() {
         </div>
 
         {/* True Name */}
-        <div className="space-y-2">
+        <div className="space-y-2 text-gray-900">
           <Label htmlFor="trueName">True Name</Label>
           <Input
             id="trueName"
@@ -79,7 +135,7 @@ export function SectionI_IdentifyingData() {
 
         {/* Alias and Sex */}
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
+          <div className="space-y-2 text-gray-900">
             <Label htmlFor="alias">Alias/Nickname</Label>
             <Input
               id="alias"
@@ -87,7 +143,7 @@ export function SectionI_IdentifyingData() {
               placeholder="e.g., Jun"
             />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 text-gray-900">
             <Label htmlFor="sex">Sex *</Label>
             <Select {...register('identifyingData.sex')}>
               <option value="Male">Male</option>
@@ -99,7 +155,7 @@ export function SectionI_IdentifyingData() {
         {/* Birthday, Age, Birthplace */}
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 items-end">
           {/* Birthday Field */}
-          <div className="flex flex-col space-y-2">
+          <div className="flex flex-col space-y-2 text-gray-900">
             <Label htmlFor="birthday" className="text-sm font-medium">
               Birthday *
             </Label>
@@ -118,7 +174,7 @@ export function SectionI_IdentifyingData() {
           </div>
 
           {/* Age Field */}
-          <div className="flex flex-col space-y-2">
+          <div className="flex flex-col space-y-2 text-gray-900">
             <Label htmlFor="age" className="text-sm font-medium">
               Age
             </Label>
@@ -132,7 +188,7 @@ export function SectionI_IdentifyingData() {
           </div>
 
           {/* Birthplace Field */}
-          <div className="flex flex-col space-y-2">
+          <div className="flex flex-col space-y-2 text-gray-900">
             <Label htmlFor="birthplace" className="text-sm font-medium">
               Birthplace
             </Label>
@@ -147,7 +203,7 @@ export function SectionI_IdentifyingData() {
 
         {/* Nationality, Religion, Civil Status */}
         <div className="grid gap-4 md:grid-cols-3">
-          <div className="space-y-2">
+          <div className="space-y-2 text-gray-900">
             <Label htmlFor="nationality">Nationality</Label>
             <Input
               id="nationality"
@@ -155,18 +211,18 @@ export function SectionI_IdentifyingData() {
               placeholder="e.g., Filipino"
             />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 text-gray-900">
             <Label htmlFor="religion">Religion</Label>
-            <Select {...register('identifyingData.religion')}>
+            <Select {...register('identifyingData.religion')} className="text-gray-900">
               <option value="">Select religion</option>
               {religionOptions.map((religion) => (
                 <option key={religion} value={religion}>{religion}</option>
               ))}
             </Select>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 text-gray-900">
             <Label htmlFor="civilStatus">Civil Status</Label>
-            <Select {...register('identifyingData.civilStatus')}>
+            <Select {...register('identifyingData.civilStatus')} className="text-gray-900">
               <option value="">Select status</option>
               {civilStatusOptions.map((status) => (
                 <option key={status} value={status}>{status}</option>
@@ -177,16 +233,16 @@ export function SectionI_IdentifyingData() {
 
         {/* Education and Occupation */}
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
+          <div className="space-y-2 text-gray-900">
             <Label htmlFor="educationalAttainment">Educational Attainment</Label>
-            <Select {...register('identifyingData.educationalAttainment')}>
+            <Select {...register('identifyingData.educationalAttainment')} className="text-gray-900">
               <option value="">Select education</option>
               {educationalAttainmentOptions.map((edu) => (
                 <option key={edu} value={edu}>{edu}</option>
               ))}
             </Select>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 text-gray-900">
             <Label htmlFor="occupation">Occupation</Label>
             <Input
               id="occupation"
@@ -197,7 +253,7 @@ export function SectionI_IdentifyingData() {
         </div>
 
         {/* Spouse Name */}
-        <div className="space-y-2">
+        <div className="space-y-2 text-gray-900">
           <Label htmlFor="spouseName">Spouse Name</Label>
           <Input
             id="spouseName"
@@ -207,7 +263,7 @@ export function SectionI_IdentifyingData() {
         </div>
 
         {/* Identifying Marks */}
-        <div className="space-y-2">
+        <div className="space-y-2 text-gray-900">
           <Label htmlFor="identifyingMarks">Identifying Marks/Tattoos</Label>
           <Textarea
             id="identifyingMarks"
@@ -221,7 +277,7 @@ export function SectionI_IdentifyingData() {
         <div className="border-t pt-4">
           <h4 className="text-sm font-medium text-gray-700 mb-3">Address Information</h4>
           <div className="space-y-4">
-            <div className="space-y-2">
+            <div className="space-y-2 text-gray-900">
               <Label htmlFor="presentAddress">Present Address</Label>
               <Textarea
                 id="presentAddress"
@@ -230,7 +286,7 @@ export function SectionI_IdentifyingData() {
                 rows={2}
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 text-gray-900">
               <Label htmlFor="permanentAddress">Permanent Address</Label>
               <Textarea
                 id="permanentAddress"
@@ -242,61 +298,7 @@ export function SectionI_IdentifyingData() {
           </div>
         </div>
 
-        {/* Letter Information */}
-        <div className="border-t pt-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-3">Letter Information</h4>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="letterJudge">Judge</Label>
-              <Input
-                id="letterJudge"
-                {...register('identifyingData.letterJudge')}
-                placeholder="Judge name for letter heading"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="letterCourt">Court</Label>
-              <Input
-                id="letterCourt"
-                {...register('identifyingData.letterCourt')}
-                placeholder="e.g., RTC Branch 1, Manila"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="letterPosition">Position</Label>
-              <Input
-                id="letterPosition"
-                {...register('identifyingData.letterPosition')}
-                placeholder="e.g., Presiding Judge"
-              />
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="letterAddress">Address</Label>
-              <Textarea
-                id="letterAddress"
-                {...register('identifyingData.letterAddress')}
-                placeholder="Court/office address for letter"
-                rows={2}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="investigationDocketNumber">Investigation Docket Number</Label>
-              <Input
-                id="investigationDocketNumber"
-                {...register('identifyingData.investigationDocketNumber')}
-                placeholder="Enter investigation docket number"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="criminalCaseNumber">Criminal Case Number</Label>
-              <Input
-                id="criminalCaseNumber"
-                {...register('identifyingData.criminalCaseNumber')}
-                placeholder="Enter criminal case number"
-              />
-            </div>
-          </div>
-        </div>
+        
       </CardContent>
     </Card>
   );
