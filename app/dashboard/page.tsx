@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { FilePlus, Search, LayoutDashboard, Clock, X } from 'lucide-react';
+import { FilePlus, Search, Clock, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -74,16 +74,12 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-8 pb-12">
+    <div className="space-y-6 pb-12">
       {/* Dashboard Header */}
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between border-b pb-6">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--brand-primary)]">
-            <LayoutDashboard className="h-3 w-3" />
-            Management Console
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Welcome back
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between border-b border-border pb-6">
+        <div className="space-y-1.5">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+            Dashboard
           </h1>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Clock className="h-3.5 w-3.5" />
@@ -91,21 +87,22 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Link href="/dashboard/reports/new">
-            <Button className="h-9 px-5 font-bold uppercase tracking-wider text-[10px] gap-2 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90 shadow-md shadow-[var(--brand-primary)]/15">
-              <FilePlus className="h-3.5 w-3.5" />
-              New Investigation
-            </Button>
-          </Link>
-        </div>
+        <Link href="/dashboard/reports/new">
+          <Button
+            size="lg"
+            className="gap-2 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90 shadow-sm"
+          >
+            <FilePlus className="h-4 w-4" />
+            New Investigation
+          </Button>
+        </Link>
       </div>
 
-      {/* Quick Search Bar */}
-      <div className="relative max-w-2xl">
+      {/* Search Bar */}
+      <div className="relative">
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
               placeholder="Search reports by name, report number, or case number..."
@@ -114,12 +111,12 @@ export default function DashboardPage() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleSearch();
               }}
-              className="pl-10 pr-10 h-10 text-sm"
+              className="pl-10 pr-10 h-11 text-sm border-border focus-visible:ring-[var(--brand-primary)]/20 focus-visible:border-[var(--brand-primary)]"
             />
             {searchQuery && (
               <button
                 onClick={clearSearch}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -128,7 +125,7 @@ export default function DashboardPage() {
           <Button
             onClick={handleSearch}
             variant="outline"
-            className="h-10 px-4 text-[10px] font-bold uppercase tracking-wider"
+            className="h-11 px-5 text-sm font-medium"
             disabled={searching}
           >
             {searching ? 'Searching...' : 'Search'}
@@ -136,19 +133,17 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Search Results (shown when searching) */}
+      {/* Search Results */}
       {searchResults !== null && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="h-px w-8 bg-[var(--brand-primary)]/30" />
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                Search Results ({searchResults.length})
-              </h2>
-            </div>
+            <h2 className="text-sm font-medium text-foreground">
+              Search Results
+              <span className="ml-1.5 text-muted-foreground">({searchResults.length})</span>
+            </h2>
             <button
               onClick={clearSearch}
-              className="text-[10px] font-bold uppercase tracking-wider text-[var(--brand-primary)] hover:underline"
+              className="text-sm font-medium text-[var(--brand-primary)] hover:underline"
             >
               Clear Search
             </button>
@@ -157,17 +152,14 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Main Dashboard Content (hidden during search) */}
+      {/* Main Dashboard Content */}
       {searchResults === null && (
         <>
-          {/* Statistics Section */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="h-px w-8 bg-[var(--brand-primary)]/30" />
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                System Overview
-              </h2>
-            </div>
+          {/* Statistics */}
+          <div className="space-y-3">
+            <h2 className="text-sm font-medium text-foreground">
+              Overview
+            </h2>
             <StatsCards
               totalReports={stats.totalReports}
               draftReports={stats.draftReports}
@@ -176,14 +168,11 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* Analytics Section */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="h-px w-8 bg-[var(--brand-primary)]/30" />
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                Performance Analytics
-              </h2>
-            </div>
+          {/* Analytics */}
+          <div className="space-y-3">
+            <h2 className="text-sm font-medium text-foreground">
+              Analytics
+            </h2>
             <AnalyticsCharts
               totalReports={stats.totalReports}
               completedReports={stats.completedReports}
@@ -193,19 +182,16 @@ export default function DashboardPage() {
           </div>
 
           {/* Recent Reports */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="h-px w-8 bg-[var(--brand-primary)]/30" />
-                <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                  Recent Case Files
-                </h2>
-              </div>
+              <h2 className="text-sm font-medium text-foreground">
+                Recent Reports
+              </h2>
               <Link
                 href="/dashboard/reports"
-                className="text-[10px] font-bold uppercase tracking-wider text-[var(--brand-primary)] hover:underline"
+                className="text-sm font-medium text-[var(--brand-primary)] hover:underline"
               >
-                View All Reports
+                View All
               </Link>
             </div>
             <ReportsList
