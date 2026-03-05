@@ -51,7 +51,7 @@ export function generateExportFilename(
   extension: 'docx'
 ): string {
   const date = formatDateForFilename();
-  return `PSIR-${reportNumber}-${date}.${extension}`;
+  return `PI-${reportNumber}-${date}.${extension}`;
 }
 
 export const civilStatusOptions = [

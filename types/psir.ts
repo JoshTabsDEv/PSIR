@@ -96,6 +96,7 @@ export interface PSIRReport {
   createdAt: Date | string;
   updatedAt: Date | string;
   lastModifiedBy: string;
+  submittedToCourtDate?: Date | string | null;
   identifyingData: IdentifyingData;
   criminalHistory: CriminalHistory;
   socioEconomicBackground: SocioEconomicBackground;

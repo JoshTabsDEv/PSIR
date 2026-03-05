@@ -105,7 +105,7 @@ export default function DashboardPage() {
       // Extract filename from Content-Disposition header or build one
       const disposition = response.headers.get('Content-Disposition');
       const filenameMatch = disposition?.match(/filename="?([^"]+)"?/);
-      link.download = filenameMatch?.[1] || `PSIR-Monthly-Summary-${summaryMonth}-${summaryYear}.docx`;
+      link.download = filenameMatch?.[1] || `PI-Monthly-Summary-${summaryMonth}-${summaryYear}.docx`;
 
       document.body.appendChild(link);
       link.click();

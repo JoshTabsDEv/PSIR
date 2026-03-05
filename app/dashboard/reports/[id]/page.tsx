@@ -3,10 +3,12 @@
 import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Pencil, FileDown, Trash2, MoreVertical, LayoutDashboard, FileText, User, Gavel, Globe, Brain, ChevronLeft, Download, ShieldAlert, Check, Loader2 } from 'lucide-react';
+import { Pencil, FileDown, Trash2, MoreVertical, LayoutDashboard, FileText, User, Gavel, Globe, Brain, ChevronLeft, Download, ShieldAlert, CalendarCheck, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -64,7 +66,9 @@ export default function ViewReportPage({ params }: PageProps) {
   const [showDelete, setShowDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [activeSection, setActiveSection] = useState('section-1');
-  const [markingDone, setMarkingDone] = useState(false);
+  const [showCourtDateDialog, setShowCourtDateDialog] = useState(false);
+  const [courtDate, setCourtDate] = useState('');
+  const [submittingCourtDate, setSubmittingCourtDate] = useState(false);
 
   useEffect(() => {
     async function fetchReport() {
@@ -108,26 +112,29 @@ export default function ViewReportPage({ params }: PageProps) {
     window.open(`/api/reports/${id}/export/docx`, '_blank');
   };
 
-  const handleMarkAsDone = async () => {
-    setMarkingDone(true);
+  const handleSetCourtDate = async () => {
+    if (!courtDate) return;
+    setSubmittingCourtDate(true);
     try {
-      const response = await fetch(`/api/reports/${id}/complete`, { method: 'PATCH' });
+      const response = await fetch(`/api/reports/${id}/submit`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ submittedToCourtDate: courtDate }),
+      });
       if (response.ok) {
-        toast.success('Report marked as completed');
-        // Refresh the report data to get updated status
+        toast.success('Report submitted and marked as completed');
         const fetchResponse = await fetch(`/api/reports/${id}`);
         const fetchResult = await fetchResponse.json();
-        if (fetchResult.success) {
-          setReport(fetchResult.data);
-        }
+        if (fetchResult.success) setReport(fetchResult.data);
+        setShowCourtDateDialog(false);
+        setCourtDate('');
       } else {
-        toast.error('Failed to mark as completed');
+        toast.error('Failed to save submitted date');
       }
-    } catch (error) {
-      console.error('Failed to mark as completed:', error);
+    } catch {
       toast.error('An error occurred');
     } finally {
-      setMarkingDone(false);
+      setSubmittingCourtDate(false);
     }
   };
 
@@ -143,7 +150,7 @@ export default function ViewReportPage({ params }: PageProps) {
 
   return (
     <div className="flex min-h-screen bg-[#f8f9fa] absolute inset-0 z-50 overflow-hidden">
-      
+
       {/* Workspace Sidebar */}
       <aside className="hidden lg:flex flex-col w-[280px] bg-white border-r border-border fixed h-screen px-6 py-8 z-20">
         <div className="space-y-8">
@@ -152,7 +159,7 @@ export default function ViewReportPage({ params }: PageProps) {
               <ChevronLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
               <span className="text-xs font-bold uppercase tracking-widest">Back to Reports</span>
             </Link>
-            
+
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <FileText className="h-5 w-5 text-[var(--brand-primary)]" />
@@ -174,8 +181,8 @@ export default function ViewReportPage({ params }: PageProps) {
                 }}
                 className={cn(
                   'group flex items-center gap-3 px-4 py-3 text-left transition-all duration-200 rounded-lg',
-                  activeSection === section.id 
-                    ? 'bg-white shadow-sm ring-1 ring-border border-l-4 border-l-[var(--brand-primary)]' 
+                  activeSection === section.id
+                    ? 'bg-white shadow-sm ring-1 ring-border border-l-4 border-l-[var(--brand-primary)]'
                     : 'hover:bg-muted/50 border-l-4 border-l-transparent text-muted-foreground'
                 )}
               >
@@ -196,14 +203,20 @@ export default function ViewReportPage({ params }: PageProps) {
                 <span className="text-xs font-bold uppercase tracking-wider">Edit Report</span>
               </Button>
             </Link>
-            <Button 
-              variant="default" 
-              className="w-full justify-start gap-2 h-9 bg-green-600 hover:bg-green-700 text-white"
-              onClick={handleMarkAsDone}
-              disabled={markingDone || report.status === 'completed'}
+            <Button
+              variant="default"
+              className="w-full justify-start gap-2 h-9 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90 text-white"
+              onClick={() => {
+                setCourtDate(report.submittedToCourtDate
+                  ? new Date(report.submittedToCourtDate).toISOString().split('T')[0]
+                  : '');
+                setShowCourtDateDialog(true);
+              }}
             >
-              {markingDone ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-              <span className="text-xs font-bold uppercase tracking-wider">Mark as Done</span>
+              <CalendarCheck className="h-3.5 w-3.5" />
+              <span className="text-xs font-bold uppercase tracking-wider">
+                {report.submittedToCourtDate ? 'Update Court Date' : 'Set Court Date'}
+              </span>
             </Button>
             <Button variant="ghost" className="w-full justify-start gap-2 h-9 text-destructive hover:text-destructive hover:bg-destructive/5" onClick={() => setShowDelete(true)}>
               <Trash2 className="h-3.5 w-3.5" />
@@ -216,14 +229,14 @@ export default function ViewReportPage({ params }: PageProps) {
       {/* Content Area */}
       <main className="flex-1 lg:ml-[280px] overflow-y-auto h-screen scroll-smooth">
         <div className="container max-w-4xl mx-auto py-12 px-6 lg:px-12 space-y-12 pb-24">
-          
+
           {/* Section I */}
           <section id="section-1" className="space-y-8 bg-white p-8 rounded-xl border shadow-sm ring-1 ring-black/[0.02]">
             <div className="flex items-center gap-2 border-b pb-4">
               <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--brand-primary)]">Section I</span>
               <h2 className="text-xl font-bold tracking-tight">Identifying Data</h2>
             </div>
-            
+
             <div className="grid gap-x-8 gap-y-6 md:grid-cols-2 lg:grid-cols-3">
               {[
                 { label: 'Full Name', value: formatFullName(report.identifyingData.lastName, report.identifyingData.firstName, report.identifyingData.middleName) },
@@ -271,57 +284,57 @@ export default function ViewReportPage({ params }: PageProps) {
             </div>
 
             <div className="space-y-6">
-               <div className="flex items-center gap-2">
-                  <ShieldAlert className="h-4 w-4 text-[var(--brand-primary)]" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-foreground/70">Present Offense</h3>
-               </div>
-               <div className="grid gap-6 md:grid-cols-2 pl-4 border-l-2 border-[var(--brand-primary)]/10">
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Charged With</span>
-                    <p className="text-sm font-semibold">{report.criminalHistory.presentOffense.chargedWith || 'N/A'}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Date Charged</span>
-                    <p className="text-sm font-semibold">{report.criminalHistory.presentOffense.chargedDate ? formatDateDisplay(report.criminalHistory.presentOffense.chargedDate) : 'N/A'}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Convicted Of</span>
-                    <p className="text-sm font-semibold">{report.criminalHistory.presentOffense.convictedOf || 'N/A'}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Sentence</span>
-                    <p className="text-sm font-semibold">{report.criminalHistory.presentOffense.sentence || 'N/A'}</p>
-                  </div>
-               </div>
+              <div className="flex items-center gap-2">
+                <ShieldAlert className="h-4 w-4 text-[var(--brand-primary)]" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground/70">Present Offense</h3>
+              </div>
+              <div className="grid gap-6 md:grid-cols-2 pl-4 border-l-2 border-[var(--brand-primary)]/10">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Charged With</span>
+                  <p className="text-sm font-semibold">{report.criminalHistory.presentOffense.chargedWith || 'N/A'}</p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Date Charged</span>
+                  <p className="text-sm font-semibold">{report.criminalHistory.presentOffense.chargedDate ? formatDateDisplay(report.criminalHistory.presentOffense.chargedDate) : 'N/A'}</p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Convicted Of</span>
+                  <p className="text-sm font-semibold">{report.criminalHistory.presentOffense.convictedOf || 'N/A'}</p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Sentence</span>
+                  <p className="text-sm font-semibold">{report.criminalHistory.presentOffense.sentence || 'N/A'}</p>
+                </div>
+              </div>
             </div>
 
             <div className="space-y-6 pt-4">
-               <div className="flex items-center gap-2">
-                  <Gavel className="h-4 w-4 text-[var(--brand-primary)]" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-foreground/70">Prior Records</h3>
-               </div>
-               <div className="overflow-hidden rounded-lg border border-border bg-muted/5 mx-4">
-                  <table className="w-full text-xs text-left border-collapse">
-                    <thead>
-                      <tr className="bg-muted/50 border-b border-border">
-                        <th className="px-4 py-2 font-bold uppercase tracking-widest text-muted-foreground/70">Agency</th>
-                        <th className="px-4 py-2 font-bold uppercase tracking-widest text-muted-foreground/70">Case #</th>
-                        <th className="px-4 py-2 font-bold uppercase tracking-widest text-muted-foreground/70">Offense</th>
-                        <th className="px-4 py-2 font-bold uppercase tracking-widest text-muted-foreground/70">Status</th>
+              <div className="flex items-center gap-2">
+                <Gavel className="h-4 w-4 text-[var(--brand-primary)]" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground/70">Prior Records</h3>
+              </div>
+              <div className="overflow-hidden rounded-lg border border-border bg-muted/5 mx-4">
+                <table className="w-full text-xs text-left border-collapse">
+                  <thead>
+                    <tr className="bg-muted/50 border-b border-border">
+                      <th className="px-4 py-2 font-bold uppercase tracking-widest text-muted-foreground/70">Agency</th>
+                      <th className="px-4 py-2 font-bold uppercase tracking-widest text-muted-foreground/70">Case #</th>
+                      <th className="px-4 py-2 font-bold uppercase tracking-widest text-muted-foreground/70">Offense</th>
+                      <th className="px-4 py-2 font-bold uppercase tracking-widest text-muted-foreground/70">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {Object.entries(report.criminalHistory.priorRecords).map(([agency, data]: [string, any]) => (
+                      <tr key={agency}>
+                        <td className="px-4 py-2 font-bold uppercase">{agency}</td>
+                        <td className="px-4 py-2">{data.criminalCaseNo || '-'}</td>
+                        <td className="px-4 py-2">{data.offense || '-'}</td>
+                        <td className="px-4 py-2 italic">{data.decisionStatus || '-'}</td>
                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                      {Object.entries(report.criminalHistory.priorRecords).map(([agency, data]: [string, any]) => (
-                        <tr key={agency}>
-                          <td className="px-4 py-2 font-bold uppercase">{agency}</td>
-                          <td className="px-4 py-2">{data.criminalCaseNo || '-'}</td>
-                          <td className="px-4 py-2">{data.offense || '-'}</td>
-                          <td className="px-4 py-2 italic">{data.decisionStatus || '-'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-               </div>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </section>
 
@@ -360,7 +373,7 @@ export default function ViewReportPage({ params }: PageProps) {
               <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--brand-primary)]">Section IV</span>
               <h2 className="text-xl font-bold tracking-tight">Analysis & Evaluation</h2>
             </div>
-            
+
             <div className="space-y-8">
               <div className="space-y-2">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Final Synthesis</span>

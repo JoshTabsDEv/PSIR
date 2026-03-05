@@ -44,7 +44,7 @@ export function ExportDocxButton({
 
       // Get filename from Content-Disposition header or generate one
       const contentDisposition = response.headers.get('Content-Disposition');
-      let filename = `PSIR-${reportNumber || reportId}.docx`;
+      let filename = `PI-${reportNumber || reportId}.docx`;
       if (contentDisposition) {
         const match = contentDisposition.match(/filename="(.+)"/);
         if (match) {

@@ -101,6 +101,9 @@ model PSIRReport {
   reviewedByDesignation String?
   reviewedByDate        DateTime?
 
+  // Submission tracking
+  submittedToCourtDate  DateTime?
+
   @@index([reportNumber])
   @@index([status])
   @@index([createdAt])

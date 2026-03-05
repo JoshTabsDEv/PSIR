@@ -158,7 +158,12 @@ export default function SearchPage() {
                             <span className="font-mono text-sm text-[var(--brand-primary)]">
                               {report.reportNumber}
                             </span>
-                            <Badge variant={report.status === 'completed' ? 'success' : 'warning'}>
+                            <Badge
+                              variant="outline"
+                              className={report.status === 'completed'
+                                ? 'border-green-300 text-green-700 bg-green-50'
+                                : 'border-amber-300 text-amber-700 bg-amber-50'}
+                            >
                               {report.status}
                             </Badge>
                           </div>
@@ -196,7 +201,7 @@ export default function SearchPage() {
             <ul className="text-sm text-gray-600 space-y-2">
               <li>• Search by offender&apos;s last name or first name</li>
               <li>• Search by case number (e.g., &quot;Crim. Case No. 12345&quot;)</li>
-              <li>• Search by report number (e.g., &quot;PSIR-2025-&quot;)</li>
+              <li>• Search by report number (e.g., &quot;PI-2025-&quot;)</li>
               <li>• Filter by draft or completed status</li>
             </ul>
           </CardContent>

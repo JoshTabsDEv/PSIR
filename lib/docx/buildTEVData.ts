@@ -69,7 +69,7 @@ export function buildTEVData(
         ) || '',
       Report_Type: 'PSIR',
       Date_Submitted:
-        formatDateShort(report.analysisEvaluation?.preparedBy?.date) || '',
+        formatDateShort(report.submittedToCourtDate ?? report.analysisEvaluation?.preparedBy?.date) || '',
     })),
   };
 }

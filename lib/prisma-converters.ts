@@ -12,6 +12,7 @@ export function prismaToFrontend(prismaReport: PrismaPSIRReport): PSIRReport {
     createdAt: prismaReport.createdAt,
     updatedAt: prismaReport.updatedAt,
     lastModifiedBy: prismaReport.lastModifiedBy,
+    submittedToCourtDate: prismaReport.submittedToCourtDate ?? null,
 
     // Section I: Identifying Data
     identifyingData: {
@@ -205,6 +206,12 @@ export function frontendToPrisma(frontendReport: Partial<PSIRFormData>): any {
     reviewedByName: analysis?.reviewedBy?.name,
     reviewedByDesignation: analysis?.reviewedBy?.designation,
     reviewedByDate: analysis?.reviewedBy?.date ? new Date(analysis.reviewedBy.date) : undefined,
+
+    // Submission tracking — auto-complete when date is set
+    submittedToCourtDate: frontendReport.submittedToCourtDate
+      ? new Date(frontendReport.submittedToCourtDate as string)
+      : undefined,
+    ...(frontendReport.submittedToCourtDate ? { status: 'completed' } : {}),
   };
 }
 

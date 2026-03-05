@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
     // Convert Buffer to Uint8Array for NextResponse compatibility
     const uint8Array = new Uint8Array(buffer);
 
-    const filename = `PSIR-Monthly-Summary-${monthName}-${year}.docx`;
+    const filename = `PI-Monthly-Summary-${monthName}-${year}.docx`;
 
     return new NextResponse(uint8Array, {
       status: 200,

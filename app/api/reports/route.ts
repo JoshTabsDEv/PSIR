@@ -11,7 +11,7 @@ async function generateUniqueReportNumber(): Promise<string> {
   const latestReport = await prisma.pSIRReport.findFirst({
     where: {
       reportNumber: {
-        startsWith: `PSIR-${year}-`,
+        startsWith: `PI-${year}-`,
       },
     },
     orderBy: {
@@ -24,14 +24,14 @@ async function generateUniqueReportNumber(): Promise<string> {
 
   let nextNumber = 1;
   if (latestReport) {
-    // Extract the number part from PSIR-2026-00001
-    const match = latestReport.reportNumber.match(/PSIR-\d{4}-(\d+)/);
+    // Extract the number part from PI-2026-00001
+    const match = latestReport.reportNumber.match(/PI-\d{4}-(\d+)/);
     if (match) {
       nextNumber = parseInt(match[1], 10) + 1;
     }
   }
 
-  return `PSIR-${year}-${nextNumber.toString().padStart(5, '0')}`;
+  return `PI-${year}-${nextNumber.toString().padStart(5, '0')}`;
 }
 
 // GET /api/reports - List all reports with pagination and filtering
