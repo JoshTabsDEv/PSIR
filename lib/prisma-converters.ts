@@ -39,6 +39,8 @@ export function prismaToFrontend(prismaReport: PrismaPSIRReport): PSIRReport {
       letterAddress: prismaReport.letterAddress || '',
       investigationDocketNumber: prismaReport.investigationDocketNumber || '',
       criminalCaseNumber: prismaReport.criminalCaseNumber || '',
+      mother: '',
+      father: ''
     },
 
     // Section II: Criminal History

@@ -2,304 +2,550 @@
 
 import { useFormContext } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from '@/components/ui/form';
 import type { PSIRFormData } from '@/types/psir';
 import { civilStatusOptions, educationalAttainmentOptions, religionOptions } from '@/lib/utils/form-helpers';
 import { calculateAge } from '@/lib/utils/date-formatters';
+import { User, Calendar, MapPin, Briefcase, Users } from 'lucide-react';
 
 export function SectionI_IdentifyingData() {
-  const { register, watch, setValue, formState: { errors } } = useFormContext<PSIRFormData>();
+  const { control, watch, setValue } = useFormContext<PSIRFormData>();
 
   const birthday = watch('identifyingData.birthday');
 
-  const handleBirthdayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const date = e.target.value;
-    setValue('identifyingData.birthday', new Date(date));
-    setValue('identifyingData.age', calculateAge(date));
-  };
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-primary)] text-white text-sm font-bold">
-            I
-          </span>
-          Identifying Data
-        </CardTitle>
+    <Card className="shadow-none border border-border bg-card/50">
+      <CardHeader className="pb-6 border-b bg-card/80">
+        <div className="flex items-start justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--brand-primary)] px-2 py-0.5 rounded border border-[var(--brand-primary)]/20 bg-[var(--brand-primary)]/5">Section I</span>
+              <h2 className="text-2xl font-bold tracking-tight text-foreground">Identifying Data</h2>
+            </div>
+            <p className="text-sm text-muted-foreground">Comprehensive personal information and case-related identifiers.</p>
+          </div>
+          <div className="hidden sm:block">
+             <User className="h-8 w-8 text-muted-foreground/10" />
+          </div>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-10 pt-8">
         {/* Letter Information */}
-        <div className="border-t pt-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-3">Letter Information</h4>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2 text-gray-900">
-              <Label htmlFor="letterJudge">Judge</Label>
-              <Input
-                id="letterJudge"
-                {...register('identifyingData.letterJudge')}
-                placeholder="Judge name for letter heading"
-              />
-            </div>
-            <div className="space-y-2 text-gray-900">
-              <Label htmlFor="letterCourt">Court</Label>
-              <Input
-                id="letterCourt"
-                {...register('identifyingData.letterCourt')}
-                placeholder="e.g., RTC Branch 1, Manila"
-              />
-            </div>
-            <div className="space-y-2 text-gray-900">
-              <Label htmlFor="letterPosition">Position</Label>
-              <Input
-                id="letterPosition"
-                {...register('identifyingData.letterPosition')}
-                placeholder="e.g., Presiding Judge"
-              />
-            </div>
-            <div className="space-y-2 md:col-span-2 text-gray-900">
-              <Label htmlFor="letterAddress">Address</Label>
-              <Textarea
-                id="letterAddress"
-                {...register('identifyingData.letterAddress')}
-                placeholder="Court/office address for letter"
-                rows={2}
-              />
-            </div>
-            <div className="space-y-2 text-gray-900">
-              <Label htmlFor="investigationDocketNumber">Investigation Docket Number</Label>
-              <Input
-                id="investigationDocketNumber"
-                {...register('identifyingData.investigationDocketNumber')}
-                placeholder="Enter investigation docket number"
-              />
-            </div>
-            <div className="space-y-2 text-gray-900">
-              <Label htmlFor="criminalCaseNumber">Criminal Case Number</Label>
-              <Input
-                id="criminalCaseNumber"
-                {...register('identifyingData.criminalCaseNumber')}
-                placeholder="Enter criminal case number"
-              />
-            </div>
+        <div className="space-y-6">
+          <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+            <Briefcase className="h-4 w-4 text-[var(--brand-primary)]" />
+            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/80">Letter Information</h3>
           </div>
-        </div>
-        <div className="border-t pt-4"></div>
-        {/* Name Fields */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="space-y-2 text-gray-900">
-            <Label htmlFor="lastName">Last Name *</Label>
-            <Input
-              id="lastName"
-              {...register('identifyingData.lastName')}
-              placeholder="e.g., DELA CRUZ"
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 pl-0 sm:pl-4 border-l-2 border-transparent sm:border-[var(--brand-primary)]/10">
+            <FormField
+              control={control}
+              name="identifyingData.letterJudge"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Judge Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter judge name" {...field} className="bg-background shadow-none focus-visible:ring-1" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            {errors.identifyingData?.lastName && (
-              <p className="text-sm text-red-500">{errors.identifyingData.lastName.message}</p>
-            )}
-          </div>
-          <div className="space-y-2 text-gray-900">
-            <Label htmlFor="firstName">First Name *</Label>
-            <Input
-              id="firstName"
-              {...register('identifyingData.firstName')}
-              placeholder="e.g., JUAN"
+            <FormField
+              control={control}
+              name="identifyingData.letterCourt"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Court</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., RTC Branch 1" {...field} className="bg-background shadow-none focus-visible:ring-1" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            {errors.identifyingData?.firstName && (
-              <p className="text-sm text-red-500">{errors.identifyingData.firstName.message}</p>
-            )}
-          </div>
-          <div className="space-y-2 text-gray-900">
-            <Label htmlFor="middleName">Middle Name</Label>
-            <Input
-              id="middleName"
-              {...register('identifyingData.middleName')}
-              placeholder="e.g., SANTOS"
+            <FormField
+              control={control}
+              name="identifyingData.letterPosition"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Position</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., Presiding Judge" {...field} className="bg-background shadow-none focus-visible:ring-1" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={control}
+              name="identifyingData.letterAddress"
+              render={({ field }) => (
+                <FormItem className="md:col-span-2 lg:col-span-3">
+                  <FormLabel>Court Address</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Complete court/office address"
+                      rows={2}
+                      className="resize-none bg-background shadow-none focus-visible:ring-1"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
           </div>
-        </div>
-
-        {/* True Name */}
-        <div className="space-y-2 text-gray-900">
-          <Label htmlFor="trueName">True Name</Label>
-          <Input
-            id="trueName"
-            {...register('identifyingData.trueName')}
-            placeholder="Legal/complete true name"
-          />
-        </div>
-
-        {/* Alias and Sex */}
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2 text-gray-900">
-            <Label htmlFor="alias">Alias/Nickname</Label>
-            <Input
-              id="alias"
-              {...register('identifyingData.alias')}
-              placeholder="e.g., Jun"
+          
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 pl-0 sm:pl-4 border-l-2 border-transparent sm:border-[var(--brand-primary)]/10">
+            <FormField
+              control={control}
+              name="identifyingData.investigationDocketNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Investigation Docket #</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Docket number" {...field} className="bg-background shadow-none focus-visible:ring-1" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          <div className="space-y-2 text-gray-900">
-            <Label htmlFor="sex">Sex *</Label>
-            <Select {...register('identifyingData.sex')}>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-            </Select>
-          </div>
-        </div>
-
-        {/* Birthday, Age, Birthplace */}
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 items-end">
-          {/* Birthday Field */}
-          <div className="flex flex-col space-y-2 text-gray-900">
-            <Label htmlFor="birthday" className="text-sm font-medium">
-              Birthday *
-            </Label>
-            <div className="w-full">
-              <DatePicker
-                value={birthday ? new Date(birthday) : undefined}
-                onChange={(date) => {
-                  setValue('identifyingData.birthday', date as Date);
-                  setValue('identifyingData.age', date ? calculateAge(date.toISOString()) : 0);
-                }}
-                placeholder="Select date of birth"
-                // Ensure your DatePicker component accepts a className to set w-full
-                className="w-full"
-              />
-            </div>
-          </div>
-
-          {/* Age Field */}
-          <div className="flex flex-col space-y-2 text-gray-900">
-            <Label htmlFor="age" className="text-sm font-medium">
-              Age
-            </Label>
-            <Input
-              id="age"
-              type="number"
-              {...register('identifyingData.age', { valueAsNumber: true })}
-              readOnly
-              className="bg-gray-50 h-10" // Force height if DatePicker is taller
+            <FormField
+              control={control}
+              name="identifyingData.criminalCaseNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Criminal Case #</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Case number" {...field} className="bg-background shadow-none focus-visible:ring-1" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-
-          {/* Birthplace Field */}
-          <div className="flex flex-col space-y-2 text-gray-900">
-            <Label htmlFor="birthplace" className="text-sm font-medium">
-              Birthplace
-            </Label>
-            <Input
-              id="birthplace"
-              {...register('identifyingData.birthplace')}
-              placeholder="e.g., Manila"
-              className="h-10"
+            <FormField
+              control={control}
+              name="identifyingData.dateOfOrder"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Date of Order</FormLabel>
+                  <FormControl>
+                    <DatePicker
+                      value={field.value ? new Date(field.value as string) : undefined}
+                      onChange={(date) => field.onChange(date?.toISOString() || '')}
+                      placeholder="Select date"
+                      className="w-full h-9 bg-background shadow-none focus-visible:ring-1"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={control}
+              name="identifyingData.dateReceive"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Date Received</FormLabel>
+                  <FormControl>
+                    <DatePicker
+                      value={field.value ? new Date(field.value as string) : undefined}
+                      onChange={(date) => field.onChange(date?.toISOString() || '')}
+                      placeholder="Select date"
+                      className="w-full h-9 bg-background shadow-none focus-visible:ring-1"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
           </div>
         </div>
 
-        {/* Nationality, Religion, Civil Status */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="space-y-2 text-gray-900">
-            <Label htmlFor="nationality">Nationality</Label>
-            <Input
-              id="nationality"
-              {...register('identifyingData.nationality')}
-              placeholder="e.g., Filipino"
-            />
+        {/* Personal Information */}
+        <div className="space-y-6">
+          <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+            <User className="h-4 w-4 text-[var(--brand-primary)]" />
+            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/80">Personal Information</h3>
           </div>
-          <div className="space-y-2 text-gray-900">
-            <Label htmlFor="religion">Religion</Label>
-            <Select {...register('identifyingData.religion')} className="text-gray-900">
-              <option value="">Select religion</option>
-              {religionOptions.map((religion) => (
-                <option key={religion} value={religion}>{religion}</option>
-              ))}
-            </Select>
-          </div>
-          <div className="space-y-2 text-gray-900">
-            <Label htmlFor="civilStatus">Civil Status</Label>
-            <Select {...register('identifyingData.civilStatus')} className="text-gray-900">
-              <option value="">Select status</option>
-              {civilStatusOptions.map((status) => (
-                <option key={status} value={status}>{status}</option>
-              ))}
-            </Select>
-          </div>
-        </div>
-
-        {/* Education and Occupation */}
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2 text-gray-900">
-            <Label htmlFor="educationalAttainment">Educational Attainment</Label>
-            <Select {...register('identifyingData.educationalAttainment')} className="text-gray-900">
-              <option value="">Select education</option>
-              {educationalAttainmentOptions.map((edu) => (
-                <option key={edu} value={edu}>{edu}</option>
-              ))}
-            </Select>
-          </div>
-          <div className="space-y-2 text-gray-900">
-            <Label htmlFor="occupation">Occupation</Label>
-            <Input
-              id="occupation"
-              {...register('identifyingData.occupation')}
-              placeholder="e.g., Farmer"
-            />
-          </div>
-        </div>
-
-        {/* Spouse Name */}
-        <div className="space-y-2 text-gray-900">
-          <Label htmlFor="spouseName">Spouse Name</Label>
-          <Input
-            id="spouseName"
-            {...register('identifyingData.spouseName')}
-            placeholder="Full name of spouse (if applicable)"
-          />
-        </div>
-
-        {/* Identifying Marks */}
-        <div className="space-y-2 text-gray-900">
-          <Label htmlFor="identifyingMarks">Identifying Marks/Tattoos</Label>
-          <Textarea
-            id="identifyingMarks"
-            {...register('identifyingData.identifyingMarks')}
-            placeholder="Describe any scars, tattoos, or distinguishing marks"
-            rows={2}
-          />
-        </div>
-
-        {/* Address Fields */}
-        <div className="border-t pt-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-3">Address Information</h4>
-          <div className="space-y-4">
-            <div className="space-y-2 text-gray-900">
-              <Label htmlFor="presentAddress">Present Address</Label>
-              <Textarea
-                id="presentAddress"
-                {...register('identifyingData.presentAddress')}
-                placeholder="Current address where offender resides"
-                rows={2}
+          
+          <div className="space-y-8 pl-0 sm:pl-4 border-l-2 border-transparent sm:border-[var(--brand-primary)]/10">
+            {/* Name Fields */}
+            <div className="grid gap-4 md:grid-cols-3">
+              <FormField
+                control={control}
+                name="identifyingData.lastName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-1">
+                      Last Name <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="DELA CRUZ" {...field} className="bg-background shadow-none focus-visible:ring-1 uppercase" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="identifyingData.firstName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-1">
+                      First Name <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="JUAN" {...field} className="bg-background shadow-none focus-visible:ring-1 uppercase" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="identifyingData.middleName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Middle Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="SANTOS" {...field} className="bg-background shadow-none focus-visible:ring-1 uppercase" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
-            <div className="space-y-2 text-gray-900">
-              <Label htmlFor="permanentAddress">Permanent Address</Label>
-              <Textarea
-                id="permanentAddress"
-                {...register('identifyingData.permanentAddress')}
-                placeholder="Complete permanent address"
-                rows={2}
+
+            {/* True Name and Alias */}
+            <div className="grid gap-4 md:grid-cols-2">
+              <FormField
+                control={control}
+                name="identifyingData.trueName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>True Name (Legal/Complete)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Full legal name" {...field} className="bg-background shadow-none focus-visible:ring-1" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="identifyingData.alias"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Alias / Nickname</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Jun" {...field} className="bg-background shadow-none focus-visible:ring-1" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Birth Information */}
+            <div className="grid gap-4 md:grid-cols-3">
+              <FormField
+                control={control}
+                name="identifyingData.birthday"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-1">
+                      Birthday <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <DatePicker
+                        value={field.value ? new Date(field.value as string) : undefined}
+                        onChange={(date) => {
+                          field.onChange(date?.toISOString() || '');
+                          if (date) {
+                            setValue('identifyingData.age', calculateAge(date.toISOString()));
+                          }
+                        }}
+                        placeholder="Select date"
+                        className="w-full h-9 bg-background shadow-none focus-visible:ring-1"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="identifyingData.age"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Age</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        {...field}
+                        value={field.value || ''}
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                        readOnly
+                        className="bg-muted/50 shadow-none border-dashed"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="identifyingData.birthplace"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Birthplace</FormLabel>
+                    <FormControl>
+                      <Input placeholder="City/Province" {...field} className="bg-background shadow-none focus-visible:ring-1" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
           </div>
         </div>
 
-        
+        {/* Demographics & Family */}
+        <div className="space-y-6">
+          <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+            <Users className="h-4 w-4 text-[var(--brand-primary)]" />
+            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/80">Demographics & Family</h3>
+          </div>
+          
+          <div className="space-y-8 pl-0 sm:pl-4 border-l-2 border-transparent sm:border-[var(--brand-primary)]/10">
+            <div className="grid gap-4 md:grid-cols-2">
+              <FormField
+                control={control}
+                name="identifyingData.mother"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mother's Maiden Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Full name" {...field} className="bg-background shadow-none focus-visible:ring-1" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="identifyingData.father"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Father's Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Full name" {...field} className="bg-background shadow-none focus-visible:ring-1" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <FormField
+                control={control}
+                name="identifyingData.sex"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-1">
+                      Sex <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Select {...field} className="h-9 bg-background shadow-none focus-visible:ring-1">
+                        <option value="">Select</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="identifyingData.nationality"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nationality</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Filipino" {...field} className="bg-background shadow-none focus-visible:ring-1" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="identifyingData.religion"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Religion</FormLabel>
+                    <FormControl>
+                      <Select {...field} className="h-9 bg-background shadow-none focus-visible:ring-1">
+                        <option value="">Select</option>
+                        {religionOptions.map((religion) => (
+                          <option key={religion} value={religion}>{religion}</option>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="identifyingData.civilStatus"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Civil Status</FormLabel>
+                    <FormControl>
+                      <Select {...field} className="h-9 bg-background shadow-none focus-visible:ring-1">
+                        <option value="">Select</option>
+                        {civilStatusOptions.map((status) => (
+                          <option key={status} value={status}>{status}</option>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <FormField
+                control={control}
+                name="identifyingData.educationalAttainment"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Educational Attainment</FormLabel>
+                    <FormControl>
+                      <Select {...field} className="h-9 bg-background shadow-none focus-visible:ring-1">
+                        <option value="">Select</option>
+                        {educationalAttainmentOptions.map((edu) => (
+                          <option key={edu} value={edu}>{edu}</option>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="identifyingData.occupation"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Occupation</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Current job" {...field} className="bg-background shadow-none focus-visible:ring-1" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="identifyingData.spouseName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Spouse Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Full name" {...field} className="bg-background shadow-none focus-visible:ring-1" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={control}
+              name="identifyingData.identifyingMarks"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Identifying Marks / Tattoos</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Describe any scars, tattoos, or distinguishing marks"
+                      rows={2}
+                      className="resize-none bg-background shadow-none focus-visible:ring-1"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        {/* Address Details */}
+        <div className="space-y-6">
+          <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+            <MapPin className="h-4 w-4 text-[var(--brand-primary)]" />
+            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/80">Address Details</h3>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 pl-0 sm:pl-4 border-l-2 border-transparent sm:border-[var(--brand-primary)]/10">
+            <FormField
+              control={control}
+              name="identifyingData.presentAddress"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Present Address</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Current residence"
+                      rows={2}
+                      className="resize-none bg-background shadow-none focus-visible:ring-1"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={control}
+              name="identifyingData.permanentAddress"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Permanent Address</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Complete permanent address"
+                      rows={2}
+                      className="resize-none bg-background shadow-none focus-visible:ring-1"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
       </CardContent>
     </Card>
+
   );
 }

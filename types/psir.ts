@@ -19,12 +19,16 @@ export interface IdentifyingData {
   identifyingMarks: string;
   presentAddress: string;
   permanentAddress: string;
+  mother: string;
+  father: string;
   letterJudge: string;
   letterCourt: string;
   letterPosition: string;
   letterAddress: string;
   investigationDocketNumber: string;
   criminalCaseNumber: string;
+  dateOfOrder?: Date | string;
+  dateReceive?: Date | string;
 }
 
 export interface PresentOffense {
@@ -139,4 +143,13 @@ export interface DashboardStats {
   draftReports: number;
   completedReports: number;
   recentReports: PSIRReport[];
+  monthlyData?: MonthlyReportData[];
+}
+
+// Chart data types
+export interface MonthlyReportData {
+  month: string;
+  total: number;
+  completed: number;
+  draft: number;
 }

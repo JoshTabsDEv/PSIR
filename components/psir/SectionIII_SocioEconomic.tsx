@@ -1,11 +1,18 @@
 'use client';
 
-import { useFormContext, useController } from 'react-hook-form';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useFormContext } from 'react-hook-form';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from '@/components/ui/form';
 import { cn } from '@/lib/utils';
 import type { PSIRFormData } from '@/types/psir';
+import { Users, Wallet, Globe } from 'lucide-react';
 
 const economicStatusOptions = [
   'Poor',
@@ -21,125 +28,144 @@ const satisfactionOptions = ['Very satisfactory', 'Satisfactory', 'Poor'] as con
 
 interface RadioSectionProps {
   label: string;
-  fieldName: string;
+  name: string;
   options: readonly string[];
-  horizontal?: boolean;
+  gridCols?: string;
+  control: any;
 }
 
-function RadioSection({ label, fieldName, options, horizontal = false }: RadioSectionProps) {
-  const { control } = useFormContext<PSIRFormData>();
-  const { field } = useController({
-    name: fieldName as keyof PSIRFormData,
-    control,
-  });
-
-  const selectedValue = field.value as string ?? '';
-
+function CustomRadioSection({ label, name, options, gridCols = "grid-cols-1", control }: RadioSectionProps) {
   return (
-    <div className="border rounded-lg p-4 bg-gray-50/50">
-      <h4 className="text-sm font-semibold text-gray-700 mb-4 uppercase tracking-wide">
-        {label}
-      </h4>
-      <RadioGroup
-        value={selectedValue}
-        onValueChange={field.onChange}
-        name={fieldName}
-        // Use a grid to ensure uniform width. 
-        // md:grid-cols-3 ensures the 'Satisfactory' options align perfectly in a row.
-        className={cn(
-          horizontal
-            ? 'grid grid-cols-1 md:grid-cols-3 lg:max-w-4xl gap-3'
-            : 'grid grid-cols-1 gap-2'
-        )}
-      >
-        {options.map((option) => {
-          const id = `${fieldName}-${option}`;
-          const isSelected = selectedValue === option;
-          return (
-            <label
-              key={option}
-              htmlFor={id}
-              className={cn(
-                'flex items-center gap-3 rounded-lg border-2 px-4 py-2 cursor-pointer transition-all duration-150 min-h-[44px]',
-                isSelected
-                  ? 'border-red-600 bg-red-50 shadow-sm'
-                  : 'border-gray-200 bg-white hover:border-red-200 hover:bg-red-50/20'
-              )}
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <FormItem className="space-y-4">
+          <FormLabel className="text-sm font-bold uppercase tracking-wider text-foreground/70">{label}</FormLabel>
+          <FormControl>
+            <RadioGroup
+              onValueChange={field.onChange}
+              value={field.value || undefined}
+              className={cn("grid gap-3", gridCols)}
             >
-              <RadioGroupItem value={option} id={id} className="sr-only" />
-
-              {/* Custom Radio Indicator to match screenshot */}
-              <div className={cn(
-                "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border",
-                isSelected ? "border-red-600 bg-red-600" : "border-gray-400"
-              )}>
-                {isSelected && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
-              </div>
-
-              <span className={cn(
-                'text-sm leading-tight',
-                isSelected ? 'text-red-700 font-semibold' : 'text-gray-700 font-medium'
-              )}>
-                {option}
-              </span>
-            </label>
-          );
-        })}
-      </RadioGroup>
-    </div>
+              {options.map((option) => {
+                const isSelected = field.value === option;
+                return (
+                  <FormItem key={option} className="flex items-center space-x-0 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value={option} id={`${name}-${option}`} className="sr-only" />
+                    </FormControl>
+                    <FormLabel
+                      htmlFor={`${name}-${option}`}
+                      className={cn(
+                        "flex flex-1 items-center gap-3 rounded-md border px-4 py-2.5 cursor-pointer transition-all duration-200 text-sm font-medium",
+                        isSelected
+                          ? "border-[var(--brand-primary)] bg-[var(--brand-primary)]/[0.03] text-[var(--brand-primary)] ring-1 ring-[var(--brand-primary)]/20"
+                          : "border-border bg-background text-muted-foreground hover:border-border-hover hover:bg-muted/30"
+                      )}
+                    >
+                      <div className={cn(
+                        "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors",
+                        isSelected ? "border-[var(--brand-primary)] bg-[var(--brand-primary)]" : "border-muted-foreground/30"
+                      )}>
+                        {isSelected && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
+                      </div>
+                      {option}
+                    </FormLabel>
+                  </FormItem>
+                );
+              })}
+            </RadioGroup>
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
   );
 }
 
 export function SectionIII_SocioEconomic() {
-  return (
-    <Card className="shadow-sm">
-      <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-3 text-lg">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-600 text-white text-sm font-bold">
-            III
-          </span>
-          Socio-Economic Background
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <RadioSection
-          label="A. FAMILY ECONOMIC STATUS"
-          fieldName="socioEconomicBackground.familyEconomicStatus"
-          options={economicStatusOptions}
-        />
+  const { control } = useFormContext<PSIRFormData>();
 
-        {/* Horizontal sections using the grid layout */}
-        <div className="space-y-4">
-          <RadioSection
-            label="B. FAMILY RELATIONSHIP"
-            fieldName="socioEconomicBackground.familyRelationship"
-            options={satisfactionOptions}
-            horizontal
-          />
-          <RadioSection
-            label="C. FAMILY REPUTATION"
-            fieldName="socioEconomicBackground.familyReputation"
-            options={satisfactionOptions}
-            horizontal
-          />
-          <RadioSection
-            label="D. FAMILY SUPPORT"
-            fieldName="socioEconomicBackground.familySupport"
-            options={satisfactionOptions}
-            horizontal
-          />
-          <RadioSection
-            label="E. COMMUNITY ACCEPTABILITY"
-            fieldName="socioEconomicBackground.communityAcceptability"
-            options={satisfactionOptions}
-            horizontal
-          />
-          <RadioSection
-            label="F. OVERALL WELL-BEING"
-            fieldName="socioEconomicBackground.overallWellBeing"
-            options={satisfactionOptions}
-            horizontal
-          />
+  return (
+    <Card className="shadow-none border border-border bg-card/50">
+      <CardHeader className="pb-6 border-b bg-card/80">
+        <div className="flex items-start justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--brand-primary)] px-2 py-0.5 rounded border border-[var(--brand-primary)]/20 bg-[var(--brand-primary)]/5">Section III</span>
+              <h2 className="text-2xl font-bold tracking-tight text-foreground">Socio-Economic Background</h2>
+            </div>
+            <p className="text-sm text-muted-foreground">Family status, relationships, and community acceptability.</p>
+          </div>
+          <div className="hidden sm:block">
+             <Globe className="h-8 w-8 text-muted-foreground/10" />
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-12 pt-8">
+        {/* Economic Status */}
+        <div className="space-y-6">
+          <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+            <Wallet className="h-4 w-4 text-[var(--brand-primary)]" />
+            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/80">Economic Standing</h3>
+          </div>
+          <div className="pl-0 sm:pl-4 border-l-2 border-transparent sm:border-[var(--brand-primary)]/10">
+            <CustomRadioSection
+              label="Family Economic Status"
+              name="socioEconomicBackground.familyEconomicStatus"
+              options={economicStatusOptions}
+              gridCols="md:grid-cols-2 lg:grid-cols-3"
+              control={control}
+            />
+          </div>
+        </div>
+
+        {/* Family Dynamics & Relationship */}
+        <div className="space-y-6">
+          <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+            <Users className="h-4 w-4 text-[var(--brand-primary)]" />
+            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/80">Family & Community Dynamics</h3>
+          </div>
+          
+          <div className="grid gap-10 pl-0 sm:pl-4 border-l-2 border-transparent sm:border-[var(--brand-primary)]/10">
+            <CustomRadioSection
+              label="Family Relationship"
+              name="socioEconomicBackground.familyRelationship"
+              options={satisfactionOptions}
+              gridCols="md:grid-cols-3"
+              control={control}
+            />
+            <CustomRadioSection
+              label="Family Reputation"
+              name="socioEconomicBackground.familyReputation"
+              options={satisfactionOptions}
+              gridCols="md:grid-cols-3"
+              control={control}
+            />
+            <CustomRadioSection
+              label="Family Support"
+              name="socioEconomicBackground.familySupport"
+              options={satisfactionOptions}
+              gridCols="md:grid-cols-3"
+              control={control}
+            />
+            <CustomRadioSection
+              label="Community Acceptability"
+              name="socioEconomicBackground.communityAcceptability"
+              options={satisfactionOptions}
+              gridCols="md:grid-cols-3"
+              control={control}
+            />
+            <CustomRadioSection
+              label="Overall Well-Being"
+              name="socioEconomicBackground.overallWellBeing"
+              options={satisfactionOptions}
+              gridCols="md:grid-cols-3"
+              control={control}
+            />
+          </div>
         </div>
       </CardContent>
     </Card>

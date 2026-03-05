@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { PSIRForm } from '@/components/psir/PSIRForm';
@@ -69,38 +69,31 @@ export default function EditReportPage({ params }: PageProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-[var(--brand-primary)]" />
+      <div className="flex items-center justify-center h-screen bg-[#f8f9fa]">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-[var(--brand-primary)]" />
+          <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Loading Workspace...</p>
+        </div>
       </div>
     );
   }
 
   if (!report) {
     return (
-      <div className="text-center py-12">
-        <h2 className="text-xl font-semibold mb-2">Report Not Found</h2>
-        <p className="text-gray-500 mb-4">The requested report could not be found.</p>
+      <div className="flex flex-col items-center justify-center h-screen bg-[#f8f9fa] text-center space-y-4">
+        <div className="space-y-2">
+          <h2 className="text-xl font-bold tracking-tight text-foreground">Report Not Found</h2>
+          <p className="text-sm text-muted-foreground">The requested report could not be accessed.</p>
+        </div>
         <Link href="/dashboard/reports">
-          <Button>Back to Reports</Button>
+          <Button variant="outline">Return to Dashboard</Button>
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4 text-gray-900">
-        <Link href={`/dashboard/reports/${id}`}>
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Report</h1>
-          <p className="text-gray-500 font-mono">{report.reportNumber}</p>
-        </div>
-      </div>
-
+    <div className="absolute inset-0 z-50">
       <PSIRForm
         initialData={report as unknown as Partial<PSIRFormData>}
         reportId={id}

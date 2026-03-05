@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useForm, FormProvider, Resolver, FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Save, ChevronLeft, ChevronRight, Check, Loader2 } from 'lucide-react';
+import { Save, ChevronLeft, ChevronRight, Check, Loader2, FileText, LayoutDashboard } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { FormNavigation } from './FormNavigation';
@@ -12,11 +12,12 @@ import { SectionII_CriminalHistory } from './SectionII_CriminalHistory';
 import { SectionIII_SocioEconomic } from './SectionIII_SocioEconomic';
 import { SectionIV_Analysis } from './SectionIV_Analysis';
 import { AutoSaveIndicator } from './AutoSaveIndicator';
-import { psirFormSchema, sectionSchemas } from '@/lib/validations/psir-schema';
+import { psirFormSchema } from '@/lib/validations/psir-schema';
 import { defaultFormValues, generateReportNumber } from '@/lib/utils/form-helpers';
 import type { PSIRFormData } from '@/types/psir';
+import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
-// Map section numbers to their field paths for validation
 const sectionFieldPaths: Record<number, (keyof PSIRFormData)[]> = {
   1: ['identifyingData'],
   2: ['criminalHistory'],
@@ -24,7 +25,6 @@ const sectionFieldPaths: Record<number, (keyof PSIRFormData)[]> = {
   4: ['analysisEvaluation'],
 };
 
-// Section names for error messages
 const sectionNames: Record<number, string> = {
   1: 'Identifying Data',
   2: 'Criminal History',
@@ -32,10 +32,8 @@ const sectionNames: Record<number, string> = {
   4: 'Analysis and Evaluation',
 };
 
-// Helper to extract validation error messages
 function getValidationErrors(errors: FieldErrors<PSIRFormData>): string[] {
   const messages: string[] = [];
-
   const extractErrors = (obj: Record<string, unknown>, prefix = '') => {
     for (const key in obj) {
       const value = obj[key] as Record<string, unknown>;
@@ -46,7 +44,6 @@ function getValidationErrors(errors: FieldErrors<PSIRFormData>): string[] {
       }
     }
   };
-
   extractErrors(errors as Record<string, unknown>);
   return messages;
 }
@@ -74,170 +71,65 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
 
   const { handleSubmit, watch, trigger, formState: { isDirty, errors } } = methods;
 
-  // Auto-save functionality
   const autoSave = useCallback(async () => {
     if (!isDirty || !onSave) return;
-
     setIsSaving(true);
     setSaveError(null);
-
     try {
       const data = methods.getValues();
       await onSave(data, 'draft');
       setLastSaved(new Date());
-      toast.success('Auto-saved', {
-        description: 'Your changes have been saved automatically.',
-        duration: 2000,
-      });
     } catch (error) {
       setSaveError('Failed to auto-save');
-      toast.error('Auto-save failed', {
-        description: 'Could not save your changes. Please try saving manually.',
-      });
       console.error('Auto-save error:', error);
     } finally {
       setIsSaving(false);
     }
   }, [isDirty, methods, onSave]);
 
-  // Auto-save every 30 seconds
   useEffect(() => {
     const interval = setInterval(autoSave, 30000);
     return () => clearInterval(interval);
   }, [autoSave]);
 
-  // Save draft manually
   const handleSaveDraft = async () => {
     if (!onSave) return;
-
     setIsSaving(true);
     setSaveError(null);
-
     try {
       const data = methods.getValues();
       await onSave(data, 'draft');
       setLastSaved(new Date());
-      toast.success('Draft saved', {
-        description: 'Your report has been saved as a draft.',
-      });
+      toast.success('Draft saved');
     } catch (error) {
       setSaveError('Failed to save draft');
-      toast.error('Failed to save draft', {
-        description: 'An error occurred while saving. Please try again.',
-      });
-      console.error('Save draft error:', error);
+      toast.error('Failed to save draft');
     } finally {
       setIsSaving(false);
     }
   };
 
-  // Submit completed form
   const onSubmit = async (data: PSIRFormData) => {
     if (!onSave) return;
-
     setIsSaving(true);
-    setSaveError(null);
-
     try {
       await onSave(data, 'completed');
       setLastSaved(new Date());
-      toast.success('Report submitted', {
-        description: 'Your PSIR report has been completed successfully.',
-      });
+      toast.success('Report submitted successfully');
     } catch (error) {
-      setSaveError('Failed to submit report');
-      toast.error('Failed to submit report', {
-        description: 'An error occurred while submitting. Please try again.',
-      });
-      console.error('Submit error:', error);
+      toast.error('Submission failed');
     } finally {
       setIsSaving(false);
     }
   };
 
-  // Handle validation errors
-  const onError = (errors: FieldErrors<PSIRFormData>) => {
-    const errorMessages = getValidationErrors(errors);
-
-    if (errorMessages.length > 0) {
-      toast.error('Validation Error', {
-        description: (
-          <ul className="list-disc pl-4 mt-2 space-y-1">
-            {errorMessages.slice(0, 5).map((msg, i) => (
-              <li key={i} className="text-sm">{msg}</li>
-            ))}
-            {errorMessages.length > 5 && (
-              <li className="text-sm text-gray-500">
-                ...and {errorMessages.length - 5} more errors
-              </li>
-            )}
-          </ul>
-        ),
-        duration: 5000,
-      });
-    }
-  };
-
-  const renderSection = () => {
-    switch (currentSection) {
-      case 1:
-        return <SectionI_IdentifyingData />;
-      case 2:
-        return <SectionII_CriminalHistory />;
-      case 3:
-        return <SectionIII_SocioEconomic />;
-      case 4:
-        return <SectionIV_Analysis />;
-      default:
-        return <SectionI_IdentifyingData />;
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentSection > 1) {
-      setCurrentSection(currentSection - 1);
-    }
-  };
-
-  // Validate a specific section and show errors
   const validateSection = async (sectionNumber: number): Promise<boolean> => {
     const fieldsToValidate = sectionFieldPaths[sectionNumber];
     const isValid = await trigger(fieldsToValidate);
-
     if (!isValid) {
-      // Get errors for the section
-      const sectionErrors = fieldsToValidate.reduce<string[]>((acc, field) => {
-        const fieldErrors = errors[field];
-        if (fieldErrors) {
-          const errorMessages = getValidationErrors({ [field]: fieldErrors } as FieldErrors<PSIRFormData>);
-          acc.push(...errorMessages);
-        }
-        return acc;
-      }, []);
-
-      toast.error(`Please complete Section ${sectionNumber}: ${sectionNames[sectionNumber]}`, {
-        description: sectionErrors.length > 0 ? (
-          <ul className="list-disc pl-4 mt-2 space-y-1">
-            {sectionErrors.slice(0, 5).map((msg, i) => (
-              <li key={i} className="text-sm">{msg}</li>
-            ))}
-            {sectionErrors.length > 5 && (
-              <li className="text-sm text-gray-500">
-                ...and {sectionErrors.length - 5} more errors
-              </li>
-            )}
-          </ul>
-        ) : 'Please fill in all required fields before proceeding.',
-        duration: 5000,
-      });
+      toast.error(`Please complete Section ${sectionNumber}`);
     }
-
     return isValid;
-  };
-
-  // Handle section navigation validation (for FormNavigation clicks)
-  const handleValidateSection = async (fromSection: number): Promise<boolean> => {
-    return validateSection(fromSection);
   };
 
   const handleNext = async () => {
@@ -245,96 +137,132 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
       const isValid = await validateSection(currentSection);
       if (isValid) {
         setCurrentSection(currentSection + 1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentSection > 1) {
+      setCurrentSection(currentSection - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6">
-        {/* Header with report number and auto-save indicator */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">
-              {reportId ? 'Edit Report' : 'New Report'}
-            </h2>
-            <p className="text-sm text-gray-500 font-mono">
-              {watch('reportNumber')}
-            </p>
-          </div>
-          <AutoSaveIndicator
-            isSaving={isSaving}
-            lastSaved={lastSaved}
-            error={saveError}
-          />
-        </div>
+      <div className="flex min-h-screen bg-[#f8f9fa]">
+        
+        {/* Fixed Professional Sidebar */}
+        <aside className="hidden lg:flex flex-col w-[280px] bg-white border-r border-border fixed h-screen overflow-y-auto px-6 py-8 z-20">
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <Link href="/dashboard" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group">
+                <LayoutDashboard className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-bold uppercase tracking-widest">Dashboard</span>
+              </Link>
+              
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-[var(--brand-primary)]" />
+                  <h1 className="text-sm font-bold tracking-tight">PSIR Workspace</h1>
+                </div>
+                <div className="font-mono text-[10px] text-muted-foreground bg-muted px-2 py-1 rounded inline-block">
+                  {watch('reportNumber')}
+                </div>
+              </div>
+            </div>
 
-        {/* Section Navigation */}
-        <FormNavigation
-          currentSection={currentSection}
-          onSectionChange={setCurrentSection}
-          onValidateSection={handleValidateSection}
-        />
+            <div className="space-y-2">
+              <h2 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-4">Navigation</h2>
+              <FormNavigation
+                currentSection={currentSection}
+                onSectionChange={setCurrentSection}
+                onValidateSection={async (from) => validateSection(from)}
+              />
+            </div>
 
-        {/* Current Section */}
-        <div className="page-transition">
-          {renderSection()}
-        </div>
-
-        {/* Navigation Buttons */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-t pt-6">
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto text-gray-900">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handlePrevious}
-              disabled={currentSection === 1}
-              className="w-full sm:w-auto"
-            >
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Previous
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleNext}
-              disabled={currentSection === 4}
-              className="w-full sm:w-auto "
-            >
-              Next
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={handleSaveDraft}
-              disabled={isSaving}
-              className="w-full sm:w-auto"
-            >
-              {isSaving ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="mr-2 h-4 w-4" />
-              )}
-              Save Draft
-            </Button>
-
-            {currentSection === 4 && (
-              <Button type="submit" disabled={isSaving} className="w-full sm:w-auto">
-                {isSaving ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Check className="mr-2 h-4 w-4" />
-                )}
-                Complete Report
+            <div className="pt-8 mt-8 border-t border-border/50 space-y-4 px-4">
+              <AutoSaveIndicator
+                isSaving={isSaving}
+                lastSaved={lastSaved}
+                error={saveError}
+              />
+              
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full justify-start gap-2 h-9 border-dashed"
+                onClick={handleSaveDraft}
+                disabled={isSaving}
+              >
+                {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                <span className="text-xs font-bold uppercase tracking-wider">Save Progress</span>
               </Button>
-            )}
+            </div>
           </div>
-        </div>
-      </form>
+        </aside>
+
+        {/* Main Workspace Area */}
+        <main className="flex-1 lg:ml-[280px] flex flex-col pb-24">
+          
+          {/* Top Bar (Mobile Only or Secondary Context) */}
+          <header className="lg:hidden sticky top-0 z-30 bg-white/95 backdrop-blur border-b px-4 py-3 flex items-center justify-between">
+             <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-[var(--brand-primary)]" />
+                <span className="text-xs font-bold tracking-tight">{watch('reportNumber')}</span>
+             </div>
+             <AutoSaveIndicator isSaving={isSaving} lastSaved={lastSaved} />
+          </header>
+
+          <div className="container max-w-4xl mx-auto py-8 px-4 lg:px-12">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+              <div className="page-transition">
+                {currentSection === 1 && <SectionI_IdentifyingData />}
+                {currentSection === 2 && <SectionII_CriminalHistory />}
+                {currentSection === 3 && <SectionIII_SocioEconomic />}
+                {currentSection === 4 && <SectionIV_Analysis />}
+              </div>
+
+              {/* Bottom Contextual Navigation */}
+              <div className="flex items-center justify-between pt-8 border-t border-border/50">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={handlePrevious}
+                  disabled={currentSection === 1}
+                  className="gap-2 h-10 px-4 text-muted-foreground hover:text-foreground"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  <span className="text-sm font-bold uppercase tracking-wider">Previous</span>
+                </Button>
+
+                <div className="flex items-center gap-3">
+                  {currentSection < 4 ? (
+                    <Button
+                      type="button"
+                      onClick={handleNext}
+                      className="bg-[var(--brand-primary)] text-white hover:bg-[var(--brand-primary)]/90 px-8 h-10 shadow-lg shadow-[var(--brand-primary)]/10 group"
+                    >
+                      <span className="text-sm font-bold uppercase tracking-wider">Next Section</span>
+                      <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  ) : (
+                    <Button 
+                      type="submit" 
+                      disabled={isSaving} 
+                      className="bg-green-600 hover:bg-green-700 text-white px-8 h-10 shadow-lg shadow-green-100"
+                    >
+                      {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
+                      <span className="text-sm font-bold uppercase tracking-wider">Complete Report</span>
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </form>
+          </div>
+        </main>
+      </div>
     </FormProvider>
   );
 }

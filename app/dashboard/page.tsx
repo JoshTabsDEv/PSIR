@@ -1,13 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { FilePlus, Search } from 'lucide-react';
+import { FilePlus, Search, LayoutDashboard, Clock, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton';
 import { StatsCards } from '@/components/dashboard/StatsCards';
 import { ReportsList } from '@/components/dashboard/ReportsList';
+import { AnalyticsCharts } from '@/components/dashboard/AnalyticsCharts';
 import type { DashboardStats, PSIRReport } from '@/types/psir';
 
 export default function DashboardPage() {
@@ -16,8 +18,12 @@ export default function DashboardPage() {
     draftReports: 0,
     completedReports: 0,
     recentReports: [],
+    monthlyData: [],
   });
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<PSIRReport[] | null>(null);
+  const [searching, setSearching] = useState(false);
 
   useEffect(() => {
     async function fetchStats() {
@@ -37,76 +43,178 @@ export default function DashboardPage() {
     fetchStats();
   }, []);
 
+  const handleSearch = useCallback(async () => {
+    const query = searchQuery.trim();
+    if (!query) {
+      setSearchResults(null);
+      return;
+    }
+
+    setSearching(true);
+    try {
+      const response = await fetch(`/api/reports?search=${encodeURIComponent(query)}&limit=10`);
+      const result = await response.json();
+      if (result.success) {
+        setSearchResults(result.data);
+      }
+    } catch (error) {
+      console.error('Search failed:', error);
+    } finally {
+      setSearching(false);
+    }
+  }, [searchQuery]);
+
+  const clearSearch = useCallback(() => {
+    setSearchQuery('');
+    setSearchResults(null);
+  }, []);
+
   if (loading) {
     return <DashboardSkeleton />;
   }
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Welcome back!</h1>
-          <p className="text-gray-600">
+    <div className="space-y-8 pb-12">
+      {/* Dashboard Header */}
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between border-b pb-6">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--brand-primary)]">
+            <LayoutDashboard className="h-3 w-3" />
+            Management Console
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Welcome back
+          </h1>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Clock className="h-3.5 w-3.5" />
             {format(new Date(), 'EEEE, MMMM d, yyyy')}
-          </p>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Link href="/dashboard/search">
-            <Button variant="outline" className='text-gray-900'>
-              <Search className="mr-2 h-4 w-4 text-gray-900" />
-              Search
-              <kbd className="ml-2 hidden sm:inline-block px-1.5 py-0.5 text-xs bg-gray-100 border rounded">
-                S
-              </kbd>
-            </Button>
-          </Link>
+
+        <div className="flex items-center gap-3">
           <Link href="/dashboard/reports/new">
-            <Button>
-              <FilePlus className="mr-2 h-4 w-4" />
-              New Report
-              <kbd className="ml-2 hidden sm:inline-block px-1.5 py-0.5 text-xs bg-white/20 border border-white/30 rounded">
-                N
-              </kbd>
+            <Button className="h-9 px-5 font-bold uppercase tracking-wider text-[10px] gap-2 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90 shadow-md shadow-[var(--brand-primary)]/15">
+              <FilePlus className="h-3.5 w-3.5" />
+              New Investigation
             </Button>
           </Link>
         </div>
       </div>
 
-      {/* Statistics Cards */}
-      <StatsCards
-        totalReports={stats.totalReports}
-        draftReports={stats.draftReports}
-        completedReports={stats.completedReports}
-      />
-
-      {/* Recent Reports */}
-      <ReportsList
-        reports={stats.recentReports as PSIRReport[]}
-        title="Recent Reports"
-        showActions={true}
-      />
-
-      {/* Quick Info */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-lg border bg-white p-6">
-          <h3 className="font-semibold mb-2 text-gray-900">About PSIR</h3>
-          <p className="text-sm text-gray-700">
-            The Post-Sentence Investigation Report (PSIR) is a comprehensive
-            document used by the Bureau of Corrections to assess offenders
-            for rehabilitation and eventual reintegration into society.
-          </p>
-        </div>
-        <div className="rounded-lg border bg-white p-6">
-          <h3 className="font-semibold mb-2 text-gray-900">Quick Tips</h3>
-          <ul className="text-sm text-gray-700 list-disc list-inside space-y-1">
-            <li>Auto-save is enabled for all reports</li>
-            <li>Save drafts to continue later</li>
-            <li>Export completed reports as PDF or DOCX</li>
-            <li>Use search to find existing reports</li>
-          </ul>
+      {/* Quick Search Bar */}
+      <div className="relative max-w-2xl">
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search reports by name, report number, or case number..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSearch();
+              }}
+              className="pl-10 pr-10 h-10 text-sm"
+            />
+            {searchQuery && (
+              <button
+                onClick={clearSearch}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+          <Button
+            onClick={handleSearch}
+            variant="outline"
+            className="h-10 px-4 text-[10px] font-bold uppercase tracking-wider"
+            disabled={searching}
+          >
+            {searching ? 'Searching...' : 'Search'}
+          </Button>
         </div>
       </div>
+
+      {/* Search Results (shown when searching) */}
+      {searchResults !== null && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="h-px w-8 bg-[var(--brand-primary)]/30" />
+              <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                Search Results ({searchResults.length})
+              </h2>
+            </div>
+            <button
+              onClick={clearSearch}
+              className="text-[10px] font-bold uppercase tracking-wider text-[var(--brand-primary)] hover:underline"
+            >
+              Clear Search
+            </button>
+          </div>
+          <ReportsList reports={searchResults} showActions={true} />
+        </div>
+      )}
+
+      {/* Main Dashboard Content (hidden during search) */}
+      {searchResults === null && (
+        <>
+          {/* Statistics Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="h-px w-8 bg-[var(--brand-primary)]/30" />
+              <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                System Overview
+              </h2>
+            </div>
+            <StatsCards
+              totalReports={stats.totalReports}
+              draftReports={stats.draftReports}
+              completedReports={stats.completedReports}
+              monthlyData={stats.monthlyData}
+            />
+          </div>
+
+          {/* Analytics Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="h-px w-8 bg-[var(--brand-primary)]/30" />
+              <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                Performance Analytics
+              </h2>
+            </div>
+            <AnalyticsCharts
+              totalReports={stats.totalReports}
+              completedReports={stats.completedReports}
+              draftReports={stats.draftReports}
+              monthlyData={stats.monthlyData}
+            />
+          </div>
+
+          {/* Recent Reports */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="h-px w-8 bg-[var(--brand-primary)]/30" />
+                <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                  Recent Case Files
+                </h2>
+              </div>
+              <Link
+                href="/dashboard/reports"
+                className="text-[10px] font-bold uppercase tracking-wider text-[var(--brand-primary)] hover:underline"
+              >
+                View All Reports
+              </Link>
+            </div>
+            <ReportsList
+              reports={stats.recentReports as PSIRReport[]}
+              showActions={true}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -4,71 +4,38 @@ import { useState } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DatePicker } from '@/components/ui/date-picker'; // Ensure this path is correct
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { DatePicker } from '@/components/ui/date-picker';
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from '@/components/ui/form';
+import { Sparkles, Loader2, Brain, CheckCircle, FileText, UserCheck } from 'lucide-react';
 import type { PSIRFormData } from '@/types/psir';
+import { cn } from '@/lib/utils';
 
 type ToneSuggestion = 'Objective' | 'Empathetic' | 'Firm';
 
 export function SectionIV_Analysis() {
-  const { register, control, watch, setValue } = useFormContext<PSIRFormData>();
+  const { control, watch, setValue } = useFormContext<PSIRFormData>();
   const [selectedTone, setSelectedTone] = useState<ToneSuggestion>('Objective');
   const [manualPrompt, setManualPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [summaries, setSummaries] = useState<{
-    criminalHistory: string;
-    socioEconomicBackground: string;
-  } | null>(null);
 
-  // Watch form values for AI context and DatePicker values
+  // Watch form values for AI context
   const identifyingData = useWatch({ control, name: 'identifyingData' });
   const criminalHistory = useWatch({ control, name: 'criminalHistory' });
   const socioEconomicBackground = useWatch({ control, name: 'socioEconomicBackground' });
 
-  const preparedByDate = watch('analysisEvaluation.preparedBy.date');
-  const reviewedByDate = watch('analysisEvaluation.reviewedBy.date');
-
   // Watch the circumstances field for character count
   const circumstances = watch('analysisEvaluation.circumstances') || '';
-
   const totalChars = circumstances.length;
   const maxChars = 5000;
-
-  const generateSummaries = async () => {
-    setIsGenerating(true);
-    try {
-      const response = await fetch('/api/ai/generate-summaries', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          identifyingData,
-          criminalHistory,
-          socioEconomicBackground,
-        }),
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        setSummaries(result.data);
-        toast.success('Summaries generated successfully!');
-      } else {
-        toast.error('Failed to generate summaries', {
-          description: result.error || 'Please check your API key configuration.',
-        });
-      }
-    } catch (error: any) {
-      console.error('Failed to generate summaries:', error);
-      toast.error('Failed to generate summaries', {
-        description: error?.message || 'An unexpected error occurred.',
-      });
-    } finally {
-      setIsGenerating(false);
-    }
-  };
 
   const generateRecommendations = async () => {
     setIsGenerating(true);
@@ -109,278 +76,225 @@ export function SectionIV_Analysis() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-primary)] text-white text-sm font-bold">
-            IV
-          </span>
-          Analysis and Evaluation
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
-          {/* Left Panel: Investigator's Assessment Workspace */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between border-b pb-3">
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-[var(--brand-primary)]" />
-                <h3 className="text-sm font-semibold text-gray-900">
-                  Investigator&apos;s Assessment Workspace
-                </h3>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={generateRecommendations}
-                disabled={isGenerating}
-                className='text-gray-900'
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-2 h-4 w-4 text-purple-600" />
-                    Draft with AI
-                  </>
-                )}
-              </Button>
+    <Card className="shadow-none border border-border bg-card/50">
+      <CardHeader className="pb-6 border-b bg-card/80">
+        <div className="flex items-start justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--brand-primary)] px-2 py-0.5 rounded border border-[var(--brand-primary)]/20 bg-[var(--brand-primary)]/5">Section IV</span>
+              <h2 className="text-2xl font-bold tracking-tight text-foreground">Analysis & Evaluation</h2>
             </div>
+            <p className="text-sm text-muted-foreground">Synthesis of findings and final recommendations.</p>
+          </div>
+          <div className="hidden sm:block">
+             <Brain className="h-8 w-8 text-muted-foreground/10" />
+          </div>
+        </div>
+      </CardHeader>
 
-            {/* Tone Suggestions */}
-            <div>
-              <Label className="text-xs text-gray-500 mb-2 block uppercase">Tone Suggestions:</Label>
-              <div className="flex gap-2">
+      <CardContent className="space-y-12 pt-8">
+        {/* Main Assessment Workspace */}
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/50">
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-[var(--brand-primary)]" />
+              <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/80">Assessment Workspace</h3>
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex bg-muted/50 p-0.5 rounded-md border">
                 {(['Objective', 'Empathetic', 'Firm'] as ToneSuggestion[]).map((tone) => (
                   <button
                     key={tone}
                     type="button"
                     onClick={() => setSelectedTone(tone)}
-                    className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${selectedTone === tone
-                      ? 'bg-[var(--brand-primary)] text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
+                    className={cn(
+                      "px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded transition-all",
+                      selectedTone === tone
+                        ? "bg-background text-[var(--brand-primary)] shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
                   >
                     {tone}
                   </button>
                 ))}
               </div>
-            </div>
-
-            {/* Manual Prompt Input */}
-            <div className="space-y-2 text-gray-900">
-              <Label htmlFor="manualPrompt" className="text-xs text-gray-500 uppercase">
-                Manual Prompt (Optional):
-              </Label>
-              <Textarea
-                id="manualPrompt"
-                value={manualPrompt}
-                onChange={(e) => setManualPrompt(e.target.value)}
-                placeholder="Example: Emphasize restorative justice, include concrete supervision conditions, and keep the conclusion direct."
-                rows={4}
-                className="resize-none text-sm"
-              />
-            </div>
-
-            {/* Main Assessment Workspace */}
-            <div className="space-y-2 text-gray-900">
-              <Textarea
-                id="circumstances"
-                {...register('analysisEvaluation.circumstances')}
-                placeholder="Synthesize your findings here..."
-                rows={20}
-                className="resize-none font-mono text-sm"
-              />
-            </div>
-
-            {/* Character Counter */}
-            <div className="text-right">
-              <span className={`text-xs ${totalChars > maxChars ? 'text-red-600' : 'text-gray-500'}`}>
-                {totalChars.toLocaleString()} / {maxChars.toLocaleString()} characters
-              </span>
-            </div>
-          </div>
-
-          {/* Right Panel: AI Assistant */}
-          <div className="space-y-4 text-gray-900">
-            <div className="flex items-center gap-2 border-b pb-3">
-              <Sparkles className="h-5 w-5 text-purple-600" />
-              <h3 className="text-sm font-semibold text-purple-900 uppercase">AI Assistant</h3>
-            </div>
-
-            {!summaries && (
+              
               <Button
                 type="button"
-                variant="outline"
-                className="w-full"
-                onClick={generateSummaries}
+                size="sm"
+                className="bg-purple-600 hover:bg-purple-700 text-white shadow-sm gap-2"
+                onClick={generateRecommendations}
                 disabled={isGenerating}
               >
                 {isGenerating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating Summaries...
-                  </>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : (
-                  'Generate Section Summaries'
+                  <Sparkles className="h-3.5 w-3.5" />
                 )}
+                <span className="text-xs font-bold uppercase tracking-wider">Draft with AI</span>
               </Button>
-            )}
-
-            {summaries && (
-              <div className="space-y-4">
-                <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Summary: Criminal History</h4>
-                  <p className="text-xs text-gray-600 leading-relaxed">{summaries.criminalHistory}</p>
-                </div>
-
-                <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Summary: Socio-Economic</h4>
-                  <p className="text-xs text-gray-600 leading-relaxed">{summaries.socioEconomicBackground}</p>
-                </div>
-
-                <Button
-                  type="button"
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                  onClick={generateRecommendations}
-                  disabled={isGenerating}
-                >
-                  {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Generate Recommendations Preview'}
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Probation Period */}
-        <div className="border-t mt-8 pt-6 text-gray-900">
-          <h4 className="text-sm font-semibold text-gray-700 mb-4 uppercase">Probation Period</h4>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="probationPeriod">Recommended Duration</Label>
-              <Input
-                id="probationPeriod"
-                {...register('analysisEvaluation.probationPeriod')}
-                placeholder="e.g., 3 years, 6 months"
-              />
-              <p className="text-xs text-gray-500">Specify the recommended probation period duration</p>
             </div>
           </div>
-        </div>
 
-        {/* Community Service Recommendation */}
-        <div className="border-t mt-8 pt-6 text-gray-900">
-          <h4 className="text-sm font-semibold text-gray-700 mb-4 uppercase">Community Service Recommendation</h4>
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="space-y-6 pl-0 sm:pl-4 border-l-2 border-transparent sm:border-[var(--brand-primary)]/10">
             <div className="space-y-2">
-              <Label htmlFor="communityServiceHours">Hours Required</Label>
-              <Input
-                id="communityServiceHours"
-                type="number"
-                {...register('analysisEvaluation.communityServiceHours', { valueAsNumber: true })}
-                placeholder="e.g., 40"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="communityServiceType">How many to plant</Label>
+              <FormLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Contextual Prompt (Optional)</FormLabel>
               <Textarea
-                id="communityServiceType"
-                {...register('analysisEvaluation.communityServiceType')}
-                placeholder="e.g., Fifty (50) fruit-bearing trees..."
-                rows={3}
+                value={manualPrompt}
+                onChange={(e) => setManualPrompt(e.target.value)}
+                placeholder="Direct the AI focus (e.g., 'Emphasize restorative justice')"
+                rows={2}
+                className="resize-none bg-background shadow-none focus-visible:ring-1 text-sm border-dashed"
+              />
+            </div>
+
+            <FormField
+              control={control}
+              name="analysisEvaluation.circumstances"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <FormLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Synthesis & Circumstances</FormLabel>
+                    <span className={cn("text-[10px] font-mono", totalChars > maxChars ? "text-destructive" : "text-muted-foreground")}>
+                      {totalChars.toLocaleString()} / {maxChars.toLocaleString()}
+                    </span>
+                  </div>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="Synthesize your findings and provide a comprehensive evaluation..."
+                      rows={18}
+                      className="resize-none font-mono text-sm leading-relaxed bg-background shadow-none focus-visible:ring-1"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        {/* Probation & Community Service */}
+        <div className="space-y-6">
+          <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+            <CheckCircle className="h-4 w-4 text-[var(--brand-primary)]" />
+            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/80">Duration & Conditions</h3>
+          </div>
+          
+          <div className="grid gap-8 md:grid-cols-2 pl-0 sm:pl-4 border-l-2 border-transparent sm:border-[var(--brand-primary)]/10">
+            <FormField
+              control={control}
+              name="analysisEvaluation.probationPeriod"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Recommended Probation Period</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., 3 years, 6 months" {...field} className="bg-background shadow-none focus-visible:ring-1" />
+                  </FormControl>
+                  <p className="text-[10px] text-muted-foreground">Specify the exact duration for the probation.</p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="grid gap-6">
+               <FormField
+                control={control}
+                name="analysisEvaluation.communityServiceHours"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Community Service Hours</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="e.g., 40" 
+                        {...field} 
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                        className="bg-background shadow-none focus-visible:ring-1" 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="analysisEvaluation.communityServiceType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Service Specifics (e.g., Tree Planting)</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Describe the nature of community service..." 
+                        rows={2}
+                        {...field} 
+                        className="resize-none bg-background shadow-none focus-visible:ring-1" 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
           </div>
         </div>
 
-        {/* Prepared By Section with DatePicker */}
-        <div className="border-t mt-8 pt-6 text-gray-900">
-          <h4 className="text-sm font-semibold text-gray-700 mb-4 uppercase">Prepared By</h4>
-          <div className="grid gap-4 md:grid-cols-3 items-end">
-            {/* Name */}
-            <div className="space-y-2">
-              <Label htmlFor="preparedByName">Name</Label>
-              <Input
-                id="preparedByName"
-                {...register('analysisEvaluation.preparedBy.name')}
-                placeholder="Enter preparer name"
-                className="h-10" // Standardize height
+        {/* Accountability & Approval */}
+        <div className="space-y-6">
+          <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+            <UserCheck className="h-4 w-4 text-[var(--brand-primary)]" />
+            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/80">Accountability & Approval</h3>
+          </div>
+          
+          <div className="space-y-8 pl-0 sm:pl-4 border-l-2 border-transparent sm:border-[var(--brand-primary)]/10">
+            <div className="grid gap-6 md:grid-cols-3">
+              <FormField
+                control={control}
+                name="analysisEvaluation.preparedBy.name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Prepared By (Name)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Full Name" {...field} className="bg-background shadow-none focus-visible:ring-1 font-bold" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-
-            {/* Designation */}
-            <div className="space-y-2">
-              <Label htmlFor="preparedByDesignation">Designation</Label>
-              <Input
-                id="preparedByDesignation"
-                {...register('analysisEvaluation.preparedBy.designation')}
-                placeholder="Enter preparer designation"
-                className="h-10" // Standardize height
+              <FormField
+                control={control}
+                name="analysisEvaluation.preparedBy.designation"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Designation</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Senior Probation Officer" {...field} className="bg-background shadow-none focus-visible:ring-1 italic" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-
-            {/* Date */}
-            <div className="space-y-2">
-              <Label>Date</Label>
-              <div className="w-full">
-                <DatePicker
-                  value={preparedByDate ? new Date(preparedByDate) : undefined}
-                  onChange={(date) => setValue('analysisEvaluation.preparedBy.date', date?.toISOString() || '')}
-                  placeholder="Select date"
-                  // Ensure className is passed to the internal button trigger
-                  className="w-full h-10"
-                />
-              </div>
+              <FormField
+                control={control}
+                name="analysisEvaluation.preparedBy.date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Date Prepared</FormLabel>
+                    <FormControl>
+                      <DatePicker
+                        value={field.value ? new Date(field.value as string) : undefined}
+                        onChange={(date) => field.onChange(date?.toISOString() || '')}
+                        placeholder="Select date"
+                        className="w-full h-9 bg-background shadow-none focus-visible:ring-1"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           </div>
         </div>
-
-        {/* Reviewed By Section with DatePicker */}
-        {/* <div className="border-t mt-8 pt-6">
-          <h4 className="text-sm font-semibold text-gray-700 mb-4 uppercase">Reviewed By</h4>
-          <div className="grid gap-4 md:grid-cols-3 items-end">
-           
-            <div className="space-y-2">
-              <Label htmlFor="reviewedByName">Name</Label>
-              <Input
-                id="reviewedByName"
-                {...register('analysisEvaluation.reviewedBy.name')}
-                placeholder="Enter reviewer name"
-                className="h-10" // Force standard height
-              />
-            </div>
-
-           
-            <div className="space-y-2">
-              <Label htmlFor="reviewedByDesignation">Designation</Label>
-              <Input
-                id="reviewedByDesignation"
-                {...register('analysisEvaluation.reviewedBy.designation')}
-                placeholder="Enter reviewer designation"
-                className="h-10" // Force standard height
-              />
-            </div>
-
-      
-            <div className="space-y-2">
-              <Label>Date</Label>
-              <div className="w-full">
-                <DatePicker
-                  value={reviewedByDate ? new Date(reviewedByDate) : undefined}
-                  onChange={(date) => setValue('analysisEvaluation.reviewedBy.date', date?.toISOString() || '')}
-                  placeholder="Select date"
-                  // Ensure the DatePicker trigger itself has h-10 and w-full inside the component
-                  className="w-full h-10"
-                />
-              </div>
-            </div>
-          </div>
-        </div> */}
       </CardContent>
     </Card>
   );

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { prismaToFrontend } from '@/lib/prisma-converters';
+import type { MonthlyReportData } from '@/types/psir';
 
 // GET /api/reports/stats - Get dashboard statistics
 export async function GET() {
@@ -18,6 +19,9 @@ export async function GET() {
     // Convert recent reports to frontend format
     const recentReports = prismaRecentReports.map(prismaToFrontend);
 
+    // Generate monthly data for the last 12 months
+    const monthlyData = await getMonthlyData();
+
     return NextResponse.json({
       success: true,
       data: {
@@ -25,6 +29,7 @@ export async function GET() {
         draftReports,
         completedReports,
         recentReports,
+        monthlyData,
       },
     });
   } catch (error) {
@@ -34,4 +39,44 @@ export async function GET() {
       { status: 500 }
     );
   }
+}
+
+async function getMonthlyData(): Promise<MonthlyReportData[]> {
+  const now = new Date();
+  const months: MonthlyReportData[] = [];
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  for (let i = 11; i >= 0; i--) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const nextMonth = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+
+    const [total, completed] = await Promise.all([
+      prisma.pSIRReport.count({
+        where: {
+          createdAt: {
+            gte: date,
+            lt: nextMonth,
+          },
+        },
+      }),
+      prisma.pSIRReport.count({
+        where: {
+          createdAt: {
+            gte: date,
+            lt: nextMonth,
+          },
+          status: 'completed',
+        },
+      }),
+    ]);
+
+    months.push({
+      month: monthNames[date.getMonth()],
+      total,
+      completed,
+      draft: total - completed,
+    });
+  }
+
+  return months;
 }

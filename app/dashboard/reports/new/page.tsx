@@ -66,14 +66,7 @@ export default function NewReportPage() {
   }, [reportId, router]);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Create New PSIR Report</h1>
-        <p className="text-gray-600">
-          Fill out the Post-Sentence Investigation Report form
-        </p>
-      </div>
-
+    <div className="absolute inset-0 z-50">
       <PSIRForm onSave={handleSave} reportId={reportId || undefined} />
     </div>
   );
