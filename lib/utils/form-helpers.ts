@@ -4,7 +4,7 @@ export function generateReportNumber(): string {
   const year = new Date().getFullYear();
   const timestamp = Date.now().toString().slice(-5);
   const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-  return `PSIR-${year}-${timestamp}${random}`;
+  return `PI-${year}-${timestamp}${random}`;
 }
 
 export function formatFullName(

@@ -39,9 +39,8 @@ export function StatsCards({ totalReports, draftReports, completedReports, month
       description: 'All investigation files',
       icon: FileText,
       trend: trendTotal,
-      color: 'text-[var(--brand-primary)]',
-      bgColor: 'bg-[var(--brand-primary)]/10',
-      borderColor: 'border-l-[var(--brand-primary)]',
+      iconColor: 'text-[var(--brand-primary)]',
+      iconBg: 'bg-[var(--brand-primary)]/10',
     },
     {
       title: 'Pending Drafts',
@@ -49,9 +48,8 @@ export function StatsCards({ totalReports, draftReports, completedReports, month
       description: 'Awaiting completion',
       icon: FileClock,
       trend: trendDraft,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
-      borderColor: 'border-l-orange-500',
+      iconColor: 'text-[var(--color-warning)]',
+      iconBg: 'bg-[var(--color-warning)]/10',
     },
     {
       title: 'Completed',
@@ -59,9 +57,8 @@ export function StatsCards({ totalReports, draftReports, completedReports, month
       description: 'Finalized reports',
       icon: FileCheck,
       trend: trendCompleted,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
-      borderColor: 'border-l-green-600',
+      iconColor: 'text-[var(--color-success)]',
+      iconBg: 'bg-[var(--color-success)]/10',
     },
     {
       title: 'Completion Rate',
@@ -69,9 +66,10 @@ export function StatsCards({ totalReports, draftReports, completedReports, month
       description: 'Overall performance',
       icon: Activity,
       trend: { value: completionRate, isPositive: completionRate >= 50 },
-      color: 'text-[var(--color-info)]',
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-l-blue-600',
+      iconColor: 'text-[var(--color-info)]',
+      iconBg: 'bg-[var(--color-info)]/10',
+      isRate: true,
+      rateValue: completionRate,
     },
   ];
 
@@ -80,44 +78,56 @@ export function StatsCards({ totalReports, draftReports, completedReports, month
       {stats.map((stat) => (
         <Card
           key={stat.title}
-          className={cn(
-            'bg-white border shadow-sm transition-all duration-200 hover:shadow-md border-l-4 overflow-hidden',
-            stat.borderColor
-          )}
+          className="bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden"
         >
-          <CardContent className="p-5">
-            <div className="flex items-start justify-between">
-              <div className="space-y-2">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">
-                  {stat.title}
-                </span>
-                <div className="text-3xl font-bold tracking-tight text-foreground">
-                  {stat.value}
-                </div>
-                <p className="text-[11px] text-muted-foreground">{stat.description}</p>
-              </div>
-              <div className={cn('rounded-lg p-2.5', stat.bgColor)}>
-                <stat.icon className={cn('h-4.5 w-4.5', stat.color)} />
+          <CardContent className="p-6">
+            {/* Top row: label + icon */}
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                {stat.title}
+              </span>
+              <div className={cn('rounded-full p-2', stat.iconBg)}>
+                <stat.icon className={cn('h-4 w-4', stat.iconColor)} />
               </div>
             </div>
-            {/* Trend indicator */}
-            {stat.trend.value > 0 && (
-              <div className="mt-3 pt-3 border-t border-dashed flex items-center gap-1.5">
-                {stat.trend.isPositive ? (
-                  <TrendingUp className="h-3 w-3 text-green-600" />
-                ) : (
-                  <TrendingDown className="h-3 w-3 text-orange-600" />
-                )}
+
+            {/* Metric */}
+            <div className="text-3xl font-semibold tracking-tight text-foreground">
+              {stat.value}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
+
+            {/* Progress bar for completion rate */}
+            {'isRate' in stat && stat.isRate && (
+              <div className="mt-4">
+                <div className="h-1.5 w-full rounded-full bg-muted">
+                  <div
+                    className="h-1.5 rounded-full bg-[var(--color-info)] transition-all duration-500"
+                    style={{ width: `${stat.rateValue}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Trend pill */}
+            {stat.trend.value > 0 && !('isRate' in stat && stat.isRate) && (
+              <div className="mt-4 flex items-center gap-2">
                 <span
                   className={cn(
-                    'text-[10px] font-bold',
-                    stat.trend.isPositive ? 'text-green-600' : 'text-orange-600'
+                    'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
+                    stat.trend.isPositive
+                      ? 'bg-[var(--color-success)]/10 text-[var(--color-success)]'
+                      : 'bg-[var(--color-warning)]/10 text-[var(--color-warning)]'
                   )}
                 >
-                  {stat.trend.isPositive ? '+' : '-'}
-                  {stat.trend.value}%
+                  {stat.trend.isPositive ? (
+                    <TrendingUp className="h-3 w-3" />
+                  ) : (
+                    <TrendingDown className="h-3 w-3" />
+                  )}
+                  {stat.trend.isPositive ? '+' : '-'}{stat.trend.value}%
                 </span>
-                <span className="text-[10px] text-muted-foreground">vs last month</span>
+                <span className="text-xs text-muted-foreground">vs last month</span>
               </div>
             )}
           </CardContent>

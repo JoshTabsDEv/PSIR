@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Pencil, FileDown, Trash2, MoreVertical, LayoutDashboard, FileText, User, Gavel, Globe, Brain, ChevronLeft, Download, ShieldAlert } from 'lucide-react';
+import { Pencil, FileDown, Trash2, MoreVertical, LayoutDashboard, FileText, User, Gavel, Globe, Brain, ChevronLeft, Download, ShieldAlert, Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -64,6 +64,7 @@ export default function ViewReportPage({ params }: PageProps) {
   const [showDelete, setShowDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [activeSection, setActiveSection] = useState('section-1');
+  const [markingDone, setMarkingDone] = useState(false);
 
   useEffect(() => {
     async function fetchReport() {
@@ -105,6 +106,29 @@ export default function ViewReportPage({ params }: PageProps) {
   const handleExportDocx = () => {
     toast.info('Generating document...');
     window.open(`/api/reports/${id}/export/docx`, '_blank');
+  };
+
+  const handleMarkAsDone = async () => {
+    setMarkingDone(true);
+    try {
+      const response = await fetch(`/api/reports/${id}/complete`, { method: 'PATCH' });
+      if (response.ok) {
+        toast.success('Report marked as completed');
+        // Refresh the report data to get updated status
+        const fetchResponse = await fetch(`/api/reports/${id}`);
+        const fetchResult = await fetchResponse.json();
+        if (fetchResult.success) {
+          setReport(fetchResult.data);
+        }
+      } else {
+        toast.error('Failed to mark as completed');
+      }
+    } catch (error) {
+      console.error('Failed to mark as completed:', error);
+      toast.error('An error occurred');
+    } finally {
+      setMarkingDone(false);
+    }
   };
 
   if (loading) return <ViewReportSkeleton />;
@@ -172,6 +196,15 @@ export default function ViewReportPage({ params }: PageProps) {
                 <span className="text-xs font-bold uppercase tracking-wider">Edit Report</span>
               </Button>
             </Link>
+            <Button 
+              variant="default" 
+              className="w-full justify-start gap-2 h-9 bg-green-600 hover:bg-green-700 text-white"
+              onClick={handleMarkAsDone}
+              disabled={markingDone || report.status === 'completed'}
+            >
+              {markingDone ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+              <span className="text-xs font-bold uppercase tracking-wider">Mark as Done</span>
+            </Button>
             <Button variant="ghost" className="w-full justify-start gap-2 h-9 text-destructive hover:text-destructive hover:bg-destructive/5" onClick={() => setShowDelete(true)}>
               <Trash2 className="h-3.5 w-3.5" />
               <span className="text-xs font-bold uppercase tracking-wider">Delete</span>

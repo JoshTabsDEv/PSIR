@@ -113,11 +113,11 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
     if (!onSave) return;
     setIsSaving(true);
     try {
-      await onSave(data, 'completed');
+      await onSave(data, 'draft');
       setLastSaved(new Date());
-      toast.success('Report submitted successfully');
+      toast.success('Report saved as draft');
     } catch (error) {
-      toast.error('Submission failed');
+      toast.error('Failed to save draft');
     } finally {
       setIsSaving(false);
     }
@@ -251,10 +251,10 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
                     <Button 
                       type="submit" 
                       disabled={isSaving} 
-                      className="bg-green-600 hover:bg-green-700 text-white px-8 h-10 shadow-lg shadow-green-100"
+                      className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90 text-white px-8 h-10 shadow-lg shadow-[var(--brand-primary)]/10"
                     >
-                      {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
-                      <span className="text-sm font-bold uppercase tracking-wider">Complete Report</span>
+                      {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                      <span className="text-sm font-bold uppercase tracking-wider">Save Draft</span>
                     </Button>
                   )}
                 </div>
