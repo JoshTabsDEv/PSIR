@@ -56,7 +56,10 @@ export function prismaToFrontend(prismaReport: PrismaPSIRReport): PSIRReport {
         court: prismaReport.letterCourt || prismaReport.presentOffenseCourt || '',
       },
       custodialStatus: mapCustodialStatusToFrontend(prismaReport.custodialStatus),
-      rorCustodian: prismaReport.rorCustodian || '',
+      rorCustodian1: prismaReport.rorCustodian1 || '',
+      rorCustodianAddress1: prismaReport.rorCustodianAddress1 || '',
+      rorCustodian2: prismaReport.rorCustodian2 || '',
+      rorCustodianAddress2: prismaReport.rorCustodianAddress2 || '',
       address: prismaReport.address || '',
       priorRecords: {
         nbi: {
@@ -163,7 +166,10 @@ export function frontendToPrisma(frontendReport: Partial<PSIRFormData>): any {
     presentOffenseJudge: id?.letterJudge,
     presentOffenseCourt: id?.letterCourt || crim?.presentOffense?.court,
     custodialStatus: mapCustodialStatusToPrisma(crim?.custodialStatus),
-    rorCustodian: crim?.rorCustodian,
+    rorCustodian1: crim?.rorCustodian1,
+    rorCustodianAddress1: crim?.rorCustodianAddress1,
+    rorCustodian2: crim?.rorCustodian2,
+    rorCustodianAddress2: crim?.rorCustodianAddress2,
     address: crim?.address,
 
     // Section II: Criminal History - B. Prior and Pending Records

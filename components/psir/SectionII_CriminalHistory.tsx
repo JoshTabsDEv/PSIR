@@ -175,22 +175,83 @@ export function SectionII_CriminalHistory() {
                 )}
               />
 
-              {watch('criminalHistory.custodialStatus') === 'ROR' && (
-                <FormField
-                  control={control}
-                  name="criminalHistory.rorCustodian"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Custodian Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Name of custodian" {...field} className="bg-background shadow-none focus-visible:ring-1" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
             </div>
+
+            {watch('criminalHistory.custodialStatus') === 'ROR' && (
+              <div className="space-y-6">
+                {/* Custodian 1 */}
+                <div className="space-y-4 p-4 rounded-lg border border-border bg-muted/20">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Custodian 1</p>
+                  <FormField
+                    control={control}
+                    name="criminalHistory.rorCustodian1"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Custodian Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Full name of recognizor/custodian" {...field} className="bg-background shadow-none focus-visible:ring-1" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={control}
+                    name="criminalHistory.rorCustodianAddress1"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Custodian Address</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Complete address of recognizor/custodian"
+                            rows={2}
+                            className="resize-none bg-background shadow-none focus-visible:ring-1"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Custodian 2 */}
+                <div className="space-y-4 p-4 rounded-lg border border-border bg-muted/20">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Custodian 2</p>
+                  <FormField
+                    control={control}
+                    name="criminalHistory.rorCustodian2"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Custodian Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Full name of recognizor/custodian" {...field} className="bg-background shadow-none focus-visible:ring-1" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={control}
+                    name="criminalHistory.rorCustodianAddress2"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Custodian Address</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Complete address of recognizor/custodian"
+                            rows={2}
+                            className="resize-none bg-background shadow-none focus-visible:ring-1"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            )}
 
             <FormField
               control={control}

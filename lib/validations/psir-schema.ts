@@ -63,7 +63,10 @@ export const criminalHistorySchema = z.object({
     court: '',
   }),
   custodialStatus: z.enum(['On Bail', 'On Detention', 'ROR']).default('On Detention'),
-  rorCustodian: z.string().default(''),
+  rorCustodian1: z.string().default(''),
+  rorCustodianAddress1: z.string().default(''),
+  rorCustodian2: z.string().default(''),
+  rorCustodianAddress2: z.string().default(''),
   address: z.string().default(''),
   priorRecords: priorRecordsSchema.default({
     nbi: { criminalCaseNo: '', offense: '', dateCharged: null, decisionStatus: 'No record on file' },
@@ -126,7 +129,10 @@ export const psirFormSchema = z.object({
       court: '',
     },
     custodialStatus: 'On Detention',
-    rorCustodian: '',
+    rorCustodian1: '',
+    rorCustodianAddress1: '',
+    rorCustodian2: '',
+    rorCustodianAddress2: '',
     address: '',
     priorRecords: {
       nbi: { criminalCaseNo: '', offense: '', dateCharged: null, decisionStatus: 'No record on file' },

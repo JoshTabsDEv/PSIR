@@ -109,7 +109,10 @@ export function buildTemplateData(report: PSIRReport): Record<string, unknown> {
     Custodial_On_Bail: checkbox(crim.custodialStatus === 'On Bail'),
     Custodial_On_Detention: checkbox(crim.custodialStatus === 'On Detention'),
     Custodial_ROR: checkbox(crim.custodialStatus === 'ROR'),
-    ROR_Custodian: str(crim.rorCustodian),
+    ROR_Custodian: str(crim.rorCustodian1),
+    ROR_Custodian_Address: str(crim.rorCustodianAddress1),
+    ROR_Custodian2: str(crim.rorCustodian2),
+    ROR_Custodian2_Address: str(crim.rorCustodianAddress2),
 
     // Prior Records (latest schema tags)
     NBI_Case_Number: str(crim.priorRecords.nbi.criminalCaseNo),

@@ -57,7 +57,10 @@ export interface PriorRecords {
 export interface CriminalHistory {
   presentOffense: PresentOffense;
   custodialStatus: 'On Bail' | 'On Detention' | 'ROR';
-  rorCustodian: string;
+  rorCustodian1: string;
+  rorCustodianAddress1: string;
+  rorCustodian2: string;
+  rorCustodianAddress2: string;
   address: string;
   priorRecords: PriorRecords;
 }

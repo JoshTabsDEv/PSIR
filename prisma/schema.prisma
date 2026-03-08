@@ -54,7 +54,10 @@ model PSIRReport {
   presentOffenseJudge          String?
   presentOffenseCourt          String?
   custodialStatus              String   @default("ON_DETENTION")
-  rorCustodian                 String?
+  rorCustodian1                String?
+  rorCustodianAddress1         String?
+  rorCustodian2                String?
+  rorCustodianAddress2         String?
   address                      String?
 
   // Section II: Criminal History - B. Prior and Pending Records

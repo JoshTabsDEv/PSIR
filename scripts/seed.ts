@@ -57,7 +57,10 @@ async function seed() {
             court: 'RTC Branch 1, Manila',
           },
           custodialStatus: 'On Detention',
-          rorCustodian: '',
+          rorCustodian1: '',
+          rorCustodianAddress1: '',
+          rorCustodian2: '',
+          rorCustodianAddress2: '',
           address: '123 Rizal St., Brgy. San Jose, Manila',
           priorRecords: {
             nbi: { criminalCaseNo: '', offense: '', dateCharged: null, decisionStatus: 'No record on file' },
@@ -123,7 +126,10 @@ async function seed() {
             court: 'RTC Branch 5, Cebu City',
           },
           custodialStatus: 'On Bail',
-          rorCustodian: '',
+          rorCustodian1: '',
+          rorCustodianAddress1: '',
+          rorCustodian2: '',
+          rorCustodianAddress2: '',
           address: '456 Mabini St., Cebu City',
           priorRecords: {
             nbi: { criminalCaseNo: '', offense: '', dateCharged: null, decisionStatus: 'No record on file' },
