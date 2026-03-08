@@ -155,7 +155,7 @@ export function SectionI_IdentifyingData() {
             />
             <FormField
               control={control}
-              name="identifyingData.dateReceive"
+              name="identifyingData.dateReceived"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Date Received</FormLabel>
@@ -423,6 +423,28 @@ export function SectionI_IdentifyingData() {
                         {civilStatusOptions.map((status) => (
                           <option key={status} value={status}>{status}</option>
                         ))}
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <FormField
+                control={control}
+                name="identifyingData.genderPreference"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Gender Preference</FormLabel>
+                    <FormControl>
+                      <Select {...field} className="h-9 bg-background shadow-none focus-visible:ring-1">
+                        <option value="">Select</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Non-binary">Non-binary</option>
+                        <option value="Prefer to self-describe">Prefer to self-describe</option>
+                        <option value="Prefer not to answer">Prefer not to answer</option>
                       </Select>
                     </FormControl>
                     <FormMessage />

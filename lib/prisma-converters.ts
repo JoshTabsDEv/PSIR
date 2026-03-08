@@ -40,8 +40,11 @@ export function prismaToFrontend(prismaReport: PrismaPSIRReport): PSIRReport {
       letterAddress: prismaReport.letterAddress || '',
       investigationDocketNumber: prismaReport.investigationDocketNumber || '',
       criminalCaseNumber: prismaReport.criminalCaseNumber || '',
-      mother: '',
-      father: ''
+      mother: prismaReport.mother || '',
+      father: prismaReport.father || '',
+      genderPreference: prismaReport.genderPreference || '',
+      dateOfOrder: prismaReport.dateOfOrder ?? undefined,
+      dateReceived: prismaReport.dateReceived ?? undefined,
     },
 
     // Section II: Criminal History
@@ -156,6 +159,11 @@ export function frontendToPrisma(frontendReport: Partial<PSIRFormData>): any {
     letterAddress: id?.letterAddress,
     investigationDocketNumber: id?.investigationDocketNumber,
     criminalCaseNumber: id?.criminalCaseNumber,
+    mother: id?.mother,
+    father: id?.father,
+    genderPreference: id?.genderPreference,
+    dateOfOrder: id?.dateOfOrder ? new Date(id.dateOfOrder) : undefined,
+    dateReceived: id?.dateReceived ? new Date(id.dateReceived) : undefined,
 
     // Section II: Criminal History - A. Present Offense
     presentOffenseChargedWith: crim?.presentOffense?.chargedWith,

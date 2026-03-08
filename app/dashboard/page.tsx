@@ -20,6 +20,7 @@ import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton';
 import { StatsCards } from '@/components/dashboard/StatsCards';
 import { ReportsList } from '@/components/dashboard/ReportsList';
 import { AnalyticsCharts } from '@/components/dashboard/AnalyticsCharts';
+import { OldestReportNotification } from '@/components/dashboard/OldestReportNotification';
 import type { DashboardStats, PSIRReport } from '@/types/psir';
 
 export default function DashboardPage() {
@@ -230,6 +231,11 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Oldest Report Notification */}
+      {searchResults === null && (
+        <OldestReportNotification />
+      )}
+
       {/* Search Results */}
       {searchResults !== null && (
         <div className="space-y-3">
@@ -301,21 +307,24 @@ export default function DashboardPage() {
 
       {/* Monthly Summary Export Dialog */}
       <Dialog open={summaryDialogOpen} onOpenChange={setSummaryDialogOpen}>
-        <DialogContent onClose={() => setSummaryDialogOpen(false)} className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Export Reports</DialogTitle>
-            <DialogDescription>
-              Select a month and year to generate a DOCX export of PSIR reports.
+        <DialogContent onClose={() => setSummaryDialogOpen(false)} className="max-w-md">
+          <DialogHeader className="space-y-2">
+            <DialogTitle className="text-lg font-semibold">Export Monthly Reports</DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Select the month and year to export your PSIR reports in DOCX or spreadsheet format.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-2">
-            <div className="grid gap-2">
-              <Label htmlFor="summary-month">Month</Label>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="summary-month" className="text-sm font-medium text-foreground">
+                Month
+              </Label>
               <Select
                 id="summary-month"
                 value={summaryMonth}
                 onChange={(e) => setSummaryMonth(e.target.value)}
+                className="w-full"
               >
                 <option value="1">January</option>
                 <option value="2">February</option>
@@ -332,12 +341,15 @@ export default function DashboardPage() {
               </Select>
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="summary-year">Year</Label>
+            <div className="space-y-2">
+              <Label htmlFor="summary-year" className="text-sm font-medium text-foreground">
+                Year
+              </Label>
               <Select
                 id="summary-year"
                 value={summaryYear}
                 onChange={(e) => setSummaryYear(e.target.value)}
+                className="w-full"
               >
                 {Array.from({ length: 25 }, (_, i) => {
                   const y = new Date().getFullYear() - i;
@@ -351,11 +363,12 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <DialogFooter className="flex-col gap-2 sm:flex-row">
+          <DialogFooter className="flex flex-col gap-3 sm:flex-row sm:gap-2 pt-2 border-t border-border">
             <Button
               variant="outline"
               onClick={() => setSummaryDialogOpen(false)}
               disabled={exportingPdf || exportingTev}
+              className="sm:flex-1"
             >
               Cancel
             </Button>
@@ -363,7 +376,7 @@ export default function DashboardPage() {
               onClick={handleExportTEV}
               disabled={exportingPdf || exportingTev}
               variant="outline"
-              className="gap-2"
+              className="gap-2 sm:flex-1"
             >
               {exportingTev ? (
                 <>
@@ -380,7 +393,7 @@ export default function DashboardPage() {
             <Button
               onClick={handleExportMonthlySummary}
               disabled={exportingPdf || exportingTev}
-              className="gap-2 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90"
+              className="gap-2 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90 sm:flex-1"
             >
               {exportingPdf ? (
                 <>

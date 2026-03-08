@@ -26,6 +26,11 @@ export const identifyingDataSchema = z.object({
   letterAddress: z.string().default(''),
   investigationDocketNumber: z.string().default(''),
   criminalCaseNumber: z.string().default(''),
+  mother: z.string().optional(),
+  father: z.string().optional(),
+  genderPreference: z.string().optional(),
+  dateOfOrder: z.coerce.date().optional(),
+  dateReceived: z.coerce.date().optional(),
 });
 
 // Section II: Criminal History

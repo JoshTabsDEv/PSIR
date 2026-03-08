@@ -176,16 +176,16 @@ export function AnalyticsCharts({
             </CardTitle>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="h-[180px] w-full mt-2">
+        <CardContent className="space-y-4">
+          <div className="h-[160px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={statusData}
                   cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={75}
+                  cy="45%"
+                  innerRadius={45}
+                  outerRadius={70}
                   paddingAngle={3}
                   dataKey="value"
                   strokeWidth={0}
@@ -199,20 +199,22 @@ export function AnalyticsCharts({
             </ResponsiveContainer>
           </div>
           {/* Center label overlay */}
-          <div className="flex flex-col items-center -mt-[130px] mb-[50px] pointer-events-none">
-            <span className="text-2xl font-bold text-foreground">{completionPercent}%</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Completed</span>
+          <div className="flex flex-col items-center -mt-[120@px] mb-4 pointer-events-none">
+            <span className="text-xl font-bold mg-12 text-foreground">{completionPercent}%</span>
+            <span className="text-[9px] text-muted-foreground uppercase tracking-wider font-medium">Completed</span>
           </div>
           {/* Legend */}
-          <div className="flex items-center justify-center gap-6 pt-2 border-t border-dashed">
+          <div className="flex flex-col gap-3 pt-3 border-t border-border/50">
             {statusData.map((entry) => (
-              <div key={entry.name} className="flex items-center gap-2">
-                <div
-                  className="h-2.5 w-2.5 rounded-full"
-                  style={{ backgroundColor: entry.color }}
-                />
-                <span className="text-xs text-muted-foreground">{entry.name}</span>
-                <span className="text-xs font-bold text-foreground">{entry.value}</span>
+              <div key={entry.name} className="flex items-center justify-between px-1">
+                <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                  <div
+                    className="h-3 w-3 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: entry.color }}
+                  />
+                  <span className="text-xs font-medium text-foreground truncate">{entry.name}</span>
+                </div>
+                <span className="text-xs font-bold text-foreground ml-2 flex-shrink-0">{entry.value}</span>
               </div>
             ))}
           </div>

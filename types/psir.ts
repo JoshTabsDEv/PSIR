@@ -19,8 +19,9 @@ export interface IdentifyingData {
   identifyingMarks: string;
   presentAddress: string;
   permanentAddress: string;
-  mother: string;
-  father: string;
+  mother?: string;
+  father?: string;
+  genderPreference?: string;
   letterJudge: string;
   letterCourt: string;
   letterPosition: string;
@@ -28,7 +29,7 @@ export interface IdentifyingData {
   investigationDocketNumber: string;
   criminalCaseNumber: string;
   dateOfOrder?: Date | string;
-  dateReceive?: Date | string;
+  dateReceived?: Date | string;
 }
 
 export interface PresentOffense {

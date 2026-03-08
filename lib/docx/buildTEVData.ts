@@ -65,7 +65,7 @@ export function buildTEVData(
         '',
       Date_Received:
         formatDateShort(
-          report.identifyingData.dateReceive ?? report.createdAt
+          report.identifyingData.dateReceived ?? report.createdAt
         ) || '',
       Report_Type: 'PSIR',
       Date_Submitted:
