@@ -1,16 +1,17 @@
 // electron/main.js — Electron main process for PSIR Management System
-const { app, BrowserWindow, shell } = require('electron');
+const { app, BrowserWindow, shell, ipcMain } = require('electron');
 const path = require('path');
-const { fork } = require('child_process');
+const { fork, execSync } = require('child_process');
 const http = require('http');
 const fs = require('fs');
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 const PORT = 3000;
-const HOST = '127.0.0.1';
+const HOST = 'localhost';
 
 let mainWindow = null;
 let serverProcess = null;
+let dbPath = null;
 
 // ── Utilities ──────────────────────────────────────────────────────────────
 
@@ -66,6 +67,7 @@ function findPrismaEngine(searchRoot) {
 
 function ensureDatabase(dbPath) {
   if (!fs.existsSync(dbPath)) {
+    console.log('[electron] No existing database found at:', dbPath);
     fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 
     // Copy seed database (empty schema) from bundled resources
@@ -77,7 +79,42 @@ function ensureDatabase(dbPath) {
       console.warn('[electron] No seed database found. Prisma will create schema on first connect.');
     }
   } else {
-    console.log('[electron] Database found:', dbPath);
+    console.log('[electron] Existing database found at:', dbPath);
+  }
+}
+
+// Run Prisma migrations in background (don't block app startup)
+function runMigrationsAsync(appRoot) {
+  try {
+    console.log('[electron] Starting prisma db push (background)...');
+    const { spawn } = require('child_process');
+
+    const proc = spawn('npx', ['prisma', 'db', 'push', '--skip-generate'], {
+      cwd: appRoot,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: {
+        ...process.env,
+        SKIP_ENV_VALIDATION: 'true',
+        DATABASE_URL: `file:${dbPath.replace(/\\/g, '/')}`
+      },
+      detached: false
+    });
+
+    proc.on('error', (err) => {
+      console.warn('[electron] Migration process error:', err.message);
+    });
+
+    proc.on('exit', (code) => {
+      if (code === 0) {
+        console.log('[electron] Migrations completed');
+      } else {
+        console.warn('[electron] Migration exited with code:', code);
+      }
+    });
+
+    // Don't wait for migrations — app starts immediately
+  } catch (error) {
+    console.error('[electron] Could not start migrations:', error.message);
   }
 }
 
@@ -100,8 +137,12 @@ async function startNextServer() {
 
   // Database lives in user's AppData so it persists across app updates
   const userData = app.getPath('userData');
-  const dbPath = path.join(userData, 'psir.db');
+  dbPath = path.join(userData, 'psir.db');
   ensureDatabase(dbPath);
+
+  // Run migrations in background (don't block app startup)
+  // Standalone dir contains prisma/ folder (copied by copy-static.js)
+  runMigrationsAsync(standaloneDir);
 
   // Find the Prisma engine (works with both npm flat layout and pnpm nested layout)
   const enginePath = findPrismaEngine(standaloneDir);
@@ -150,6 +191,94 @@ async function startNextServer() {
   console.log('[electron] Next.js server is ready.');
 }
 
+// ── IPC Handlers ────────────────────────────────────────────────────────────
+
+ipcMain.handle('sync:status', async () => {
+  try {
+    const response = await fetch(`http://${HOST}:${PORT}/api/sync`);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('[ipc] Sync status error:', error);
+    return { success: false, message: 'Failed to get sync status' };
+  }
+});
+
+ipcMain.handle('sync:run', async () => {
+  try {
+    const response = await fetch(`http://${HOST}:${PORT}/api/sync`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'sync' })
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('[ipc] Sync run error:', error);
+    return { success: false, message: 'Sync failed' };
+  }
+});
+
+ipcMain.handle('sync:migrate', async () => {
+  try {
+    const response = await fetch(`http://${HOST}:${PORT}/api/sync`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'migrate' })
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('[ipc] Migration error:', error);
+    return { success: false, message: 'Migration failed' };
+  }
+});
+
+ipcMain.handle('sync:backup', async () => {
+  try {
+    const response = await fetch(`http://${HOST}:${PORT}/api/sync`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'backup' })
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('[ipc] Backup error:', error);
+    return { success: false, message: 'Backup failed' };
+  }
+});
+
+ipcMain.handle('sync:backups', async () => {
+  try {
+    const response = await fetch(`http://${HOST}:${PORT}/api/sync`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'backups' })
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('[ipc] List backups error:', error);
+    return { success: false, message: 'Failed to list backups' };
+  }
+});
+
+ipcMain.handle('sync:restore', async (event, backupPath) => {
+  try {
+    const response = await fetch(`http://${HOST}:${PORT}/api/sync`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'restore', backupPath })
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('[ipc] Restore error:', error);
+    return { success: false, message: 'Restore failed' };
+  }
+});
+
 // ── Window ─────────────────────────────────────────────────────────────────
 
 function createWindow() {
@@ -162,6 +291,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js'),
     },
   });
 

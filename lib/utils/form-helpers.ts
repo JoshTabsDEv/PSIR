@@ -12,11 +12,12 @@ export function formatFullName(
   firstName: string,
   middleName?: string
 ): string {
-  const parts = [lastName, firstName];
-  if (middleName) {
-    parts.push(middleName.charAt(0) + '.');
-  }
-  return parts.filter(Boolean).join(', ');
+
+  const formattedLastName = lastName.toUpperCase();
+
+  const givenNames = [firstName, middleName].filter(Boolean).join(' y ');
+
+  return [formattedLastName, givenNames].filter(Boolean).join(', ');
 }
 
 export function capitalizeWords(str: string): string {
@@ -56,6 +57,7 @@ export function generateExportFilename(
 
 export const civilStatusOptions = [
   'Single',
+  'Single (Common Law)',
   'Married',
   'Widowed',
   'Separated',

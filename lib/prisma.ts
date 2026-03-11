@@ -7,7 +7,7 @@ const globalForPrisma = globalThis as unknown as {
 
 // Resolve a relative SQLite file: URL to an absolute path.
 // Next.js 16 + Turbopack can run API routes with a different CWD,
-// so we anchor relative paths to the project root via __dirname.
+// so we anchor relative paths to the project root via process.cwd().
 function resolveDbUrl(): string | undefined {
   const url = process.env.DATABASE_URL;
   if (!url?.startsWith('file:')) return url;
@@ -15,8 +15,8 @@ function resolveDbUrl(): string | undefined {
   const filePart = url.slice('file:'.length);
   if (path.isAbsolute(filePart)) return url;
 
-  // __dirname here is <project>/lib — one level up is the project root
-  const projectRoot = path.resolve(__dirname, '..');
+  // Use process.cwd() which is reliable in Turbopack and production
+  const projectRoot = process.cwd();
   const abs = path.resolve(projectRoot, filePart).replace(/\\/g, '/');
   return `file:${abs}`;
 }

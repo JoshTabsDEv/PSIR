@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { CountUp } from '@/components/ui/count-up';
 import {
   Dialog,
   DialogContent,
@@ -22,6 +23,7 @@ import { ReportsList } from '@/components/dashboard/ReportsList';
 import { AnalyticsCharts } from '@/components/dashboard/AnalyticsCharts';
 import { OldestReportNotification } from '@/components/dashboard/OldestReportNotification';
 import type { DashboardStats, PSIRReport } from '@/types/psir';
+import RealTimeClock from '@/components/RealTimeClock';
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats>({
@@ -42,6 +44,17 @@ export default function DashboardPage() {
   const [summaryYear, setSummaryYear] = useState(() => new Date().getFullYear().toString());
   const [exportingPdf, setExportingPdf] = useState(false);
   const [exportingTev, setExportingTev] = useState(false);
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    // Update the state every second
+    const timer = setInterval(() => {
+      setNow(new Date());
+    }, 1000);
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     async function fetchStats() {
@@ -87,41 +100,6 @@ export default function DashboardPage() {
     setSearchResults(null);
   }, []);
 
-  const handleExportMonthlySummary = useCallback(async () => {
-    setExportingPdf(true);
-    try {
-      const url = `/api/reports/export/monthly-summary?month=${summaryMonth}&year=${summaryYear}`;
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.error || 'Failed to generate summary');
-      }
-
-      const blob = await response.blob();
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-
-      // Extract filename from Content-Disposition header or build one
-      const disposition = response.headers.get('Content-Disposition');
-      const filenameMatch = disposition?.match(/filename="?([^"]+)"?/);
-      link.download = filenameMatch?.[1] || `PI-Monthly-Summary-${summaryMonth}-${summaryYear}.docx`;
-
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(downloadUrl);
-
-      setSummaryDialogOpen(false);
-    } catch (error) {
-      console.error('Monthly summary export failed:', error);
-      alert(error instanceof Error ? error.message : 'Failed to export monthly summary');
-    } finally {
-      setExportingPdf(false);
-    }
-  }, [summaryMonth, summaryYear]);
-
   const handleExportTEV = useCallback(async () => {
     setExportingTev(true);
     try {
@@ -150,7 +128,7 @@ export default function DashboardPage() {
       setSummaryDialogOpen(false);
     } catch (error) {
       console.error('TEV export failed:', error);
-      alert(error instanceof Error ? error.message : 'Failed to export TEV');
+      alert(error instanceof Error ? error.message : 'Failed to export WAR');
     } finally {
       setExportingTev(false);
     }
@@ -164,16 +142,7 @@ export default function DashboardPage() {
     <div className="space-y-6 pb-12">
       {/* Dashboard Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between border-b border-border pb-6">
-        <div className="space-y-1.5">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Dashboard
-          </h1>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Clock className="h-3.5 w-3.5" />
-            {format(new Date(), 'EEEE, MMMM d, yyyy')}
-          </div>
-        </div>
-
+        <RealTimeClock title="Dashboard" className="space-y-1.5" />
         <div className="flex gap-2">
           <Button
             size="lg"
@@ -182,9 +151,9 @@ export default function DashboardPage() {
             onClick={() => setSummaryDialogOpen(true)}
           >
             <FileDown className="h-4 w-4" />
-            Monthly Summary
+            Export WAR
           </Button>
-          <Link href="/dashboard/reports/new">
+          <Link href="/reports/new">  
             <Button
               size="lg"
               className="gap-2 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90 shadow-sm"
@@ -242,7 +211,9 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-medium text-foreground">
               Search Results
-              <span className="ml-1.5 text-muted-foreground">({searchResults.length})</span>
+              <span className="ml-1.5 text-muted-foreground">
+                (<CountUp end={searchResults.length} duration={800} delay={100} />)
+              </span>
             </h2>
             <button
               onClick={clearSearch}
@@ -386,24 +357,7 @@ export default function DashboardPage() {
               ) : (
                 <>
                   <FileSpreadsheet className="h-4 w-4" />
-                  Export TEV
-                </>
-              )}
-            </Button>
-            <Button
-              onClick={handleExportMonthlySummary}
-              disabled={exportingPdf || exportingTev}
-              className="gap-2 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90 sm:flex-1"
-            >
-              {exportingPdf ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <FileDown className="h-4 w-4" />
-                  Monthly Summary
+                  Export WAR
                 </>
               )}
             </Button>

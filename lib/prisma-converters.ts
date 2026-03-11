@@ -210,7 +210,7 @@ export function frontendToPrisma(frontendReport: Partial<PSIRFormData>): any {
     probationPeriod: analysis?.probationPeriod,
 
     // Community Service Recommendation
-    communityServiceHours: analysis?.communityServiceHours,
+    communityServiceHours: analysis?.communityServiceHours ? String(analysis.communityServiceHours) : undefined,
     communityServiceType: analysis?.communityServiceType,
 
     preparedByName: analysis?.preparedBy?.name,

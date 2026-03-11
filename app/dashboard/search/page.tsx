@@ -94,7 +94,7 @@ export default function SearchPage() {
               <option value="draft">Draft</option>
               <option value="completed">Completed</option>
             </Select>
-            <Button onClick={handleSearch} disabled={loading}>
+            <Button onClick={handleSearch} disabled={loading} className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90 text-white">
               {loading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
@@ -141,7 +141,7 @@ export default function SearchPage() {
                   icon={SearchX}
                   title="No results found"
                   description="No reports match your search. Try different keywords or clear the filters."
-                  action={{ label: 'Create New Report', href: '/dashboard/reports/new' }}
+                  action={{ label: 'Create New Report', href: '/reports/new' }}
                   secondaryAction={{ label: 'View all reports', href: '/dashboard/reports' }}
                 />
               </CardContent>

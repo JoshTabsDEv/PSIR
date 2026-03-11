@@ -51,7 +51,7 @@ export function ReportsFilters({
           <option value="completed">Completed</option>
         </Select>
 
-        <Button onClick={onSearch}>
+        <Button onClick={onSearch} className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90 text-white">
           <Filter className="mr-2 h-4 w-4" />
           Filter
         </Button>

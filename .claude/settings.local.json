@@ -17,7 +17,11 @@
       "WebFetch(domain:www.shadcnblocks.com)",
       "Bash(pnpm tsc:*)",
       "Bash(ls:*)",
-      "Bash(cd /c/Users/New/Documents/capitol/psir && pnpm approve-builds 2>&1)"
+      "Bash(cd /c/Users/New/Documents/capitol/psir && pnpm approve-builds 2>&1)",
+      "Bash(pnpm prisma:*)",
+      "Bash(C:UsersNewDocumentscapitolpsirprismaschema.prisma:*)",
+      "Bash(/C/Users/New/Documents/capitol/psir/prisma/schema.prisma:*)",
+      "Bash(sed:*)"
     ]
   }
 }

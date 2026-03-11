@@ -97,7 +97,14 @@ copyDir(
 );
 console.log('[copy-static] ✓ templates/');
 
-// 4. Resolve all symlinks in standalone so electron-builder doesn't need admin rights
+// 4. prisma/ → .next/standalone/prisma/
+copyDir(
+  path.join(root, 'prisma'),
+  path.join(standalone, 'prisma')
+);
+console.log('[copy-static] ✓ prisma/');
+
+// 5. Resolve all symlinks in standalone so electron-builder doesn't need admin rights
 //    (Next.js creates symlinks pointing to node_modules, pnpm creates symlinks too)
 console.log('[copy-static] Resolving symlinks in standalone (this may take a moment)...');
 resolveSymlinksInDir(path.join(standalone, 'node_modules'));

@@ -75,8 +75,11 @@ export function buildTemplateData(report: PSIRReport): Record<string, unknown> {
     Birthday: date(id.birthday),
     Birthday_Short: date(id.birthday, 'short'),
     Birthplace: str(id.birthplace),
+    Gender: str(id.genderPreference),
     Nationality: str(id.nationality),
     Religion: str(id.religion),
+    Mother: str(id.mother),
+    Father: str(id.father),
     Civil_Status: str(id.civilStatus),
     Age: num(id.age, true),
     Educational_Attainment: str(id.educationalAttainment),
@@ -95,6 +98,8 @@ export function buildTemplateData(report: PSIRReport): Record<string, unknown> {
     Letter_Address: str(id.letterAddress),
     Investigation_Docket_Number: str(id.investigationDocketNumber),
     Criminal_Case_Number: str(id.criminalCaseNumber),
+    Date_Of_Order: date(id.dateOfOrder),
+    Date_Recieved: date(id.dateReceived),
 
     // ===== Section II: Criminal History =====
     // Latest schema tags
@@ -113,6 +118,7 @@ export function buildTemplateData(report: PSIRReport): Record<string, unknown> {
     ROR_Custodian_Address: str(crim.rorCustodianAddress1),
     ROR_Custodian2: str(crim.rorCustodian2),
     ROR_Custodian2_Address: str(crim.rorCustodianAddress2),
+    Complete_Address: str(crim.address),
 
     // Prior Records (latest schema tags)
     NBI_Case_Number: str(crim.priorRecords.nbi.criminalCaseNo),
@@ -194,10 +200,11 @@ export function buildTemplateData(report: PSIRReport): Record<string, unknown> {
 
     // ===== Section IV: Analysis and Evaluation =====
     Circumstances: str(analysis.circumstances),
+    Probation_Period: str(analysis.probationPeriod),
     Needs: str(analysis.needs),
     Attitude: str(analysis.attitude),
     Recommendations: str(analysis.recommendations),
-    Community_Service_Hours: num(analysis.communityServiceHours, true),
+    Community_Service_Hours: str(analysis.communityServiceHours),
     Community_Service_Type: str(analysis.communityServiceType),
 
     // Prepared By
@@ -252,7 +259,7 @@ export function getAllTemplateTags(): string[] {
     'Birthday', 'Birthday_Short', 'Birthplace', 'Nationality', 'Religion',
     'Civil_Status', 'Age', 'Educational_Attainment', 'Occupation',
     'Spouse_Name', 'Spouse_Address', 'Identifying_Marks', 'Present_Address', 'Permanent_Address',
-    'Letter_Judge', 'Letter_Court', 'Letter_Position', 'Letter_Address', 'Investigation_Docket_Number', 'Criminal_Case_Number',
+    'Letter_Judge', 'Letter_Court', 'Letter_Position', 'Letter_Address', 'Investigation_Docket_Number', 'Criminal_Case_Number', 'Date_Of_Order', 'Date_Recieved',
     // Section II
     'Charged_With', 'Charged_Date', 'Convicted_Of', 'Convicted_Date',
     'Sentence', 'Judge', 'Court',

@@ -26,6 +26,7 @@ export default function ReportsPage() {
   const [status, setStatus] = useState('all');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -47,6 +48,7 @@ export default function ReportsPage() {
       if (result.success) {
         setReports(result.data);
         setTotalPages(result.pagination.totalPages);
+        setTotal(result.pagination.total);
       } else {
         toast.error('Failed to load reports', {
           description: result.error || 'Could not fetch reports.',
@@ -119,8 +121,8 @@ export default function ReportsPage() {
             Manage all PSIR reports
           </p>
         </div>
-        <Link href="/dashboard/reports/new">
-          <Button>
+        <Link href="/reports/new">
+          <Button className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90 text-white">
             <FilePlus className="mr-2 h-4 w-4" />
             New Report
           </Button>
@@ -146,30 +148,42 @@ export default function ReportsPage() {
             title="Reports"
             showActions={true}
             onDelete={(id) => setDeleteId(id)}
+            onReportUpdated={(updated) => {
+              setReports((prev) =>
+                prev.map((r) => (r._id === updated._id ? updated : r))
+              );
+            }}
           />
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(page - 1)}
-                disabled={page === 1}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="text-sm text-gray-600">
-                Page {page} of {totalPages}
+            <div className="flex items-center justify-between px-1">
+              <span className="text-sm text-muted-foreground">
+                {total} report{total !== 1 ? 's' : ''} total
               </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(page + 1)}
-                disabled={page === totalPages}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(page - 1)}
+                  disabled={page === 1}
+                  className="h-8 w-8 p-0 text-[var(--brand-primary)] border-[var(--brand-primary)]/40 hover:bg-[var(--brand-primary)]/5 disabled:opacity-40"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm font-medium text-foreground tabular-nums">
+                  {page} / {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(page + 1)}
+                  disabled={page === totalPages}
+                  className="h-8 w-8 p-0 text-[var(--brand-primary)] border-[var(--brand-primary)]/40 hover:bg-[var(--brand-primary)]/5 disabled:opacity-40"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           )}
         </>
@@ -192,6 +206,7 @@ export default function ReportsPage() {
               variant="destructive"
               onClick={handleDelete}
               disabled={deleting}
+              className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90 text-white"
             >
               {deleting ? 'Deleting...' : 'Delete'}
             </Button>

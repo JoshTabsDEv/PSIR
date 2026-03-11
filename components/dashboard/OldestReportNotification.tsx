@@ -53,6 +53,10 @@ export function OldestReportNotification() {
     );
   }
 
+  const numberofDays = data ? Math.floor((new Date().getTime() - new Date(data.createdAt).getTime()) / (1000 * 60 * 60 * 24)) : 0;
+
+  console.log(numberofDays);
+
   if (error || !data) {
     return null; // Don't show notification if there's an error or no data
   }
@@ -69,7 +73,7 @@ export function OldestReportNotification() {
               Pending Investigation
             </CardTitle>
             <p className="mt-1 text-xs text-muted-foreground">
-              Oldest case awaiting review
+              The oldest case still waiting for its day in court.
             </p>
           </div>
         </div>
@@ -96,6 +100,12 @@ export function OldestReportNotification() {
         <div className="pt-1 border-t border-border/30">
           <p className="text-xs text-muted-foreground">
             Received {format(new Date(data.createdAt), 'MMM d, yyyy')}
+
+            {numberofDays > 0 && (
+              <span className="ml-2 text-xs text-[var(--brand-primary)]">
+                ({numberofDays} days old)
+              </span>
+            )}
           </p>
         </div>
       </CardContent>

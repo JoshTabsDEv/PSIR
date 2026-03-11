@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, FilePlus, Search, X } from 'lucide-react';
+import { LayoutDashboard, FileText, FilePlus, Search, BarChart3, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -14,8 +14,9 @@ interface SidebarProps {
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/dashboard/analytics', icon: BarChart3, label: 'Analytics' },
   { href: '/dashboard/reports', icon: FileText, label: 'All Reports' },
-  { href: '/dashboard/reports/new', icon: FilePlus, label: 'New Report' },
+  { href: '/reports/new', icon: FilePlus, label: 'New Report' },
   { href: '/dashboard/search', icon: Search, label: 'Search' },
 ];
 

@@ -45,9 +45,10 @@ export async function GET(request: NextRequest) {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0, 23, 59, 59, 999);
 
-    // Query reports for the month
+    // Query reports for the month — completed reports only
     const prismaReports = await prisma.pSIRReport.findMany({
       where: {
+        status: 'completed',
         createdAt: {
           gte: startDate,
           lte: endDate,

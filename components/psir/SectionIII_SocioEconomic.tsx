@@ -44,6 +44,7 @@ function CustomRadioSection({ label, name, options, gridCols = "grid-cols-1", co
           <FormLabel className="text-sm font-bold uppercase tracking-wider text-foreground/70">{label}</FormLabel>
           <FormControl>
             <RadioGroup
+              name={name}
               onValueChange={field.onChange}
               value={field.value || undefined}
               className={cn("grid gap-3", gridCols)}

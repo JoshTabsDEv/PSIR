@@ -190,7 +190,7 @@ export function SectionIV_Analysis() {
                 <FormItem>
                   <FormLabel>Recommended Probation Period</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., 3 years, 6 months" {...field} className="bg-background shadow-none focus-visible:ring-1" />
+                    <Input placeholder="e.g., THREE (3) YEARS, SIX (6) MONTHS" {...field} className="bg-background shadow-none focus-visible:ring-1" />
                   </FormControl>
                   <p className="text-[10px] text-muted-foreground">Specify the exact duration for the probation.</p>
                   <FormMessage />
@@ -206,10 +206,10 @@ export function SectionIV_Analysis() {
                     <FormLabel>Community Service Hours</FormLabel>
                     <FormControl>
                       <Input 
-                        type="number" 
-                        placeholder="e.g., 40" 
+                        type="text" 
+                        placeholder="e.g., Forty (40) hours" 
                         {...field} 
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                        onChange={(e) => field.onChange(e.target.value)}
                         className="bg-background shadow-none focus-visible:ring-1" 
                       />
                     </FormControl>
@@ -225,7 +225,7 @@ export function SectionIV_Analysis() {
                     <FormLabel>Service Specifics (e.g., Tree Planting)</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Describe the nature of community service..." 
+                        placeholder="e.g., Fifty (50)" 
                         rows={2}
                         {...field} 
                         className="resize-none bg-background shadow-none focus-visible:ring-1" 
@@ -280,6 +280,54 @@ export function SectionIV_Analysis() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Date Prepared</FormLabel>
+                    <FormControl>
+                      <DatePicker
+                        value={field.value ? new Date(field.value as string) : undefined}
+                        onChange={(date) => field.onChange(date?.toISOString() || '')}
+                        placeholder="Select date"
+                        className="w-full h-9 bg-background shadow-none focus-visible:ring-1"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Reviewed By Section */}
+            <div className="grid gap-6 md:grid-cols-3 mt-8">
+              <FormField
+                control={control}
+                name="analysisEvaluation.reviewedBy.name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Reviewed By (Name)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Full Name" {...field} className="bg-background shadow-none focus-visible:ring-1 font-bold" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="analysisEvaluation.reviewedBy.designation"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Designation</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Chief Probation Officer" {...field} className="bg-background shadow-none focus-visible:ring-1 italic" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="analysisEvaluation.reviewedBy.date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Date Reviewed</FormLabel>
                     <FormControl>
                       <DatePicker
                         value={field.value ? new Date(field.value as string) : undefined}

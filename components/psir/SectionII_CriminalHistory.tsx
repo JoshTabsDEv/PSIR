@@ -51,7 +51,9 @@ export function SectionII_CriminalHistory() {
                 name="criminalHistory.presentOffense.chargedWith"
                 render={({ field }) => (
                   <FormItem className="md:col-span-3">
-                    <FormLabel>Charged with</FormLabel>
+                    <FormLabel className="flex items-center gap-1">
+                      Charged With <span className="text-destructive">*</span>
+                    </FormLabel>
                     <FormControl>
                       <Input placeholder="e.g., Violation of R.A. 9165" {...field} className="bg-background shadow-none focus-visible:ring-1" />
                     </FormControl>
@@ -85,7 +87,9 @@ export function SectionII_CriminalHistory() {
                 name="criminalHistory.presentOffense.convictedOf"
                 render={({ field }) => (
                   <FormItem className="md:col-span-3">
-                    <FormLabel>Convicted of</FormLabel>
+                    <FormLabel className="flex items-center gap-1">
+                      Convicted Of <span className="text-destructive">*</span>
+                    </FormLabel>
                     <FormControl>
                       <Input placeholder="e.g., Illegal possession of dangerous drugs" {...field} className="bg-background shadow-none focus-visible:ring-1" />
                     </FormControl>
@@ -118,7 +122,9 @@ export function SectionII_CriminalHistory() {
               name="criminalHistory.presentOffense.sentence"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Sentence</FormLabel>
+                  <FormLabel className="flex items-center gap-1">
+                    Sentence <span className="text-destructive">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Input placeholder="e.g., 6 years and 1 day to 12 years imprisonment" {...field} className="bg-background shadow-none focus-visible:ring-1" />
                   </FormControl>
@@ -147,7 +153,8 @@ export function SectionII_CriminalHistory() {
                     <FormControl>
                       <RadioGroup
                         onValueChange={field.onChange}
-                        defaultValue={field.value || undefined}
+                        value={field.value}
+                        name={field.name}
                         className="flex flex-wrap gap-x-6 gap-y-2"
                       >
                         <FormItem className="flex items-center space-x-2 space-y-0">
@@ -187,7 +194,9 @@ export function SectionII_CriminalHistory() {
                     name="criminalHistory.rorCustodian1"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Custodian Name</FormLabel>
+                        <FormLabel className="flex items-center gap-1">
+                          Custodian Name <span className="text-destructive">*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input placeholder="Full name of recognizor/custodian" {...field} className="bg-background shadow-none focus-visible:ring-1" />
                         </FormControl>
@@ -195,7 +204,7 @@ export function SectionII_CriminalHistory() {
                       </FormItem>
                     )}
                   />
-                  <FormField
+                  {/* <FormField
                     control={control}
                     name="criminalHistory.rorCustodianAddress1"
                     render={({ field }) => (
@@ -212,7 +221,7 @@ export function SectionII_CriminalHistory() {
                         <FormMessage />
                       </FormItem>
                     )}
-                  />
+                  /> */}
                 </div>
 
                 {/* Custodian 2 */}
@@ -223,7 +232,9 @@ export function SectionII_CriminalHistory() {
                     name="criminalHistory.rorCustodian2"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Custodian Name</FormLabel>
+                        <FormLabel className="flex items-center gap-1">
+                          Custodian Name <span className="text-destructive">*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input placeholder="Full name of recognizor/custodian" {...field} className="bg-background shadow-none focus-visible:ring-1" />
                         </FormControl>
@@ -302,9 +313,12 @@ export function SectionII_CriminalHistory() {
                         control={control}
                         name="criminalHistory.priorRecords.nbi.criminalCaseNo"
                         render={({ field }) => (
-                          <FormControl>
-                            <Input {...field} className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background" />
-                          </FormControl>
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
                         )}
                       />
                     </td>
@@ -313,9 +327,12 @@ export function SectionII_CriminalHistory() {
                         control={control}
                         name="criminalHistory.priorRecords.nbi.offense"
                         render={({ field }) => (
-                          <FormControl>
-                            <Input {...field} className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background" />
-                          </FormControl>
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
                         )}
                       />
                     </td>
@@ -324,9 +341,17 @@ export function SectionII_CriminalHistory() {
                         control={control}
                         name="criminalHistory.priorRecords.nbi.dateCharged"
                         render={({ field }) => (
-                          <FormControl>
-                            <Input type="date" {...field} className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background text-xs" />
-                          </FormControl>
+                          <FormItem>
+                            <FormControl>
+                              <Input 
+                                type="date" 
+                                {...field} 
+                                value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''} 
+                                className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background text-xs" 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
                         )}
                       />
                     </td>
@@ -335,9 +360,12 @@ export function SectionII_CriminalHistory() {
                         control={control}
                         name="criminalHistory.priorRecords.nbi.decisionStatus"
                         render={({ field }) => (
-                          <FormControl>
-                            <Input {...field} className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background" />
-                          </FormControl>
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
                         )}
                       />
                     </td>
@@ -350,9 +378,12 @@ export function SectionII_CriminalHistory() {
                         control={control}
                         name="criminalHistory.priorRecords.cmrd.criminalCaseNo"
                         render={({ field }) => (
-                          <FormControl>
-                            <Input {...field} className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background" />
-                          </FormControl>
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
                         )}
                       />
                     </td>
@@ -361,9 +392,12 @@ export function SectionII_CriminalHistory() {
                         control={control}
                         name="criminalHistory.priorRecords.cmrd.offense"
                         render={({ field }) => (
-                          <FormControl>
-                            <Input {...field} className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background" />
-                          </FormControl>
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
                         )}
                       />
                     </td>
@@ -372,9 +406,17 @@ export function SectionII_CriminalHistory() {
                         control={control}
                         name="criminalHistory.priorRecords.cmrd.dateCharged"
                         render={({ field }) => (
-                          <FormControl>
-                            <Input type="date" {...field} className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background text-xs" />
-                          </FormControl>
+                          <FormItem>
+                            <FormControl>
+                              <Input 
+                                type="date" 
+                                {...field} 
+                                value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''} 
+                                className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background text-xs" 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
                         )}
                       />
                     </td>
@@ -383,9 +425,12 @@ export function SectionII_CriminalHistory() {
                         control={control}
                         name="criminalHistory.priorRecords.cmrd.decisionStatus"
                         render={({ field }) => (
-                          <FormControl>
-                            <Input {...field} className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background" />
-                          </FormControl>
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
                         )}
                       />
                     </td>
@@ -398,9 +443,12 @@ export function SectionII_CriminalHistory() {
                         control={control}
                         name="criminalHistory.priorRecords.others.criminalCaseNo"
                         render={({ field }) => (
-                          <FormControl>
-                            <Input {...field} className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background" />
-                          </FormControl>
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
                         )}
                       />
                     </td>
@@ -409,9 +457,12 @@ export function SectionII_CriminalHistory() {
                         control={control}
                         name="criminalHistory.priorRecords.others.offense"
                         render={({ field }) => (
-                          <FormControl>
-                            <Input {...field} className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background" />
-                          </FormControl>
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
                         )}
                       />
                     </td>
@@ -420,9 +471,17 @@ export function SectionII_CriminalHistory() {
                         control={control}
                         name="criminalHistory.priorRecords.others.dateCharged"
                         render={({ field }) => (
-                          <FormControl>
-                            <Input type="date" {...field} className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background text-xs" />
-                          </FormControl>
+                          <FormItem>
+                            <FormControl>
+                              <Input 
+                                type="date" 
+                                {...field} 
+                                value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''} 
+                                className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background text-xs" 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
                         )}
                       />
                     </td>
@@ -431,9 +490,12 @@ export function SectionII_CriminalHistory() {
                         control={control}
                         name="criminalHistory.priorRecords.others.decisionStatus"
                         render={({ field }) => (
-                          <FormControl>
-                            <Input {...field} className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background" />
-                          </FormControl>
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} className="h-8 border-transparent bg-transparent shadow-none focus-visible:ring-1 focus-visible:bg-background" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
                         )}
                       />
                     </td>

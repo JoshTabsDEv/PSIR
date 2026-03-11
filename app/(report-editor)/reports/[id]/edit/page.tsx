@@ -3,9 +3,17 @@
 import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { PSIRForm } from '@/components/psir/PSIRForm';
 import type { PSIRReport, PSIRFormData } from '@/types/psir';
 
@@ -18,6 +26,7 @@ export default function EditReportPage({ params }: PageProps) {
   const router = useRouter();
   const [report, setReport] = useState<PSIRReport | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showWarning, setShowWarning] = useState(false);
 
   useEffect(() => {
     async function fetchReport() {
@@ -26,6 +35,10 @@ export default function EditReportPage({ params }: PageProps) {
         const result = await response.json();
         if (result.success) {
           setReport(result.data);
+          // Show warning if report is already completed
+          if (result.data.status === 'completed') {
+            setShowWarning(true);
+          }
         } else {
           toast.error('Failed to load report', {
             description: result.error || 'Could not fetch report data.',
@@ -95,12 +108,41 @@ export default function EditReportPage({ params }: PageProps) {
   }
 
   return (
-    <div className="absolute inset-0 z-50">
+    <>
+      <Dialog open={showWarning} onOpenChange={setShowWarning}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-[var(--brand-primary)]">
+              <AlertTriangle className="h-5 w-5" />
+              Editing Completed Report
+            </DialogTitle>
+            <DialogDescription>
+              This report has been marked as <strong>completed</strong> and submitted to court. 
+              Editing may affect the official record. Are you sure you want to continue?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => router.push(`/dashboard/reports/${id}`)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => setShowWarning(false)}
+              className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)]"
+            >
+              Continue Editing
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <PSIRForm
         initialData={report as unknown as Partial<PSIRFormData>}
         reportId={id}
         onSave={handleSave}
       />
-    </div>
+    </>
   );
 }

@@ -128,6 +128,7 @@ export default function ViewReportPage({ params }: PageProps) {
         if (fetchResult.success) setReport(fetchResult.data);
         setShowCourtDateDialog(false);
         setCourtDate('');
+        router.refresh();
       } else {
         toast.error('Failed to save submitted date');
       }
@@ -197,7 +198,7 @@ export default function ViewReportPage({ params }: PageProps) {
               <Download className="h-3.5 w-3.5" />
               <span className="text-xs font-bold uppercase tracking-wider">Export DOCX</span>
             </Button>
-            <Link href={`/dashboard/reports/${id}/edit`} className="block">
+            <Link href={`/reports/${id}/edit`} className="block">
               <Button variant="outline" className="w-full justify-start gap-2 h-9 border-dashed">
                 <Pencil className="h-3.5 w-3.5" />
                 <span className="text-xs font-bold uppercase tracking-wider">Edit Report</span>
@@ -218,7 +219,7 @@ export default function ViewReportPage({ params }: PageProps) {
                 {report.submittedToCourtDate ? 'Update Court Date' : 'Set Court Date'}
               </span>
             </Button>
-            <Button variant="ghost" className="w-full justify-start gap-2 h-9 text-destructive hover:text-destructive hover:bg-destructive/5" onClick={() => setShowDelete(true)}>
+            <Button variant="ghost" className="w-full justify-start gap-2 h-9 text-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/5" onClick={() => setShowDelete(true)}>
               <Trash2 className="h-3.5 w-3.5" />
               <span className="text-xs font-bold uppercase tracking-wider">Delete</span>
             </Button>
@@ -252,6 +253,17 @@ export default function ViewReportPage({ params }: PageProps) {
                 { label: 'Education', value: report.identifyingData.educationalAttainment },
                 { label: 'Occupation', value: report.identifyingData.occupation },
                 { label: 'Spouse', value: report.identifyingData.spouseName },
+                { label: 'Mother\'s Maiden Name', value: report.identifyingData.mother },
+                { label: 'Father\'s Name', value: report.identifyingData.father },
+                { label: 'Gender Preference', value: report.identifyingData.genderPreference },
+                { label: 'Investigation Docket No.', value: report.identifyingData.investigationDocketNumber },
+                { label: 'Criminal Case No.', value: report.identifyingData.criminalCaseNumber },
+                { label: 'Date of Order', value: formatDateDisplay(report.identifyingData.dateOfOrder) },
+                { label: 'Date Received', value: formatDateDisplay(report.identifyingData.dateReceived) },
+                { label: 'Letter — Judge', value: report.identifyingData.letterJudge },
+                { label: 'Letter — Court', value: report.identifyingData.letterCourt },
+                { label: 'Letter — Position', value: report.identifyingData.letterPosition },
+                { label: 'Letter — Address', value: report.identifyingData.letterAddress },
               ].map((item, i) => (
                 <div key={i} className="space-y-1">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">{item.label}</span>
@@ -393,6 +405,22 @@ export default function ViewReportPage({ params }: PageProps) {
                   <p className="text-xs mt-1 text-muted-foreground italic">&quot;{report.analysisEvaluation.communityServiceType}&quot;</p>
                 </div>
               </div>
+
+              {/* Signature Blocks */}
+              <div className="grid gap-6 md:grid-cols-2 pt-6">
+                <div className="p-4 rounded-lg border bg-gray-50/30 border-gray-100">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-gray-700/60 block mb-2">Prepared By</span>
+                  <p className="text-sm font-bold text-gray-900">{report.analysisEvaluation.preparedBy?.name || 'N/A'}</p>
+                  <p className="text-xs text-muted-foreground italic">{report.analysisEvaluation.preparedBy?.designation || 'N/A'}</p>
+                  <p className="text-xs text-muted-foreground">{report.analysisEvaluation.preparedBy?.date ? new Date(report.analysisEvaluation.preparedBy.date as string).toLocaleDateString() : 'N/A'}</p>
+                </div>
+                <div className="p-4 rounded-lg border bg-gray-50/30 border-gray-100">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-gray-700/60 block mb-2">Reviewed By</span>
+                  <p className="text-sm font-bold text-gray-900">{report.analysisEvaluation.reviewedBy?.name || 'N/A'}</p>
+                  <p className="text-xs text-muted-foreground italic">{report.analysisEvaluation.reviewedBy?.designation || 'N/A'}</p>
+                  <p className="text-xs text-muted-foreground">{report.analysisEvaluation.reviewedBy?.date ? new Date(report.analysisEvaluation.reviewedBy.date as string).toLocaleDateString() : 'N/A'}</p>
+                </div>
+              </div>
             </div>
           </section>
         </div>
@@ -407,7 +435,7 @@ export default function ViewReportPage({ params }: PageProps) {
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowDelete(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+            <Button variant="destructive" className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90 text-white" onClick={handleDelete} disabled={deleting}>
               {deleting ? 'Deleting...' : 'Delete'}
             </Button>
           </DialogFooter>

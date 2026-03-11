@@ -38,11 +38,6 @@ model PSIRReport {
   identifyingMarks      String?
   presentAddress        String?
   permanentAddress      String?
-  mother                String?
-  father                String?
-  genderPreference      String?
-  dateOfOrder           DateTime?
-  dateReceived          DateTime?
   letterJudge           String?
   letterCourt           String?
   letterPosition        String?
@@ -97,7 +92,7 @@ model PSIRReport {
   probationPeriod String?
 
   // Community Service Recommendation
-  communityServiceHours String?
+  communityServiceHours Int?
   communityServiceType  String?
 
   // Signature blocks
@@ -112,9 +107,37 @@ model PSIRReport {
   // Submission tracking
   submittedToCourtDate  DateTime?
 
+  // Relations
+  notifications Notification[]
+
   @@index([reportNumber])
   @@index([status])
   @@index([createdAt])
   @@index([lastName, firstName])
   @@map("psir_reports")
+}
+
+model Notification {
+  id          Int      @id @default(autoincrement())
+  reportId    Int
+  report      PSIRReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  
+  // Display data (denormalized from PSIRReport for performance)
+  petitionerFirstName String
+  petitionerLastName  String
+  reportNumber        String
+  dateOfOrder         DateTime?
+  
+  // State tracking
+  read        Boolean  @default(false)
+  dismissed   Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  readAt      DateTime?
+  dismissedAt DateTime?
+  
+  @@index([reportId])
+  @@index([dismissed, read])
+  @@index([dateOfOrder])
+  @@map("notifications")
 }

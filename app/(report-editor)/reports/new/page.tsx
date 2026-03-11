@@ -69,8 +69,6 @@ export default function NewReportPage() {
   }, [reportId, router]);
 
   return (
-    <div className="absolute inset-0 z-50">
-      <PSIRForm onSave={handleSave} reportId={reportId || undefined} />
-    </div>
+    <PSIRForm onSave={handleSave} reportId={reportId || undefined} />
   );
 }

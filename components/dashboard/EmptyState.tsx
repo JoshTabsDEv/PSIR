@@ -26,8 +26,8 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-      <div className="mb-4 rounded-full bg-gray-100 p-4">
-        <Icon className="h-8 w-8 text-gray-400" />
+      <div className="mb-4 rounded-full bg-[var(--brand-primary)]/10 p-4">
+        <Icon className="h-8 w-8 text-[var(--brand-primary)]" />
       </div>
 
       <h3 className="text-base font-semibold text-gray-900">{title}</h3>
@@ -40,10 +40,10 @@ export function EmptyState({
         <div className="mt-6 flex flex-col items-center gap-2">
           {action.href ? (
             <Link href={action.href}>
-              <Button>{action.label}</Button>
+              <Button className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90 text-white">{action.label}</Button>
             </Link>
           ) : (
-            <Button onClick={action.onClick}>{action.label}</Button>
+            <Button onClick={action.onClick} className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90 text-white">{action.label}</Button>
           )}
 
           {secondaryAction && (
@@ -51,14 +51,14 @@ export function EmptyState({
               {secondaryAction.href ? (
                 <Link
                   href={secondaryAction.href}
-                  className="text-sm text-gray-500 hover:text-gray-700 underline underline-offset-4"
+                  className="text-sm text-[var(--brand-primary)] hover:text-[var(--brand-primary)]/80 underline underline-offset-4"
                 >
                   {secondaryAction.label}
                 </Link>
               ) : (
                 <button
                   onClick={secondaryAction.onClick}
-                  className="text-sm text-gray-500 hover:text-gray-700 underline underline-offset-4"
+                  className="text-sm text-[var(--brand-primary)] hover:text-[var(--brand-primary)]/80 underline underline-offset-4"
                 >
                   {secondaryAction.label}
                 </button>

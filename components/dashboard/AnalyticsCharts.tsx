@@ -17,6 +17,7 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, BarChart3, PieChartIcon } from 'lucide-react';
+import { CountUp } from '@/components/ui/count-up';
 import type { MonthlyReportData } from '@/types/psir';
 
 interface AnalyticsChartsProps {
@@ -199,13 +200,20 @@ export function AnalyticsCharts({
             </ResponsiveContainer>
           </div>
           {/* Center label overlay */}
-          <div className="flex flex-col items-center -mt-[120@px] mb-4 pointer-events-none">
-            <span className="text-xl font-bold mg-12 text-foreground">{completionPercent}%</span>
+          <div className="flex flex-col items-center -mt-[120px] mb-4 pointer-events-none">
+            <span className="text-xl font-bold text-foreground">
+              <CountUp 
+                end={completionPercent} 
+                duration={1500} 
+                delay={200}
+                suffix="%"
+              />
+            </span>
             <span className="text-[9px] text-muted-foreground uppercase tracking-wider font-medium">Completed</span>
           </div>
           {/* Legend */}
           <div className="flex flex-col gap-3 pt-3 border-t border-border/50">
-            {statusData.map((entry) => (
+            {statusData.map((entry, index) => (
               <div key={entry.name} className="flex items-center justify-between px-1">
                 <div className="flex items-center gap-2.5 flex-1 min-w-0">
                   <div
@@ -214,7 +222,13 @@ export function AnalyticsCharts({
                   />
                   <span className="text-xs font-medium text-foreground truncate">{entry.name}</span>
                 </div>
-                <span className="text-xs font-bold text-foreground ml-2 flex-shrink-0">{entry.value}</span>
+                <span className="text-xs font-bold text-foreground ml-2 flex-shrink-0">
+                  <CountUp 
+                    end={entry.value} 
+                    duration={1500} 
+                    delay={300 + index * 100}
+                  />
+                </span>
               </div>
             ))}
           </div>

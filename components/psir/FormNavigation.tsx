@@ -8,6 +8,7 @@ interface FormNavigationProps {
   onSectionChange: (section: number) => void;
   onValidateSection?: (fromSection: number, toSection: number) => Promise<boolean>;
   completedSections?: number[];
+  allowNextSectionNavigation?: boolean;
 }
 
 const sections = [
@@ -22,21 +23,23 @@ export function FormNavigation({
   onSectionChange,
   onValidateSection,
   completedSections = [],
+  allowNextSectionNavigation = false,
 }: FormNavigationProps) {
   const handleSectionClick = async (targetSection: number) => {
+    // Always allow navigation to previous sections
     if (targetSection <= currentSection) {
       onSectionChange(targetSection);
       return;
     }
 
-    if (onValidateSection) {
-      for (let section = currentSection; section < targetSection; section++) {
-        const isValid = await onValidateSection(section, targetSection);
-        if (!isValid) return;
-      }
-    }
+    // Block all forward navigation - only allow manual save button
+    return;
+  };
 
-    onSectionChange(targetSection);
+  const handleSectionClickEvent = (e: React.MouseEvent, targetSection: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleSectionClick(targetSection);
   };
 
   return (
@@ -44,16 +47,22 @@ export function FormNavigation({
       {sections.map((section) => {
         const isActive = currentSection === section.id;
         const isCompleted = completedSections.includes(section.id);
+        const isNextSection = section.id === currentSection + 1;
+        const isFutureSection = section.id > currentSection + 1;
+        const canNavigate = section.id <= currentSection || (allowNextSectionNavigation && isNextSection);
 
         return (
           <button
             key={section.id}
-            onClick={() => handleSectionClick(section.id)}
+            onClick={(e) => handleSectionClickEvent(e, section.id)}
+            disabled={!canNavigate}
             className={cn(
               'group relative flex flex-col items-start px-4 py-3 text-left transition-all duration-200 rounded-lg',
               isActive 
                 ? 'bg-white shadow-sm ring-1 ring-border border-l-4 border-l-[var(--brand-primary)]' 
-                : 'hover:bg-muted/50 border-l-4 border-l-transparent'
+                : canNavigate
+                  ? 'hover:bg-muted/50 border-l-4 border-l-transparent cursor-pointer'
+                  : 'opacity-50 border-l-4 border-l-transparent cursor-not-allowed'
             )}
           >
             <div className="flex items-center gap-3 w-full">

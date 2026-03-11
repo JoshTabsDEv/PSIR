@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Eye, Pencil, Trash2, FileDown, FolderOpen, MoreHorizontal, CalendarCheck } from 'lucide-react';
+import { Eye, Pencil, Trash2, FileDown, FolderOpen, MoreHorizontal, CalendarCheck, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/dashboard/EmptyState';
@@ -38,6 +38,7 @@ import { formatFullName } from '@/lib/utils/form-helpers';
 
 interface ReportsListProps {
   reports: PSIRReport[];
+  title?: string;
   showActions?: boolean;
   onDelete?: (id: string) => void;
   onReportUpdated?: (updated: PSIRReport) => void;
@@ -54,6 +55,10 @@ export function ReportsList({
     reportId: '',
     reportNumber: '',
   });
+  const [editWarning, setEditWarning] = useState<{ open: boolean; reportId: string }>({
+    open: false,
+    reportId: '',
+  });
   const [courtDate, setCourtDate] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -62,6 +67,14 @@ export function ReportsList({
     setCourtDate('');
     setError('');
     setCourtDateDialog({ open: true, reportId: report._id!, reportNumber: report.reportNumber });
+  };
+
+  const handleEditClick = (report: PSIRReport) => {
+    if (report.status === 'completed') {
+      setEditWarning({ open: true, reportId: report._id! });
+    } else {
+      window.location.href = `/reports/${report._id}/edit`;
+    }
   };
 
   const handleSetCourtDate = async () => {
@@ -99,7 +112,7 @@ export function ReportsList({
             icon={FolderOpen}
             title="Registry Empty"
             description="No investigation reports found. Initiate a new case to begin."
-            action={{ label: 'New Investigation', href: '/dashboard/reports/new' }}
+            action={{ label: 'New Investigation', href: '/reports/new' }}
           />
         </CardContent>
       </Card>
@@ -108,12 +121,12 @@ export function ReportsList({
 
   return (
     <>
-      <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+      <div className="bg-card rounded-xl border border-border shadow-sm">
         <Table>
           <TableHeader>
             <TableRow className="border-b hover:bg-transparent">
               <TableHead className="h-12 text-xs font-semibold uppercase tracking-wider text-muted-foreground px-6">
-                Report ID
+                Investigation Docket Number
               </TableHead>
               <TableHead className="h-12 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Subject Name
@@ -138,10 +151,10 @@ export function ReportsList({
                 key={report._id}
                 className="group hover:bg-muted/30 transition-colors"
               >
-                {/* Report ID */}
+                {/* Investigation Docket Number */}
                 <TableCell className="px-6">
                   <span className="inline-flex items-center font-mono text-xs font-medium text-foreground/80 bg-muted/60 px-2.5 py-1 rounded-md">
-                    {report.reportNumber}
+                    {report.identifyingData.investigationDocketNumber}
                   </span>
                 </TableCell>
 
@@ -207,15 +220,14 @@ export function ReportsList({
                           <Eye className="h-4 w-4" />
                         </Button>
                       </Link>
-                      <Link href={`/dashboard/reports/${report._id}/edit`}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                      </Link>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        onClick={() => handleEditClick(report)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
@@ -226,7 +238,7 @@ export function ReportsList({
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-52">
+                        <DropdownMenuContent align="end" sideOffset={4} collisionPadding={8} className="w-52">
                           <DropdownMenuItem
                             className="gap-2 cursor-pointer"
                             onClick={() => window.open(`/api/reports/${report._id}/export/docx`, '_blank')}
@@ -309,6 +321,38 @@ export function ReportsList({
               className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90"
             >
               {submitting ? 'Saving...' : 'Confirm & Complete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Warning Dialog */}
+      <Dialog open={editWarning.open} onOpenChange={(open) => !open && setEditWarning({ open: false, reportId: '' })}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-[var(--brand-primary)]">
+              <AlertTriangle className="h-5 w-5" />
+              Editing Completed Report
+            </DialogTitle>
+            <DialogDescription>
+              This report has been marked as <strong>completed</strong> and submitted to court. 
+              Editing may affect the official record. Are you sure you want to continue?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditWarning({ open: false, reportId: '' })}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                window.location.href = `/reports/${editWarning.reportId}/edit`;
+              }}
+              className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)]"
+            >
+              Continue Editing
             </Button>
           </DialogFooter>
         </DialogContent>

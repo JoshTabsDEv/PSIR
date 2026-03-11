@@ -2,6 +2,7 @@
 
 import { FileText, FileClock, FileCheck, TrendingUp, TrendingDown, Activity } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { CountUp } from '@/components/ui/count-up';
 import { cn } from '@/lib/utils';
 import type { MonthlyReportData } from '@/types/psir';
 
@@ -62,7 +63,7 @@ export function StatsCards({ totalReports, draftReports, completedReports, month
     },
     {
       title: 'Completion Rate',
-      value: `${completionRate}%`,
+      value: completionRate,
       description: 'Overall performance',
       icon: Activity,
       trend: { value: completionRate, isPositive: completionRate >= 50 },
@@ -93,7 +94,26 @@ export function StatsCards({ totalReports, draftReports, completedReports, month
 
             {/* Metric */}
             <div className="text-3xl font-semibold tracking-tight text-foreground">
-              {stat.value}
+              {typeof stat.value === 'number' ? (
+                'isRate' in stat && stat.isRate ? (
+                  <CountUp 
+                    end={stat.value} 
+                    duration={1500} 
+                    delay={100}
+                    suffix="%"
+                    className="inline-block"
+                  />
+                ) : (
+                  <CountUp 
+                    end={stat.value} 
+                    duration={1500} 
+                    delay={100}
+                    className="inline-block"
+                  />
+                )
+              ) : (
+                stat.value
+              )}
             </div>
             <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
 

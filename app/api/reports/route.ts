@@ -80,6 +80,8 @@ export async function GET(request: NextRequest) {
     const limit = filters.limit || 10;
     const skip = (page - 1) * limit;
 
+    console.log('GET /api/reports - Filters:', JSON.stringify(filters));
+
     // Execute query
     const [prismaReports, total] = await Promise.all([
       prisma.pSIRReport.findMany({
@@ -92,6 +94,8 @@ export async function GET(request: NextRequest) {
       }),
       prisma.pSIRReport.count({ where }),
     ]);
+
+    console.log('GET /api/reports - Found', prismaReports.length, 'reports, total:', total);
 
     // Convert Prisma reports to frontend format
     const reports = prismaReports.map(prismaToFrontend);
@@ -107,9 +111,10 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Error fetching reports:', error);
+    console.error('Error fetching reports:', error instanceof Error ? error.message : String(error));
+    console.error('Full error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch reports' },
+      { success: false, error: 'Failed to fetch reports', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
@@ -119,12 +124,15 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    console.log('POST /api/reports - Received body:', JSON.stringify(body).substring(0, 200));
 
     // Generate unique report number server-side
     const reportNumber = await generateUniqueReportNumber();
+    console.log('Generated report number:', reportNumber);
 
     // Convert frontend data to Prisma format
     const prismaData = frontendToPrisma(body);
+    console.log('Converted to Prisma format, keys:', Object.keys(prismaData).length);
 
     // Override with server-generated report number
     prismaData.reportNumber = reportNumber;
@@ -133,6 +141,7 @@ export async function POST(request: NextRequest) {
     const prismaReport = await prisma.pSIRReport.create({
       data: prismaData,
     });
+    console.log('Report created with ID:', prismaReport.id);
 
     // Convert back to frontend format
     const report = prismaToFrontend(prismaReport);
@@ -142,7 +151,8 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error('Error creating report:', error);
+    console.error('Error creating report:', error instanceof Error ? error.message : String(error));
+    console.error('Full error:', error);
 
     // Handle unique constraint error (duplicate report number)
     if ((error as { code?: string }).code === 'P2002') {
@@ -153,7 +163,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { success: false, error: 'Failed to create report' },
+      { success: false, error: 'Failed to create report', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }

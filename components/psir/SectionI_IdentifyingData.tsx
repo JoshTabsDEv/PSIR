@@ -54,7 +54,9 @@ export function SectionI_IdentifyingData() {
               name="identifyingData.letterJudge"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Judge Name</FormLabel>
+                  <FormLabel className="flex items-center gap-1">
+                    Judge Name <span className="text-destructive">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Input placeholder="Enter judge name" {...field} className="bg-background shadow-none focus-visible:ring-1" />
                   </FormControl>
@@ -67,7 +69,9 @@ export function SectionI_IdentifyingData() {
               name="identifyingData.letterCourt"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Court</FormLabel>
+                  <FormLabel className="flex items-center gap-1">
+                    Court <span className="text-destructive">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Input placeholder="e.g., RTC Branch 1" {...field} className="bg-background shadow-none focus-visible:ring-1" />
                   </FormControl>
@@ -80,7 +84,9 @@ export function SectionI_IdentifyingData() {
               name="identifyingData.letterPosition"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Position</FormLabel>
+                  <FormLabel className="flex items-center gap-1">
+                    Position <span className="text-destructive">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Input placeholder="e.g., Presiding Judge" {...field} className="bg-background shadow-none focus-visible:ring-1" />
                   </FormControl>
@@ -93,7 +99,9 @@ export function SectionI_IdentifyingData() {
               name="identifyingData.letterAddress"
               render={({ field }) => (
                 <FormItem className="md:col-span-2 lg:col-span-3">
-                  <FormLabel>Court Address</FormLabel>
+                  <FormLabel className="flex items-center gap-1">
+                    Court Address <span className="text-destructive">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Complete court/office address"
@@ -114,9 +122,11 @@ export function SectionI_IdentifyingData() {
               name="identifyingData.investigationDocketNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Investigation Docket #</FormLabel>
+                  <FormLabel className="flex items-center gap-1">
+                    Investigation Docket # <span className="text-destructive">*</span>
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder="Docket number" {...field} className="bg-background shadow-none focus-visible:ring-1" />
+                    <Input placeholder="e.g., PI-2026-0001" {...field} className="bg-background shadow-none focus-visible:ring-1" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -127,7 +137,9 @@ export function SectionI_IdentifyingData() {
               name="identifyingData.criminalCaseNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Criminal Case #</FormLabel>
+                  <FormLabel className="flex items-center gap-1">
+                    Criminal Case # <span className="text-destructive">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Input placeholder="Case number" {...field} className="bg-background shadow-none focus-visible:ring-1" />
                   </FormControl>
@@ -193,7 +205,7 @@ export function SectionI_IdentifyingData() {
                       Last Name <span className="text-destructive">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="DELA CRUZ" {...field} className="bg-background shadow-none focus-visible:ring-1 uppercase" />
+                      <Input placeholder="DELA CRUZ" {...field} className="bg-background shadow-none focus-visible:ring-1" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -208,7 +220,7 @@ export function SectionI_IdentifyingData() {
                       First Name <span className="text-destructive">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="JUAN" {...field} className="bg-background shadow-none focus-visible:ring-1 uppercase" />
+                      <Input placeholder="JUAN" {...field} className="bg-background shadow-none focus-visible:ring-1" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -221,7 +233,7 @@ export function SectionI_IdentifyingData() {
                   <FormItem>
                     <FormLabel>Middle Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="SANTOS" {...field} className="bg-background shadow-none focus-visible:ring-1 uppercase" />
+                      <Input placeholder="SANTOS" {...field} className="bg-background shadow-none focus-visible:ring-1" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -236,7 +248,9 @@ export function SectionI_IdentifyingData() {
                 name="identifyingData.trueName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>True Name (Legal/Complete)</FormLabel>
+                    <FormLabel className="flex items-center gap-1">
+                      True Name (Legal/Complete) <span className="text-destructive">*</span>
+                    </FormLabel>
                     <FormControl>
                       <Input placeholder="Full legal name" {...field} className="bg-background shadow-none focus-visible:ring-1" />
                     </FormControl>
@@ -438,14 +452,7 @@ export function SectionI_IdentifyingData() {
                   <FormItem>
                     <FormLabel>Gender Preference</FormLabel>
                     <FormControl>
-                      <Select {...field} className="h-9 bg-background shadow-none focus-visible:ring-1">
-                        <option value="">Select</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Non-binary">Non-binary</option>
-                        <option value="Prefer to self-describe">Prefer to self-describe</option>
-                        <option value="Prefer not to answer">Prefer not to answer</option>
-                      </Select>
+                      <Input placeholder="Enter gender preference" {...field} className="bg-background shadow-none focus-visible:ring-1" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -533,7 +540,9 @@ export function SectionI_IdentifyingData() {
               name="identifyingData.presentAddress"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Present Address</FormLabel>
+                  <FormLabel className="flex items-center gap-1">
+                    Present Address <span className="text-destructive">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Current residence"
@@ -551,7 +560,9 @@ export function SectionI_IdentifyingData() {
               name="identifyingData.permanentAddress"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Permanent Address</FormLabel>
+                  <FormLabel className="flex items-center gap-1">
+                    Permanent Address <span className="text-destructive">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Complete permanent address"
