@@ -18,7 +18,7 @@ Use this as the source of truth for DOCX placeholders in `templates/PSIR.docx`.
 
 - `{Report_Number}`
 - `{Status}`
-- `{Created_Date}`
+- `{Export_Date}`
 - `{Updated_Date}`
 
 ### Section I: Identifying Data
@@ -103,6 +103,15 @@ Loop fields:
 - `{Date}`
 - `{Court}` (currently empty)
 - `{Sentence}`
+
+#### Conviction Dates Loop (Simple Date Rows)
+
+- `{#Conviction_Dates}...{/Conviction_Dates}`
+
+Loop fields:
+
+- `{Index}`
+- `{Date}`
 
 ### Section III: Socio-Economic Background
 
