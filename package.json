@@ -2,13 +2,10 @@
   "name": "psir",
   "version": "1.0.1",
   "private": true,
-  "description": "The PSIR System is a digital application for managing Post-Sentence Investigation Reports in the Philippine correctional system. It provides a comprehensive 4-section form for capturing offender data including identifying information, criminal history, socio-economic background, and analysis. The form auto-saves every 30 seconds, and report numbers are automatically generated sequentially. Users can download completed reports as DOCX or PDF documents and manage all reports through a dashboard with search and filter capabilities. The application is built with Next.js 16, React 19, TypeScript, TailwindCSS, and shadcn/ui, backed by a MySQL database using Prisma ORM.",
+  "description": "The PSIR System is a digital application for managing Post-Sentence Investigation Reports in the Philippine correctional system. It provides a comprehensive 4-section form for capturing offender data including identifying information, criminal history, socio-economic background, and analysis. The form auto-saves every 30 seconds, and report numbers are automatically generated sequentially. Users can download completed reports as DOCX or PDF documents and manage all reports through a dashboard with search and filter capabilities. The application is built with Next.js 16, React 19, TypeScript, TailwindCSS, and shadcn/ui, backed by a PostgreSQL database (Supabase) using Prisma ORM.",
   "author": "Joshua Tabura <tabura.joshua10a@gmail.com>",
-  "main": "electron/main.js",
   "pnpm": {
     "onlyBuiltDependencies": [
-      "electron",
-      "electron-winstaller",
       "@prisma/client",
       "@prisma/engines",
       "prisma",
@@ -18,61 +15,13 @@
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
     "build": "next build",
+    "vercel-build": "prisma migrate deploy && next build",
     "start": "next start",
     "lint": "eslint",
-    "db:seed": "tsx scripts/seed.ts",
-    "electron:dev": "concurrently -n NEXT,ELECTRON -c blue,yellow \"next dev --hostname 0.0.0.0\" \"wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .\"",
-    "electron:build": "next build && node scripts/copy-static.js && electron-builder --win --x64"
-  },
-  "build": {
-    "appId": "ph.gov.ppa.psir",
-    "productName": "PSIR Management System",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "electron/**/*",
-      ".next/standalone/**/*",
-      ".next/static/**/*",
-      "public/**/*",
-      "templates/**/*",
-      "package.json"
-    ],
-    "extraResources": [
-      {
-        "from": "psir-seed.db",
-        "to": "psir-seed.db"
-      },
-      {
-        "from": "build/icon.ico",
-        "to": "icon.ico"
-      }
-    ],
-    "asar": true,
-    "asarUnpack": [
-      ".next/standalone/**"
-    ],
-    "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
-      "icon": "build/icon.ico",
-      "forceCodeSigning": false
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "shortcutName": "PSIR System",
-      "installerIcon": "build/installerIcon.ico",
-      "uninstallerIcon": "build/installerIcon.ico",
-      "installerHeaderIcon": "build/installerHeaderIcon.ico"
-    }
+    "postinstall": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -85,7 +34,6 @@
     "docx": "^9.5.2",
     "docxtemplater": "^3.68.1",
     "dotenv": "^17.3.1",
-    "electron-store": "^11.0.2",
     "file-saver": "^2.0.5",
     "jspdf": "^4.1.0",
     "jspdf-autotable": "^5.0.7",
@@ -108,10 +56,6 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "concurrently": "^9.2.1",
-    "cross-env": "^10.1.0",
-    "electron": "^38.2.0",
-    "electron-builder": "^26.8.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "prisma": "5.22.0",
@@ -119,7 +63,6 @@
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "tw-animate-css": "^1.4.0",
-    "typescript": "^5",
-    "wait-on": "^9.0.4"
+    "typescript": "^5"
   }
 }

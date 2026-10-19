@@ -92,81 +92,40 @@ export default function DashboardPage() {
     fetchPreparedByNames();
   }, []);
 
-  // Real-time refresh using Server-Sent Events
+  // Periodic refresh. Serverless hosting (Vercel) cannot hold SSE connections
+  // open, so poll stats while the tab is visible instead.
   useEffect(() => {
-    let eventSource: EventSource | null = null;
+    const REFRESH_INTERVAL_MS = 30_000;
+    let timer: ReturnType<typeof setInterval> | null = null;
 
-    function connectEventSource() {
-      // Close existing connection if any
-      if (eventSource) {
-        eventSource.close();
+    function stopPolling() {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
       }
+    }
 
-      // Create new EventSource connection for real-time updates
-      eventSource = new EventSource('/api/reports/updates');
-
-      eventSource.onopen = () => {
-        console.log('Connected to real-time updates');
-      };
-
-      eventSource.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          
-          if (data.type === 'COURT_SUBMISSION') {
-            // Instant refresh when court submission happens
-            console.log('Court submission detected, refreshing stats');
-            fetchStats();
-            
-            // Show toast notification for court submission
-            if (data.reportNumber) {
-              toast.success(`Report ${data.reportNumber} submitted to court`);
-            }
-          } else if (data.type === 'STATS_UPDATE') {
-            // General stats update
-            setStats(data.stats);
-          }
-        } catch (error) {
-          console.error('Error parsing SSE message:', error);
-        }
-      };
-
-      eventSource.onerror = (error) => {
-        console.error('EventSource error:', error);
-        // Reconnect after 5 seconds
-        setTimeout(() => {
-          if (eventSource?.readyState === EventSource.CLOSED) {
-            connectEventSource();
-          }
-        }, 5000);
-      };
+    function startPolling() {
+      stopPolling();
+      timer = setInterval(() => {
+        void fetchStats();
+      }, REFRESH_INTERVAL_MS);
     }
 
     function handleVisibilityChange() {
       if (document.hidden) {
-        // Tab is hidden, close connection to save resources
-        if (eventSource) {
-          eventSource.close();
-          eventSource = null;
-        }
+        stopPolling();
       } else {
-        // Tab is visible, reconnect and refresh immediately
-        fetchStats();
-        connectEventSource();
+        void fetchStats();
+        startPolling();
       }
     }
 
-    // Start connection
-    connectEventSource();
-
-    // Listen for visibility changes
+    startPolling();
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      // Cleanup
-      if (eventSource) {
-        eventSource.close();
-      }
+      stopPolling();
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [fetchStats]);

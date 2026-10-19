@@ -1,142 +1,134 @@
-﻿# PSIR Management System
+# PSIR Management System
 
 <p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=24&pause=1200&center=true&vCenter=true&width=900&lines=PSIR+Management+System;Next.js+%2B+Prisma+%2B+MySQL;Create%2C+Manage%2C+and+Export+PSIR+Reports" alt="Typing animation" />
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=24&pause=1200&center=true&vCenter=true&width=900&lines=PSIR+Management+System;Next.js+%2B+Prisma+%2B+PostgreSQL;Create%2C+Manage%2C+and+Export+PSIR+Reports" alt="Typing animation" />
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Next.js-16-black?logo=next.js" alt="Next.js" />
   <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" alt="React" />
   <img src="https://img.shields.io/badge/Prisma-5-2D3748?logo=prisma" alt="Prisma" />
-  <img src="https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql&logoColor=white" alt="MySQL" />
+  <img src="https://img.shields.io/badge/PostgreSQL-Supabase-3ECF8E?logo=supabase&logoColor=white" alt="Supabase Postgres" />
+  <img src="https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel" alt="Vercel" />
   <img src="https://img.shields.io/badge/License-Private-red" alt="License" />
 </p>
 
-Post-Sentence Investigation Report (PSIR) management app built with Next.js, Prisma, and MySQL.
+Post-Sentence Investigation Report (PSIR) management app built with Next.js, Prisma, and PostgreSQL (Supabase). This branch (`web-version`) targets web deployment on Vercel. The desktop build lives on the `electron-version` branch.
 
 ## 🚀 Prerequisites
 
-Install these on the new PC first:
-
 - Node.js 20+
-- pnpm (recommended) or npm
-- MySQL 8+
+- pnpm (recommended)
 - Git
-
-Optional but recommended:
-
-- VS Code
-- MySQL Workbench
+- A Supabase project (free tier is fine) or any PostgreSQL 14+ database
 
 ## 1) 📥 Clone the Repository
 
-Use the current repository location:
-
 ```bash
 git clone https://github.com/JoshTabsDEv/PSIR.git
-cd PSIR/psir
-```
-
-If your team still uses the old remote, update it after clone:
-
-```bash
-git remote set-url origin https://github.com/JoshTabsDEv/PSIR.git
+cd PSIR
+git checkout web-version
 ```
 
 ## 2) 📦 Install Dependencies
 
-If pnpm is not installed:
-
 ```bash
-npm i -g pnpm
-```
-
-Install packages:
-
-```bash
-pnpm install
+npm i -g pnpm   # if pnpm is not installed
+pnpm install    # also runs `prisma generate` via postinstall
 ```
 
 ## 3) 🔐 Configure Environment Variables
 
-Create `psir/.env.local` and set your values:
+Copy `.env.example` to `.env.local` and fill in your values:
 
 ```env
-DATABASE_URL="mysql://USER:PASSWORD@HOST:3306/psir_db"
+DATABASE_URL="postgresql://postgres.PROJECT_REF:PASSWORD@aws-0-REGION.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1"
+DIRECT_URL="postgresql://postgres.PROJECT_REF:PASSWORD@aws-0-REGION.pooler.supabase.com:5432/postgres"
 GEMINI_API_KEY="your_gemini_api_key"
 ```
 
-Notes:
+Where to find them (Supabase Dashboard -> Project Settings -> Database -> Connection string):
 
-- `DATABASE_URL` must point to an existing MySQL database.
-- If your MySQL password contains special chars (like `@`), URL-encode them.
-  Example: `@` becomes `%40`.
-- Keep `.env.local` private; do not commit secrets.
+- `DATABASE_URL`: the **Transaction** pooler string (port 6543). Used by the app at runtime. Keep `?pgbouncer=true&connection_limit=1` on it.
+- `DIRECT_URL`: the **Session** pooler string (port 5432). Used only by Prisma migrations.
+- If your password contains special characters (like `@`), URL-encode them. Example: `@` becomes `%40`.
+- Keep `.env.local` private; never commit secrets.
 
-## 4) 🗄️ Create the Database
+## 4) 🗄️ Apply the Database Schema
 
-In MySQL, create the DB if it does not exist:
-
-```sql
-CREATE DATABASE psir_db;
-```
-
-## 5) ⚙️ Initialize Prisma
-
-From `psir/`:
+From the project root:
 
 ```bash
-npx prisma generate
-npx prisma db push
+pnpm db:deploy      # applies prisma/migrations to the database
 ```
 
-Optional (seed sample data):
+For local schema changes during development use `pnpm db:migrate` (creates a new migration).
+
+Optional sample data:
 
 ```bash
 pnpm db:seed
 ```
 
-## 6) ▶️ Run the App
+## 5) ▶️ Run the App
 
 ```bash
 pnpm dev
 ```
 
-Open:
+Open `http://localhost:3000`.
 
-- `http://localhost:3000`
-
-## 7) ✅ Verify Setup Quickly
+## 6) ✅ Verify Setup Quickly
 
 - Dashboard loads
 - Reports pages load
-- DB health check works: `http://localhost:3000/api/db-check`
+- DB health check returns `ok: true`: `http://localhost:3000/api/db-check`
 - AI endpoints work only if `GEMINI_API_KEY` is valid
+
+## ☁️ Deploy to Vercel
+
+1. In Vercel, **Add New Project** and import the `JoshTabsDEv/PSIR` repository.
+2. Set the production branch to `web-version` (Project Settings -> Git).
+3. Framework preset: **Next.js**. Leave build settings on defaults. Vercel runs the `vercel-build` script, which applies migrations (`prisma migrate deploy`) and then builds.
+4. Add Environment Variables (Project Settings -> Environment Variables):
+   - `DATABASE_URL` (transaction pooler, port 6543)
+   - `DIRECT_URL` (session pooler, port 5432)
+   - `GEMINI_API_KEY`
+5. Deploy. After the first deploy, open `/api/db-check` on the deployed URL to confirm the schema is live.
+
+Notes:
+
+- The dashboard refreshes its stats by polling every 30 seconds while the tab is visible. Server-Sent Events are not used because serverless functions cannot hold long-lived connections.
+- The "recent judge" convenience feature is stored in the browser's `localStorage` (per browser), replacing the Electron preferences store.
+- There is no authentication yet. Do not expose a deployment containing real offender data publicly until login is added.
 
 ## 🛠️ Common Issues
 
 ### 1) `Can't reach database server`
 
-- Check MySQL service is running
-- Recheck `DATABASE_URL`
-- Ensure `psir_db` exists
+- Recheck `DATABASE_URL` and `DIRECT_URL`
+- Confirm the Supabase project is not paused (free projects pause after inactivity)
 
-### 2) Prisma client errors
+### 2) `relation "psir_reports" does not exist`
 
-Run:
+Migrations have not been applied. Run:
 
 ```bash
-npx prisma generate
+pnpm db:deploy
 ```
 
-### 3) AI generation fails
+### 3) Prisma client errors
+
+```bash
+pnpm prisma generate
+```
+
+### 4) AI generation fails
 
 - Verify `GEMINI_API_KEY` in `.env.local`
-- Restart dev server after changing env vars
+- Restart the dev server after changing env vars
 
-### 4) Port already in use
-
-Run on another port:
+### 5) Port already in use
 
 ```bash
 pnpm dev -- -p 3001
@@ -145,18 +137,20 @@ pnpm dev -- -p 3001
 ## 💻 Useful Commands
 
 ```bash
-pnpm dev          # Start dev server
-pnpm build        # Build production app
-pnpm start        # Run production build
-pnpm lint         # Lint project
-pnpm db:seed      # Seed sample data
-npx prisma studio # Open Prisma DB browser
+pnpm dev            # Start dev server
+pnpm build          # Build production app
+pnpm start          # Run production build
+pnpm lint           # Lint project
+pnpm db:migrate     # Create and apply a new migration (dev)
+pnpm db:deploy      # Apply pending migrations (prod / CI)
+pnpm db:seed        # Seed sample data
+pnpm prisma studio  # Open Prisma DB browser
 ```
 
-## 🔀 Branch Workflow (Recommended)
+## 🔀 Branch Workflow
 
 ```bash
-git checkout dev
+git checkout web-version
 git pull
 git checkout -b feature/PSIR-xxx-short-title
 ```
@@ -169,8 +163,7 @@ git commit -m "feat(PSIR-xxx): short description"
 git push -u origin feature/PSIR-xxx-short-title
 ```
 
-## ✨ README Notes
+Branches:
 
-- Emojis are supported by GitHub Markdown (`:rocket:`, `:sparkles:`, etc.).
-- The typing banner uses an SVG animation service.
-- Badges are powered by Shields.io.
+- `web-version`: web deployment (Vercel + Supabase Postgres)
+- `electron-version`: Windows desktop app (Electron + SQLite)

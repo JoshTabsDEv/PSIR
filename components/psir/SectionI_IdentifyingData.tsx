@@ -1,5 +1,6 @@
 'use client';
 
+import { judgeNameStore } from '@/lib/judge-name-store';
 import { useMemo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
@@ -110,12 +111,10 @@ export function SectionI_IdentifyingData({
                   shouldValidate: true,
                 });
 
-                if (window.electron?.judgeName) {
-                  try {
-                    await window.electron.judgeName.clear();
-                  } catch (error) {
-                    console.error('Failed to clear saved judge name:', error);
-                  }
+                try {
+                  judgeNameStore.clear();
+                } catch (error) {
+                  console.error('Failed to clear saved judge name:', error);
                 }
               }}
             >

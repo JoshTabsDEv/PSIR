@@ -8,7 +8,7 @@ config({ path: '.env.local' });
 
 async function seed() {
   try {
-    console.log('Connected to MySQL via Prisma');
+    console.log('Connected to database via Prisma');
 
     // Clear existing data (optional - comment out to keep existing)
     // await prisma.pSIRReport.deleteMany({});

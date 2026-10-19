@@ -14,6 +14,7 @@ import { SectionIV_Analysis } from './SectionIV_Analysis';
 import { AutoSaveIndicator } from './AutoSaveIndicator';
 import { defaultFormValues, generateReportNumber } from '@/lib/utils/form-helpers';
 import type { PSIRFormData } from '@/types/psir';
+import { judgeNameStore, normalizeJudgeName, dedupeAndSortJudgeNames } from '@/lib/judge-name-store';
 import Link from 'next/link';
 
 interface PSIRFormProps {
@@ -27,25 +28,6 @@ interface AnalysisFieldOptions {
   communityServiceValues: string[];
   preparedByNames: string[];
   reviewedByNames: string[];
-}
-
-function normalizeJudgeName(judgeName: string): string {
-  return judgeName.trim().replace(/\s+/g, ' ');
-}
-
-function dedupeAndSortJudgeNames(judgeNames: string[]): string[] {
-  const uniqueNames = new Map<string, string>();
-
-  for (const judgeName of judgeNames) {
-    const normalizedJudgeName = normalizeJudgeName(judgeName);
-    if (!normalizedJudgeName) continue;
-
-    uniqueNames.set(normalizedJudgeName.toLowerCase(), normalizedJudgeName);
-  }
-
-  return Array.from(uniqueNames.values()).sort((left, right) =>
-    left.localeCompare(right, undefined, { sensitivity: 'base' })
-  );
 }
 
 export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
@@ -79,13 +61,11 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
   } = methods;
 
   const persistJudgeName = useCallback(async (rawJudgeName: string) => {
-    if (!window.electron?.judgeName) return;
-
     const normalizedJudgeName = normalizeJudgeName(rawJudgeName || '');
     if (!normalizedJudgeName) return;
 
     try {
-      const state = await window.electron.judgeName.save(normalizedJudgeName);
+      const state = judgeNameStore.save(normalizedJudgeName);
       setJudgeNames((currentJudgeNames) =>
         dedupeAndSortJudgeNames([...currentJudgeNames, ...state.judgeNames])
       );
@@ -118,7 +98,7 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
     let isMounted = true;
 
     async function preloadJudgeNames() {
-      const judgeNameStatePromise = window.electron?.judgeName?.getState();
+      const judgeNameStatePromise = Promise.resolve(judgeNameStore.getState());
       const databaseJudgeNamesPromise = fetch('/api/judge-names')
         .then(async (response) => {
           const result = await response.json();
@@ -134,7 +114,7 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
 
       try {
         const [judgeNameState, databaseJudgeNames] = await Promise.all([
-          judgeNameStatePromise ?? Promise.resolve({ recentJudge: '', judgeNames: [] }),
+          judgeNameStatePromise,
           databaseJudgeNamesPromise,
         ]);
 

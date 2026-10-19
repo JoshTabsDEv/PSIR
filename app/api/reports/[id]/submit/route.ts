@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { prismaToFrontend } from '@/lib/prisma-converters';
-import { broadcastCourtSubmission } from '@/lib/sse-broadcast';
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -39,8 +38,6 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
         const report = prismaToFrontend(prismaReport);
 
-        // Broadcast real-time update to all connected dashboards
-        broadcastCourtSubmission(report.reportNumber);
 
         return NextResponse.json({
             success: true,
