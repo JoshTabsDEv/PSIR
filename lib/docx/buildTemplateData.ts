@@ -62,6 +62,8 @@ export function buildTemplateData(report: PSIRReport): Record<string, unknown> {
     Report_Number: str(report.reportNumber),
     Status: str(report.status),
     Export_Date: exportDate,
+    // Older templates still use {Created_Date}; keep it populated.
+    Created_Date: date(report.createdAt),
     Updated_Date: date(report.updatedAt),
 
     // ===== Section I: Identifying Data =====

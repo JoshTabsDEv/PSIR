@@ -83,12 +83,9 @@ export function renderPSIRDocx(
     },
   });
 
-  // Set template data
-  doc.setData(templateData);
-
-  // Render the document
+  // Render the document with the template data
   try {
-    doc.render();
+    doc.render(templateData);
   } catch (err) {
     // Handle template errors with helpful messages
     if (err instanceof Error && 'properties' in err) {
@@ -124,8 +121,7 @@ export function renderPSIRDocx(
       linebreaks: true,
       nullGetter: () => '',
     });
-    doc2.setData(templateData);
-    doc2.render();
+    doc2.render(templateData);
     return Buffer.from(doc2.getZip().generate({ type: 'nodebuffer' }));
   }
 
