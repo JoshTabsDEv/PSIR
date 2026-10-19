@@ -28,6 +28,7 @@ import { Tooltip } from '@/components/ui/tooltip';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { PSIRReport } from '@/types/psir';
 import { formatDateDisplay, formatRelativeTime } from '@/lib/utils/date-formatters';
+import { ExportDocumentsMenu } from '@/components/psir/ExportDocumentsMenu';
 import { formatFullName } from '@/lib/utils/form-helpers';
 import { cn } from '@/lib/utils';
 
@@ -105,11 +106,6 @@ export default function ViewReportPage({ params }: PageProps) {
     } finally {
       setDeleting(false);
     }
-  };
-
-  const handleExportDocx = () => {
-    toast.info('Generating document...');
-    window.open(`/api/reports/${id}/export/docx`, '_blank');
   };
 
   const handleSetCourtDate = async () => {
@@ -194,10 +190,12 @@ export default function ViewReportPage({ params }: PageProps) {
           </nav>
 
           <div className="pt-8 mt-8 border-t border-border/50 space-y-3">
-            <Button variant="outline" className="w-full justify-start gap-2 h-9 border-dashed" onClick={handleExportDocx}>
-              <Download className="h-3.5 w-3.5" />
-              <span className="text-xs font-bold uppercase tracking-wider">Export DOCX</span>
-            </Button>
+            <ExportDocumentsMenu reportId={id}>
+              <Button variant="outline" className="w-full justify-start gap-2 h-9 border-dashed">
+                <Download className="h-3.5 w-3.5" />
+                <span className="text-xs font-bold uppercase tracking-wider">Export</span>
+              </Button>
+            </ExportDocumentsMenu>
             <Link href={`/reports/${id}/edit`} className="block">
               <Button variant="outline" className="w-full justify-start gap-2 h-9 border-dashed">
                 <Pencil className="h-3.5 w-3.5" />
