@@ -17,11 +17,13 @@ interface Props {
   reportId: string;
   /** The button that opens the menu */
   children: ReactNode;
+  /** Which side of the trigger the menu opens on (flips automatically near viewport edges) */
+  side?: 'top' | 'right' | 'bottom' | 'left';
   align?: 'start' | 'center' | 'end';
 }
 
 /** Menu listing every document that can be generated for a report. */
-export function ExportDocumentsMenu({ reportId, children, align = 'start' }: Props) {
+export function ExportDocumentsMenu({ reportId, children, side = 'right', align = 'start' }: Props) {
   function download(label: string, url: string) {
     toast.info(`Generating ${label}…`);
     window.open(url, '_blank');
@@ -30,7 +32,7 @@ export function ExportDocumentsMenu({ reportId, children, align = 'start' }: Pro
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
-      <DropdownMenuContent align={align} className="w-64">
+      <DropdownMenuContent side={side} align={align} sideOffset={12} className="w-64">
         <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500">
           Export document
         </DropdownMenuLabel>
