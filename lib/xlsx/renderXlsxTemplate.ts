@@ -84,8 +84,32 @@ export function renderXlsxTemplate(data: Record<string, string>, options: Render
 
   for (const name of Object.keys(zip.files)) {
     if (!/^xl\/worksheets\/sheet\d+\.xml$/.test(name)) continue;
-    zip.file(name, renderSheet(zip.file(name)!.asText(), sharedStrings, data));
+    const rendered = renderSheet(zip.file(name)!.asText(), sharedStrings, data);
+    zip.file(name, dropCachedFormulaValues(rendered));
   }
 
+  forceRecalcOnOpen(zip);
+
   return zip.generate({ type: 'nodebuffer', compression: 'DEFLATE' });
+}
+
+/**
+ * Formula cells carry the value Excel last computed (from the sample data in
+ * the template). Other sheets reference the profile sheet via formulas such as
+ * ='Clients Profile'!C16, so strip those stale results; Excel recomputes them.
+ */
+function dropCachedFormulaValues(xml: string): string {
+  return xml.replace(/(<f(?:\s[^>]*)?>[\s\S]*?<\/f>|<f(?:\s[^>]*)?\/>)<v>[\s\S]*?<\/v>/g, '$1');
+}
+
+/** Ask Excel to run a full calculation when the workbook is opened. */
+function forceRecalcOnOpen(zip: PizZip): void {
+  const file = zip.file('xl/workbook.xml');
+  if (!file) return;
+  let xml = file.asText();
+  if (/<calcPr\b[^>]*fullCalcOnLoad=/.test(xml)) return;
+  xml = /<calcPr\b/.test(xml)
+    ? xml.replace(/<calcPr\b/, '<calcPr fullCalcOnLoad="1"')
+    : xml.replace('</workbook>', '<calcPr fullCalcOnLoad="1"/></workbook>');
+  zip.file('xl/workbook.xml', xml);
 }
