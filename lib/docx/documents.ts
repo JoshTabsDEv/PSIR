@@ -27,4 +27,10 @@ export const REPORT_DOCUMENTS: ReportDocument[] = [
     description: 'PPA Form 12, first report in person (XLSX)',
     href: (reportId) => `/api/reports/${reportId}/export/client-profile`,
   },
+  {
+    key: 'final-report',
+    label: 'Final Report (FR)',
+    description: 'Probation termination final report (DOCX)',
+    href: (reportId) => `/api/reports/${reportId}/export/final-report`,
+  },
 ];
