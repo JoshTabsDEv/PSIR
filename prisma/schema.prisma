@@ -1,0 +1,177 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model PSIRReport {
+  id           Int      @id @default(autoincrement())
+  reportNumber String
+  status       String   @default("draft")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  lastModifiedBy String
+
+  // Tenancy + officer links
+  officeId     Int
+  office       Office   @relation(fields: [officeId], references: [id])
+  preparedById Int?
+  preparedBy   User?    @relation("PreparedReports", fields: [preparedById], references: [id])
+  reviewedById Int?
+  reviewedBy   User?    @relation("ReviewedReports", fields: [reviewedById], references: [id])
+
+  // Section I: Identifying Data
+  lastName              String
+  firstName             String
+  middleName            String?
+  trueName              String?
+  alias                 String?
+  sex                   String   @default("Male")
+  birthday              DateTime
+  birthplace            String?
+  nationality           String   @default("Filipino")
+  religion              String?
+  civilStatus           String?
+  age                   Int
+  educationalAttainment String?
+  occupation            String?
+  spouseName            String?
+  identifyingMarks      String?
+  presentAddress        String?
+  permanentAddress      String?
+  mother                String?
+  father                String?
+  genderPreference      String?
+  dateOfOrder           DateTime?
+  dateReceived          DateTime?
+  letterJudge           String?
+  letterCourt           String?
+  letterPosition        String?
+  letterAddress         String?
+  investigationDocketNumber String?
+  criminalCaseNumber    String?
+
+  // Section II: Criminal History - A. Present Offense
+  presentOffenseChargedWith    String?
+  presentOffenseChargedDate    DateTime?
+  presentOffenseConvictedOf    String?
+  presentOffenseConvictedDate  DateTime?
+  presentOffenseSentence       String?
+  presentOffenseJudge          String?
+  presentOffenseCourt          String?
+  custodialStatus              String   @default("ON_DETENTION")
+  rorCustodian1                String?
+  rorCustodianAddress1         String?
+  rorCustodian2                String?
+  rorCustodianAddress2         String?
+  address                      String?
+
+  // Section II: Criminal History - B. Prior and Pending Records
+  nbiCaseNo          String?
+  nbiOffense         String?
+  nbiDateCharged     DateTime?
+  nbiDecisionStatus  String?   @default("No record on file")
+
+  cmrdCaseNo         String?
+  cmrdOffense        String?
+  cmrdDateCharged    DateTime?
+  cmrdDecisionStatus String?   @default("No derogatory record")
+
+  othersCaseNo         String?
+  othersOffense        String?
+  othersDateCharged    DateTime?
+  othersDecisionStatus String?   @default("None")
+
+  // Section III: Socio-Economic Background
+  familyEconomicStatus   String   @default("POOR")
+  familyRelationship     String   @default("SATISFACTORY")
+  familyReputation       String   @default("SATISFACTORY")
+  familySupport          String   @default("SATISFACTORY")
+  communityAcceptability String   @default("SATISFACTORY")
+  overallWellBeing       String   @default("SATISFACTORY")
+
+  // Section IV: Analysis and Evaluation
+  circumstances   String?
+  needs           String?
+  attitude        String?
+  recommendations String?
+  probationPeriod String?
+
+  // Community Service Recommendation
+  communityServiceHours String?
+  communityServiceType  String?
+
+  // Signature blocks
+  preparedByName        String?
+  preparedByDesignation String?
+  preparedByDate        DateTime?
+
+  reviewedByName        String?
+  reviewedByDesignation String?
+  reviewedByDate        DateTime?
+
+  // Submission tracking
+  submittedToCourtDate  DateTime?
+
+  @@unique([officeId, reportNumber])
+  @@index([officeId, status])
+  @@index([officeId, createdAt])
+  @@index([preparedById])
+  @@index([lastName, firstName])
+  @@map("psir_reports")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  name         String
+  role         String   @default("OFFICER")
+  passwordHash String
+  isActive     Boolean  @default(true)
+  officeId     Int
+  office       Office   @relation(fields: [officeId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  preparedReports PSIRReport[] @relation("PreparedReports")
+  reviewedReports PSIRReport[] @relation("ReviewedReports")
+
+  @@index([officeId])
+  @@map("users")
+}
+
+model Office {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique // short code used in report numbers, e.g. TAG
+  name      String
+  region    String?
+  address   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users    User[]
+  reports  PSIRReport[]
+  counters ReportCounter[]
+
+  @@map("offices")
+}
+
+// Per-office, per-year sequence for report numbers. Incremented inside the
+// report-create transaction so concurrent saves never collide.
+model ReportCounter {
+  officeId   Int
+  year       Int
+  lastNumber Int    @default(0)
+  office     Office @relation(fields: [officeId], references: [id])
+
+  @@id([officeId, year])
+  @@map("report_counters")
+}
