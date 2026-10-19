@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { prismaToFrontend, frontendToPrisma } from '@/lib/prisma-converters';
+import { getSession } from '@/lib/auth/server';
 import type { ReportFilters } from '@/types/psir';
 
 // Generate a unique report number by checking the database
@@ -132,6 +133,8 @@ export async function POST(request: NextRequest) {
 
     // Convert frontend data to Prisma format
     const prismaData = frontendToPrisma(body);
+    const session = await getSession();
+    if (session) prismaData.lastModifiedBy = session.name;
     console.log('Converted to Prisma format, keys:', Object.keys(prismaData).length);
 
     // Override with server-generated report number

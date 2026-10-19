@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { prismaToFrontend, frontendToPrisma } from '@/lib/prisma-converters';
+import { getSession } from '@/lib/auth/server';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -42,6 +43,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     // Convert frontend data to Prisma format
     const prismaData = frontendToPrisma(body);
+    const session = await getSession();
+    if (session) prismaData.lastModifiedBy = session.name;
 
     // Remove reportNumber from update data - it should never change after creation
     const { reportNumber, ...updateData } = prismaData;

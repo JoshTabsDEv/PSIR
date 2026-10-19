@@ -85,6 +85,27 @@ Open `http://localhost:3000`.
 - DB health check returns `ok: true`: `http://localhost:3000/api/db-check`
 - AI endpoints work only if `GEMINI_API_KEY` is valid
 
+## 🔐 Login & Users
+
+All pages and API routes except the landing page and `/login` require a signed-in user. Sessions are signed cookies (HS256, 8 hours, httpOnly).
+
+1. Set `AUTH_SECRET` in `.env.local` (and in Vercel): at least 32 random characters.
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
+   ```
+2. Create the first user (runs against the database in `.env.local`):
+   ```bash
+   pnpm user:create -- --username admin --password "ChangeMe-Strong-Pass" --name "Juan Dela Cruz" --role ADMIN
+   ```
+   Re-running with an existing username resets that user's password.
+3. Sign in at `/login`.
+
+Notes:
+
+- Passwords are stored as bcrypt hashes (cost 12). Usernames are case-insensitive.
+- Login is throttled per IP (10 failures / 15 min) in memory per server instance. Good enough for now; move to a shared store later if abuse shows up.
+- Roles are stored (`ADMIN`, `OFFICER`) but not yet enforced anywhere. Next improvement.
+
 ## ☁️ Deploy to Vercel
 
 1. In Vercel, **Add New Project** and import the `JoshTabsDEv/PSIR` repository.
@@ -94,13 +115,14 @@ Open `http://localhost:3000`.
    - `DATABASE_URL` (transaction pooler, port 6543)
    - `DIRECT_URL` (session pooler, port 5432)
    - `GEMINI_API_KEY`
+   - `AUTH_SECRET`
 5. Deploy. After the first deploy, open `/api/db-check` on the deployed URL to confirm the schema is live.
 
 Notes:
 
 - The dashboard refreshes its stats by polling every 30 seconds while the tab is visible. Server-Sent Events are not used because serverless functions cannot hold long-lived connections.
 - The "recent judge" convenience feature is stored in the browser's `localStorage` (per browser), replacing the Electron preferences store.
-- There is no authentication yet. Do not expose a deployment containing real offender data publicly until login is added.
+- Create at least one user with `pnpm user:create` (pointed at the Supabase DB) before sharing the URL.
 
 ## 🛠️ Common Issues
 
