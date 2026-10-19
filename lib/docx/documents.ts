@@ -21,4 +21,10 @@ export const REPORT_DOCUMENTS: ReportDocument[] = [
     description: 'Post-Sentence Investigation Report (DOCX)',
     href: (reportId) => `/api/reports/${reportId}/export/docx`,
   },
+  {
+    key: 'client-profile',
+    label: 'Client’s Profile (CP)',
+    description: 'PPA Form 12, first report in person (XLSX)',
+    href: (reportId) => `/api/reports/${reportId}/export/client-profile`,
+  },
 ];
