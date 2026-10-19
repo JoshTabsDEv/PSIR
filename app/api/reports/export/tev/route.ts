@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { prismaToFrontend } from '@/lib/prisma-converters';
 import { buildTEVData } from '@/lib/docx/buildTEVData';
 import { renderTEVDocx } from '@/lib/docx/renderTEVDocx';
+import { getSession, officeScope, unauthorized } from '@/lib/auth/server';
 
 const MONTH_NAMES = [
   'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
@@ -12,6 +13,9 @@ const MONTH_NAMES = [
 // GET /api/reports/export/tev?month=3&year=2026&preparedBy=John%20Doe
 export async function GET(request: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session) return unauthorized();
+
     const { searchParams } = new URL(request.url);
     const monthParam = searchParams.get('month');
     const yearParam = searchParams.get('year');
@@ -55,7 +59,8 @@ export async function GET(request: NextRequest) {
     const endDate = new Date(year, month, 0, 23, 59, 59, 999);
 
     // Build where clause - only filter by date and status, not by prepared by
-    const whereClause: any = {
+    const whereClause: Record<string, unknown> = {
+      ...officeScope(session, searchParams.get('officeId')),
       status: 'completed',
       createdAt: {
         gte: startDate,

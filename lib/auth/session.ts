@@ -4,11 +4,15 @@ import { SignJWT, jwtVerify } from 'jose';
 export const SESSION_COOKIE = 'psir_session';
 export const SESSION_TTL_SECONDS = 8 * 60 * 60; // 8 hours
 
+export type UserRole = 'ADMIN' | 'OFFICER';
+
 export interface SessionUser {
   id: number;
   username: string;
   name: string;
-  role: string;
+  role: UserRole;
+  officeId: number;
+  officeCode: string;
 }
 
 function getSecretKey(): Uint8Array {
@@ -20,7 +24,13 @@ function getSecretKey(): Uint8Array {
 }
 
 export async function createSessionToken(user: SessionUser): Promise<string> {
-  return new SignJWT({ username: user.username, name: user.name, role: user.role })
+  return new SignJWT({
+    username: user.username,
+    name: user.name,
+    role: user.role,
+    officeId: user.officeId,
+    officeCode: user.officeCode,
+  })
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(String(user.id))
     .setIssuedAt()
@@ -32,13 +42,17 @@ export async function verifySessionToken(token: string): Promise<SessionUser | n
   try {
     const { payload } = await jwtVerify(token, getSecretKey(), { algorithms: ['HS256'] });
     const id = Number(payload.sub);
-    if (!Number.isInteger(id) || typeof payload.username !== 'string') return null;
+    const officeId = Number(payload.officeId);
+    if (!Number.isInteger(id) || !Number.isInteger(officeId)) return null;
+    if (typeof payload.username !== 'string' || typeof payload.officeCode !== 'string') return null;
 
     return {
       id,
       username: payload.username,
       name: typeof payload.name === 'string' ? payload.name : payload.username,
-      role: typeof payload.role === 'string' ? payload.role : 'OFFICER',
+      role: payload.role === 'ADMIN' ? 'ADMIN' : 'OFFICER',
+      officeId,
+      officeCode: payload.officeCode,
     };
   } catch {
     return null;

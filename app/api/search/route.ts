@@ -1,25 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { prismaToFrontend } from '@/lib/prisma-converters';
+import { getSession, officeScope, unauthorized } from '@/lib/auth/server';
 
-// GET /api/search - Search reports
+// GET /api/search - Search reports in the user's office
 export async function GET(request: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session) return unauthorized();
+
     const searchParams = request.nextUrl.searchParams;
     const query = searchParams.get('q') || '';
     const status = searchParams.get('status');
     const limit = parseInt(searchParams.get('limit') || '20');
 
     if (!query && !status) {
-      return NextResponse.json({
-        success: true,
-        data: [],
-        message: 'Please provide a search query',
-      });
+      return NextResponse.json({ success: true, data: [], message: 'Please provide a search query' });
     }
 
-    // Build Prisma where clause
-    const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = {
+      ...officeScope(session, searchParams.get('officeId')),
+    };
 
     if (query) {
       where.OR = [
@@ -55,7 +55,6 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Convert to frontend format (partial conversion for search results)
     const reports = prismaReports.map((report) => ({
       _id: report.id.toString(),
       reportNumber: report.reportNumber,
@@ -75,16 +74,9 @@ export async function GET(request: NextRequest) {
       },
     }));
 
-    return NextResponse.json({
-      success: true,
-      data: reports,
-      count: reports.length,
-    });
+    return NextResponse.json({ success: true, data: reports, count: reports.length });
   } catch (error) {
     console.error('Search error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Search failed' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Search failed' }, { status: 500 });
   }
 }

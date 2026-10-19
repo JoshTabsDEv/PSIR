@@ -1,43 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { prismaToFrontend, frontendToPrisma } from '@/lib/prisma-converters';
-import { getSession } from '@/lib/auth/server';
+import { getSession, officeScope, unauthorized } from '@/lib/auth/server';
+import { nextReportNumber } from '@/lib/reports/report-number';
+import { resolveSignatoryIds } from '@/lib/reports/signatories';
 import type { ReportFilters } from '@/types/psir';
 
-// Generate a unique report number by checking the database
-async function generateUniqueReportNumber(): Promise<string> {
-  const year = new Date().getFullYear();
-
-  // Get the highest report number for this year
-  const latestReport = await prisma.pSIRReport.findFirst({
-    where: {
-      reportNumber: {
-        startsWith: `PI-${year}-`,
-      },
-    },
-    orderBy: {
-      reportNumber: 'desc',
-    },
-    select: {
-      reportNumber: true,
-    },
-  });
-
-  let nextNumber = 1;
-  if (latestReport) {
-    // Extract the number part from PI-2026-00001
-    const match = latestReport.reportNumber.match(/PI-\d{4}-(\d+)/);
-    if (match) {
-      nextNumber = parseInt(match[1], 10) + 1;
-    }
-  }
-
-  return `PI-${year}-${nextNumber.toString().padStart(5, '0')}`;
-}
-
-// GET /api/reports - List all reports with pagination and filtering
+// GET /api/reports - List reports (scoped to the user's office) with pagination and filtering
 export async function GET(request: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session) return unauthorized();
+
     const searchParams = request.nextUrl.searchParams;
     const filters: ReportFilters = {
       search: searchParams.get('search') || undefined,
@@ -50,8 +24,10 @@ export async function GET(request: NextRequest) {
       limit: parseInt(searchParams.get('limit') || '10'),
     };
 
-    // Build where clause for Prisma
-    const where: Record<string, unknown> = {};
+    // Office scope first; filters can narrow it, never widen it
+    const where: Record<string, unknown> = {
+      ...officeScope(session, searchParams.get('officeId')),
+    };
 
     if (filters.status && filters.status !== 'all') {
       where.status = filters.status;
@@ -76,98 +52,68 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Pagination
     const page = filters.page || 1;
     const limit = filters.limit || 10;
     const skip = (page - 1) * limit;
 
-    console.log('GET /api/reports - Filters:', JSON.stringify(filters));
-
-    // Execute query
     const [prismaReports, total] = await Promise.all([
       prisma.pSIRReport.findMany({
         where,
-        orderBy: {
-          [filters.sortBy || 'createdAt']: filters.sortOrder || 'desc',
-        },
+        orderBy: { [filters.sortBy || 'createdAt']: filters.sortOrder || 'desc' },
         skip,
         take: limit,
       }),
       prisma.pSIRReport.count({ where }),
     ]);
 
-    console.log('GET /api/reports - Found', prismaReports.length, 'reports, total:', total);
-
-    // Convert Prisma reports to frontend format
-    const reports = prismaReports.map(prismaToFrontend);
-
     return NextResponse.json({
       success: true,
-      data: reports,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
+      data: prismaReports.map(prismaToFrontend),
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     });
   } catch (error) {
-    console.error('Error fetching reports:', error instanceof Error ? error.message : String(error));
-    console.error('Full error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch reports', details: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+    console.error('Error fetching reports:', error);
+    return NextResponse.json({ success: false, error: 'Failed to fetch reports' }, { status: 500 });
   }
 }
 
-// POST /api/reports - Create a new report
+// POST /api/reports - Create a new report in the user's office
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    console.log('POST /api/reports - Received body:', JSON.stringify(body).substring(0, 200));
-
-    // Generate unique report number server-side
-    const reportNumber = await generateUniqueReportNumber();
-    console.log('Generated report number:', reportNumber);
-
-    // Convert frontend data to Prisma format
-    const prismaData = frontendToPrisma(body);
     const session = await getSession();
-    if (session) prismaData.lastModifiedBy = session.name;
-    console.log('Converted to Prisma format, keys:', Object.keys(prismaData).length);
+    if (!session) return unauthorized();
 
-    // Override with server-generated report number
-    prismaData.reportNumber = reportNumber;
+    const body = await request.json();
 
-    // Create new report
-    const prismaReport = await prisma.pSIRReport.create({
-      data: prismaData,
+    const prismaData = frontendToPrisma(body);
+    prismaData.lastModifiedBy = session.name;
+
+    // Link "Prepared by" / "Reviewed by" to office users when the names match
+    const signatories = await resolveSignatoryIds(
+      session.officeId,
+      prismaData.preparedByName,
+      prismaData.reviewedByName
+    );
+
+    // Allocate the report number and insert atomically so concurrent saves never collide
+    const prismaReport = await prisma.$transaction(async (tx) => {
+      const reportNumber = await nextReportNumber(tx, session.officeId, session.officeCode);
+      return tx.pSIRReport.create({
+        data: { ...prismaData, ...signatories, reportNumber, officeId: session.officeId },
+      });
     });
-    console.log('Report created with ID:', prismaReport.id);
-
-    // Convert back to frontend format
-    const report = prismaToFrontend(prismaReport);
 
     return NextResponse.json(
-      { success: true, data: report, message: 'Report created successfully' },
+      { success: true, data: prismaToFrontend(prismaReport), message: 'Report created successfully' },
       { status: 201 }
     );
   } catch (error) {
-    console.error('Error creating report:', error instanceof Error ? error.message : String(error));
-    console.error('Full error:', error);
+    console.error('Error creating report:', error);
 
-    // Handle unique constraint error (duplicate report number)
     if ((error as { code?: string }).code === 'P2002') {
-      return NextResponse.json(
-        { success: false, error: 'Report number already exists' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'Report number already exists' }, { status: 409 });
     }
 
-    return NextResponse.json(
-      { success: false, error: 'Failed to create report', details: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to create report' }, { status: 500 });
   }
 }

@@ -14,6 +14,7 @@ interface CurrentUser {
   name: string;
   username: string;
   role: string;
+  officeCode: string;
 }
 
 export function Header({ onMenuToggle }: HeaderProps) {
@@ -72,8 +73,8 @@ export function Header({ onMenuToggle }: HeaderProps) {
 
       <div className="flex items-center gap-3">
         {user && (
-          <span className="hidden sm:inline text-sm text-gray-600" title={user.username}>
-            {user.name}
+          <span className="hidden sm:inline text-sm text-gray-600" title={`${user.username} (${user.role})`}>
+            {user.name} <span className="text-gray-400">&middot; {user.officeCode}</span>
           </span>
         )}
         <Button variant="outline" size="sm" onClick={handleSignOut} disabled={signingOut}>

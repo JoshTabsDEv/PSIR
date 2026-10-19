@@ -10,6 +10,17 @@ async function seed() {
   try {
     console.log('Connected to database via Prisma');
 
+    const officeArg = process.argv.indexOf('--office');
+    const officeCode = officeArg >= 0 ? (process.argv[officeArg + 1] || '').toUpperCase() : '';
+    const office = officeCode
+      ? await prisma.office.findUnique({ where: { code: officeCode } })
+      : await prisma.office.findFirst({ orderBy: { id: 'asc' } });
+    if (!office) {
+      console.error('No office found. Run `pnpm office:create` first (or pass --office CODE).');
+      return;
+    }
+    console.log(`Seeding into office ${office.code}`);
+
     // Clear existing data (optional - comment out to keep existing)
     // await prisma.pSIRReport.deleteMany({});
     // console.log('Cleared existing reports');
@@ -158,14 +169,14 @@ async function seed() {
 
     // Insert sample reports
     for (const report of sampleReports) {
-      const existing = await prisma.pSIRReport.findUnique({
-        where: { reportNumber: report.reportNumber },
+      const existing = await prisma.pSIRReport.findFirst({
+        where: { officeId: office.id, reportNumber: report.reportNumber },
       });
 
       if (!existing) {
         // Convert frontend format to Prisma format
         const prismaData = frontendToPrisma(report);
-        await prisma.pSIRReport.create({ data: prismaData });
+        await prisma.pSIRReport.create({ data: { ...prismaData, officeId: office.id } });
         console.log(`Created report: ${report.reportNumber}`);
       } else {
         console.log(`Report ${report.reportNumber} already exists, skipping`);

@@ -1,28 +1,27 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getSession, officeScope, unauthorized } from '@/lib/auth/server';
 
-// GET /api/reports/oldest - Get the oldest report (by createdAt)
-export async function GET() {
+// GET /api/reports/oldest - Oldest report by date received, in the user's office
+export async function GET(request: NextRequest) {
   try {
-    console.log('GET /api/reports/oldest - Starting query');
+    const session = await getSession();
+    if (!session) return unauthorized();
+
     const oldestReport = await prisma.pSIRReport.findFirst({
+      where: officeScope(session, request.nextUrl.searchParams.get('officeId')),
       orderBy: { dateReceived: 'asc' },
       select: {
         investigationDocketNumber: true,
         firstName: true,
         lastName: true,
         dateReceived: true,
-        status:true,
+        status: true,
       },
     });
 
-    console.log('GET /api/reports/oldest - Query result:', oldestReport ? 'found' : 'not found');
-
     if (!oldestReport) {
-      return NextResponse.json({
-        success: true,
-        data: null,
-      });
+      return NextResponse.json({ success: true, data: null });
     }
 
     return NextResponse.json({
@@ -35,11 +34,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error('Error fetching oldest report:', error instanceof Error ? error.message : String(error));
-    console.error('Full error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch oldest report', details: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+    console.error('Error fetching oldest report:', error);
+    return NextResponse.json({ success: false, error: 'Failed to fetch oldest report' }, { status: 500 });
   }
 }

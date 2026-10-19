@@ -13,11 +13,19 @@ datasource db {
 
 model PSIRReport {
   id           Int      @id @default(autoincrement())
-  reportNumber String   @unique
+  reportNumber String
   status       String   @default("draft")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   lastModifiedBy String
+
+  // Tenancy + officer links
+  officeId     Int
+  office       Office   @relation(fields: [officeId], references: [id])
+  preparedById Int?
+  preparedBy   User?    @relation("PreparedReports", fields: [preparedById], references: [id])
+  reviewedById Int?
+  reviewedBy   User?    @relation("ReviewedReports", fields: [reviewedById], references: [id])
 
   // Section I: Identifying Data
   lastName              String
@@ -112,9 +120,10 @@ model PSIRReport {
   // Submission tracking
   submittedToCourtDate  DateTime?
 
-  @@index([reportNumber])
-  @@index([status])
-  @@index([createdAt])
+  @@unique([officeId, reportNumber])
+  @@index([officeId, status])
+  @@index([officeId, createdAt])
+  @@index([preparedById])
   @@index([lastName, firstName])
   @@map("psir_reports")
 }
@@ -126,8 +135,43 @@ model User {
   role         String   @default("OFFICER")
   passwordHash String
   isActive     Boolean  @default(true)
+  officeId     Int
+  office       Office   @relation(fields: [officeId], references: [id])
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  preparedReports PSIRReport[] @relation("PreparedReports")
+  reviewedReports PSIRReport[] @relation("ReviewedReports")
+
+  @@index([officeId])
   @@map("users")
+}
+
+model Office {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique // short code used in report numbers, e.g. TAG
+  name      String
+  region    String?
+  address   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users    User[]
+  reports  PSIRReport[]
+  counters ReportCounter[]
+
+  @@map("offices")
+}
+
+// Per-office, per-year sequence for report numbers. Incremented inside the
+// report-create transaction so concurrent saves never collide.
+model ReportCounter {
+  officeId   Int
+  year       Int
+  lastNumber Int    @default(0)
+  office     Office @relation(fields: [officeId], references: [id])
+
+  @@id([officeId, year])
+  @@map("report_counters")
 }

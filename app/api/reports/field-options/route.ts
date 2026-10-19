@@ -1,50 +1,39 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getSession, officeScope, unauthorized } from '@/lib/auth/server';
+import { mergeNames, officeUserNames } from '@/lib/reports/signatories';
 
-function normalizeOptionValue(value: string | null | undefined): string {
-  return (value ?? '').trim().replace(/\s+/g, ' ');
-}
-
-function dedupeAndSort(values: Array<string | null | undefined>): string[] {
-  const uniqueValues = new Map<string, string>();
-
-  for (const value of values) {
-    const normalizedValue = normalizeOptionValue(value);
-    if (!normalizedValue) continue;
-
-    uniqueValues.set(normalizedValue.toLowerCase(), normalizedValue);
-  }
-
-  return Array.from(uniqueValues.values()).sort((left, right) =>
-    left.localeCompare(right, undefined, { sensitivity: 'base' })
-  );
-}
-
+// GET /api/reports/field-options - Autocomplete values for Section IV fields (office-scoped)
 export async function GET() {
   try {
-    const reports = await prisma.pSIRReport.findMany({
-      select: {
-        probationPeriod: true,
-        communityServiceHours: true,
-        preparedByName: true,
-        reviewedByName: true,
-      },
-    });
+    const session = await getSession();
+    if (!session) return unauthorized();
+
+    const [reports, userNames] = await Promise.all([
+      prisma.pSIRReport.findMany({
+        where: officeScope(session),
+        select: {
+          probationPeriod: true,
+          communityServiceHours: true,
+          preparedByName: true,
+          reviewedByName: true,
+        },
+      }),
+      officeUserNames(session.officeId),
+    ]);
 
     return NextResponse.json({
       success: true,
       data: {
-        probationPeriods: dedupeAndSort(reports.map((report) => report.probationPeriod)),
-        communityServiceValues: dedupeAndSort(reports.map((report) => report.communityServiceHours)),
-        preparedByNames: dedupeAndSort(reports.map((report) => report.preparedByName)),
-        reviewedByNames: dedupeAndSort(reports.map((report) => report.reviewedByName)),
+        probationPeriods: mergeNames(reports.map((report) => report.probationPeriod)),
+        communityServiceValues: mergeNames(reports.map((report) => report.communityServiceHours)),
+        // Office users first-class, plus any names already used on reports
+        preparedByNames: mergeNames(userNames, reports.map((report) => report.preparedByName)),
+        reviewedByNames: mergeNames(userNames, reports.map((report) => report.reviewedByName)),
       },
     });
   } catch (error) {
     console.error('Failed to fetch report field options:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch report field options' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to fetch report field options' }, { status: 500 });
   }
 }

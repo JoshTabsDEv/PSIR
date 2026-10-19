@@ -1,10 +1,10 @@
 /**
  * Create or reset a login user.
  *
- *   pnpm user:create -- --username admin --password "StrongPass123" --name "Juan Dela Cruz" --role ADMIN
+ *   pnpm user:create -- --username admin --password "StrongPass123" --name "Juan Dela Cruz" --office TAG --role ADMIN
  *
- * Re-running for an existing username resets the password/name/role.
- * Reads DATABASE_URL from .env.local (falls back to .env).
+ * Re-running for an existing username resets the password/name/role/office.
+ * The office must already exist (see `pnpm office:create`).
  */
 import { config } from 'dotenv';
 config({ path: '.env.local' });
@@ -21,14 +21,25 @@ function arg(name: string): string | undefined {
 async function main() {
   const username = arg('username')?.trim().toLowerCase();
   const password = arg('password');
+  const officeCode = arg('office')?.trim().toUpperCase();
   const role = (arg('role') || 'OFFICER').toUpperCase();
 
-  if (!username || !password) {
-    console.error('Usage: pnpm user:create -- --username <u> --password <p> [--name "<n>"] [--role ADMIN|OFFICER]');
+  if (!username || !password || !officeCode) {
+    console.error('Usage: pnpm user:create -- --username <u> --password <p> --office <CODE> [--name "<n>"] [--role ADMIN|OFFICER]');
     process.exit(1);
   }
   if (password.length < 8) {
     console.error('Password must be at least 8 characters.');
+    process.exit(1);
+  }
+  if (role !== 'ADMIN' && role !== 'OFFICER') {
+    console.error('Role must be ADMIN or OFFICER.');
+    process.exit(1);
+  }
+
+  const office = await prisma.office.findUnique({ where: { code: officeCode } });
+  if (!office) {
+    console.error(`Office "${officeCode}" not found. Create it first: pnpm office:create -- --code ${officeCode} --name "..."`);
     process.exit(1);
   }
 
@@ -36,11 +47,11 @@ async function main() {
   const passwordHash = await hashPassword(password);
   const user = await prisma.user.upsert({
     where: { username },
-    update: { passwordHash, name, role, isActive: true },
-    create: { username, passwordHash, name, role },
+    update: { passwordHash, name, role, isActive: true, officeId: office.id },
+    create: { username, passwordHash, name, role, officeId: office.id },
   });
 
-  console.log(`User ready: ${user.username} (${user.role})`);
+  console.log(`User ready: ${user.username} (${user.role}) @ ${office.code}`);
 }
 
 main()

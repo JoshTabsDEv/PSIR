@@ -22,7 +22,8 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx scripts/seed.ts",
-    "user:create": "tsx scripts/create-user.ts"
+    "user:create": "tsx scripts/create-user.ts",
+    "office:create": "tsx scripts/create-office.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

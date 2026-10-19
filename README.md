@@ -93,18 +93,21 @@ All pages and API routes except the landing page and `/login` require a signed-i
    ```bash
    node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
    ```
-2. Create the first user (runs against the database in `.env.local`):
+2. Create your office, then the first user (both run against the database in `.env.local`):
    ```bash
-   pnpm user:create -- --username admin --password "ChangeMe-Strong-Pass" --name "Juan Dela Cruz" --role ADMIN
+   pnpm office:create -- --code TAG --name "Tagbilaran City Parole and Probation Office" --region "VII"
+   pnpm user:create -- --username admin --password "ChangeMe-Strong-Pass" --name "Juan Dela Cruz" --office TAG --role ADMIN
    ```
-   Re-running with an existing username resets that user's password.
+   The office `code` appears in report numbers (`PI-TAG-2026-00001`). Re-running `user:create` with an existing username resets that user's password.
 3. Sign in at `/login`.
 
 Notes:
 
 - Passwords are stored as bcrypt hashes (cost 12). Usernames are case-insensitive.
 - Login is throttled per IP (10 failures / 15 min) in memory per server instance. Good enough for now; move to a shared store later if abuse shows up.
-- Roles are stored (`ADMIN`, `OFFICER`) but not yet enforced anywhere. Next improvement.
+- Every report and user belongs to an office. `OFFICER` sees only their own office; `ADMIN` sees all offices and can filter any list with `?officeId=`.
+- Report numbers are allocated per office and year inside a transaction (`report_counters`), so concurrent saves never collide.
+- "Prepared by" / "Reviewed by" names are matched to office users and linked (`preparedById` / `reviewedById`) so monthly and TEV exports stay accurate even if a name is typed differently later.
 
 ## ☁️ Deploy to Vercel
 

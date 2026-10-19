@@ -1,26 +1,25 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { prismaToFrontend } from '@/lib/prisma-converters';
+import { getSession, officeScope, unauthorized } from '@/lib/auth/server';
 import type { MonthlyReportData } from '@/types/psir';
 
-// GET /api/reports/stats - Get dashboard statistics
-export async function GET() {
+type Scope = { officeId?: number };
+
+// GET /api/reports/stats - Dashboard statistics for the user's office
+export async function GET(request: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session) return unauthorized();
+
+    const scope = officeScope(session, request.nextUrl.searchParams.get('officeId'));
+
     const [totalReports, draftReports, completedReports, prismaRecentReports] = await Promise.all([
-      prisma.pSIRReport.count(),
-      prisma.pSIRReport.count({ where: { status: 'draft' } }),
-      prisma.pSIRReport.count({ where: { status: 'completed' } }),
-      prisma.pSIRReport.findMany({
-        orderBy: { createdAt: 'desc' },
-        take: 5,
-      }),
+      prisma.pSIRReport.count({ where: scope }),
+      prisma.pSIRReport.count({ where: { ...scope, status: 'draft' } }),
+      prisma.pSIRReport.count({ where: { ...scope, status: 'completed' } }),
+      prisma.pSIRReport.findMany({ where: scope, orderBy: { createdAt: 'desc' }, take: 5 }),
     ]);
-
-    // Convert recent reports to frontend format
-    const recentReports = prismaRecentReports.map(prismaToFrontend);
-
-    // Generate monthly data for the last 12 months
-    const monthlyData = await getMonthlyData();
 
     return NextResponse.json({
       success: true,
@@ -28,55 +27,37 @@ export async function GET() {
         totalReports,
         draftReports,
         completedReports,
-        recentReports,
-        monthlyData,
+        recentReports: prismaRecentReports.map(prismaToFrontend),
+        monthlyData: await getMonthlyData(scope),
       },
     });
   } catch (error) {
     console.error('Error fetching stats:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch statistics' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to fetch statistics' }, { status: 500 });
   }
 }
 
-async function getMonthlyData(): Promise<MonthlyReportData[]> {
+async function getMonthlyData(scope: Scope): Promise<MonthlyReportData[]> {
   const now = new Date();
-  const months: MonthlyReportData[] = [];
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-  for (let i = 11; i >= 0; i--) {
-    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const nextMonth = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+  // Last 12 months, counted in parallel
+  return Promise.all(
+    Array.from({ length: 12 }, (_, offset) => {
+      const i = 11 - offset;
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const nextMonth = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+      const range = { createdAt: { gte: date, lt: nextMonth } };
 
-    const [total, completed] = await Promise.all([
-      prisma.pSIRReport.count({
-        where: {
-          createdAt: {
-            gte: date,
-            lt: nextMonth,
-          },
-        },
-      }),
-      prisma.pSIRReport.count({
-        where: {
-          createdAt: {
-            gte: date,
-            lt: nextMonth,
-          },
-          status: 'completed',
-        },
-      }),
-    ]);
-
-    months.push({
-      month: monthNames[date.getMonth()],
-      total,
-      completed,
-      draft: total - completed,
-    });
-  }
-
-  return months;
+      return Promise.all([
+        prisma.pSIRReport.count({ where: { ...scope, ...range } }),
+        prisma.pSIRReport.count({ where: { ...scope, ...range, status: 'completed' } }),
+      ]).then(([total, completed]) => ({
+        month: monthNames[date.getMonth()],
+        total,
+        completed,
+        draft: total - completed,
+      }));
+    })
+  );
 }

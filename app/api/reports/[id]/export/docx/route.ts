@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
 import { prismaToFrontend } from '@/lib/prisma-converters';
 import { renderPSIRDocx } from '@/lib/docx/renderPSIRDocx';
 import { buildTemplateData } from '@/lib/docx/buildTemplateData';
+import { getSession, unauthorized } from '@/lib/auth/server';
+import { findScopedReport } from '@/lib/reports/access';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -11,12 +12,13 @@ interface RouteParams {
 // GET /api/reports/[id]/export/docx - Export report as DOCX using template
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
+    const session = await getSession();
+    if (!session) return unauthorized();
+
     const { id } = await params;
 
-    // Fetch report from database
-    const prismaReport = await prisma.pSIRReport.findUnique({
-      where: { id: parseInt(id) },
-    });
+    // Fetch report from database (office-scoped)
+    const prismaReport = await findScopedReport(id, session);
 
     if (!prismaReport) {
       return NextResponse.json(

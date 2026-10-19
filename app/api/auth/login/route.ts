@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { verifyPassword } from '@/lib/auth/password';
-import { createSessionToken, SESSION_COOKIE, sessionCookieOptions } from '@/lib/auth/session';
+import { createSessionToken, SESSION_COOKIE, sessionCookieOptions, type SessionUser } from '@/lib/auth/session';
 import { clearAttempts, isRateLimited, recordFailedAttempt } from '@/lib/auth/rate-limit';
 
 const loginSchema = z.object({
@@ -10,10 +10,12 @@ const loginSchema = z.object({
   password: z.string().min(1).max(256),
 });
 
-const INVALID = NextResponse.json(
-  { success: false, error: 'Invalid username or password' },
-  { status: 401 }
-);
+function invalidCredentials() {
+  return NextResponse.json(
+    { success: false, error: 'Invalid username or password' },
+    { status: 401 }
+  );
+}
 
 function clientKey(request: NextRequest): string {
   const forwarded = request.headers.get('x-forwarded-for');
@@ -45,18 +47,28 @@ export async function POST(request: NextRequest) {
   const { username, password } = parsed.data;
 
   try {
-    const user = await prisma.user.findUnique({ where: { username: username.toLowerCase() } });
+    const user = await prisma.user.findUnique({
+      where: { username: username.toLowerCase() },
+      include: { office: { select: { id: true, code: true, isActive: true } } },
+    });
 
     // Always run the hash comparison so timing does not reveal valid usernames.
     const passwordOk = await verifyPassword(password, user?.passwordHash);
-    if (!user || !user.isActive || !passwordOk) {
+    if (!user || !user.isActive || !user.office.isActive || !passwordOk) {
       recordFailedAttempt(key);
-      return INVALID;
+      return invalidCredentials();
     }
 
     clearAttempts(key);
 
-    const sessionUser = { id: user.id, username: user.username, name: user.name, role: user.role };
+    const sessionUser: SessionUser = {
+      id: user.id,
+      username: user.username,
+      name: user.name,
+      role: user.role === 'ADMIN' ? 'ADMIN' : 'OFFICER',
+      officeId: user.office.id,
+      officeCode: user.office.code,
+    };
     const token = await createSessionToken(sessionUser);
 
     const response = NextResponse.json({ success: true, data: sessionUser });

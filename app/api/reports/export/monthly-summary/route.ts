@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { prismaToFrontend } from '@/lib/prisma-converters';
 import { buildMonthlySummaryDocx } from '@/lib/docx/buildMonthlySummaryDocx';
+import { getSession, officeScope, unauthorized } from '@/lib/auth/server';
+import { resolveSignatoryIds } from '@/lib/reports/signatories';
 
 const MONTH_NAMES = [
   'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
@@ -11,6 +13,9 @@ const MONTH_NAMES = [
 // GET /api/reports/export/monthly-summary?month=3&year=2026&preparedBy=John%20Doe
 export async function GET(request: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session) return unauthorized();
+
     const { searchParams } = new URL(request.url);
     const monthParam = searchParams.get('month');
     const yearParam = searchParams.get('year');
@@ -46,7 +51,8 @@ export async function GET(request: NextRequest) {
     const endDate = new Date(year, month, 0, 23, 59, 59, 999); // Last day of month
 
     // Build where clause
-    const whereClause: any = {
+    const whereClause: Record<string, unknown> = {
+      ...officeScope(session, searchParams.get('officeId')),
       createdAt: {
         gte: startDate,
         lte: endDate,
@@ -55,7 +61,11 @@ export async function GET(request: NextRequest) {
 
     // Add prepared by filter if provided
     if (preparedByParam && preparedByParam.trim() !== '') {
-      whereClause.preparedByName = preparedByParam.trim();
+      const preparedBy = preparedByParam.trim();
+      const { preparedById } = await resolveSignatoryIds(session.officeId, preparedBy, null);
+      whereClause.OR = preparedById
+        ? [{ preparedById }, { preparedByName: preparedBy }]
+        : [{ preparedByName: preparedBy }];
     }
 
     // Query reports for the month
