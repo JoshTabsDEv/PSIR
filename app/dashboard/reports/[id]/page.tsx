@@ -190,7 +190,17 @@ export default function ViewReportPage({ params }: PageProps) {
           </nav>
 
           <div className="pt-8 mt-8 border-t border-border/50 space-y-3">
-            <ExportDocumentsMenu reportId={id}>
+            <ExportDocumentsMenu
+              reportId={id}
+              piNumber={report.identifyingData.investigationDocketNumber}
+              onPiNumberSaved={(piNumber) =>
+                setReport((current) =>
+                  current
+                    ? { ...current, identifyingData: { ...current.identifyingData, investigationDocketNumber: piNumber } }
+                    : current
+                )
+              }
+            >
               <Button variant="outline" className="w-full justify-start gap-2 h-9 border-dashed">
                 <Download className="h-3.5 w-3.5" />
                 <span className="text-xs font-bold uppercase tracking-wider">Export</span>

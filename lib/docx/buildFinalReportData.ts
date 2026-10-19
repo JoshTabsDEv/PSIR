@@ -39,7 +39,7 @@ export function buildFinalReportData(report: PSIRReport, office?: FinalReportOff
     // Identification block
     Offense_he_is_convicted: str(offense?.convictedOf),
     True_Name: str(id.trueName),
-    Docket_Number: '', // supervision docket number: no field yet
+    Docket_Number: str(id.investigationDocketNumber), // PI No., same value printed on the Client Profile
     Nickname: str(id.alias),
     Judge: str(offense?.judge || id.letterJudge),
     Court: str(offense?.court || id.letterCourt),

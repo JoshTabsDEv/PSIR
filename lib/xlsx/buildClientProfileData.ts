@@ -40,6 +40,7 @@ export function buildClientProfileData(report: PSIRReport, office?: ClientProfil
     Office_Name: str(office?.name).toUpperCase(),
 
     // Numbers
+    PI_Number: str(id.investigationDocketNumber), // office-assigned PI No. (Section I "Investigation Docket #")
     Report_Number: str(report.reportNumber),
     PS_Number: '',
 

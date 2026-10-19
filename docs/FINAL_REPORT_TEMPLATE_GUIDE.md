@@ -16,7 +16,7 @@ The original "FR- AAA Format.docx" used Word mail-merge fields («Name_of_Petiti
 | `{Name_of_Petitioner_ALL_CAPS}` | FIRST MIDDLE LAST, upper case |
 | `{Offense_he_is_convicted}` | Convicted of |
 | `{True_Name}` | True name |
-| `{Docket_Number}` | blank (supervision docket number, no field yet) |
+| `{Docket_Number}` | PI No. = Section I "Investigation Docket #" (same value as on the Client Profile; prompted before the first export if empty) |
 | `{Nickname}` | Alias |
 | `{Judge}` | Present-offense judge (falls back to letter judge) |
 | `{Court}` | Present-offense court (falls back to letter court) |
