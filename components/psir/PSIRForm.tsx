@@ -12,15 +12,21 @@ import { SectionII_CriminalHistory } from './SectionII_CriminalHistory';
 import { SectionIII_SocioEconomic } from './SectionIII_SocioEconomic';
 import { SectionIV_Analysis } from './SectionIV_Analysis';
 import { AutoSaveIndicator } from './AutoSaveIndicator';
-import { defaultFormValues, generateReportNumber } from '@/lib/utils/form-helpers';
+import { defaultFormValues } from '@/lib/utils/form-helpers';
 import type { PSIRFormData } from '@/types/psir';
 import { judgeNameStore, normalizeJudgeName, dedupeAndSortJudgeNames } from '@/lib/judge-name-store';
 import Link from 'next/link';
 
+/** Result of a save. New reports return the server-assigned report number. */
+export interface SaveResult {
+  id: string;
+  reportNumber?: string;
+}
+
 interface PSIRFormProps {
   initialData?: Partial<PSIRFormData>;
   reportId?: string;
-  onSave?: (data: PSIRFormData, status: 'draft' | 'completed') => Promise<string | void>;
+  onSave?: (data: PSIRFormData, status: 'draft' | 'completed') => Promise<string | SaveResult | void>;
 }
 
 interface AnalysisFieldOptions {
@@ -48,7 +54,8 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
   const methods = useForm<PSIRFormData>({
     defaultValues: {
       ...defaultFormValues,
-      reportNumber: initialData?.reportNumber || generateReportNumber(),
+      // Assigned by the server on first save (per office, per year)
+      reportNumber: initialData?.reportNumber || '',
       ...initialData,
     } as PSIRFormData,
   });
@@ -171,7 +178,12 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
     setIsSaving(true);
     setSaveError(null);
     try {
-      const savedId = await onSave(formData, 'draft');
+      const saved = await onSave(formData, 'draft');
+      const savedId = typeof saved === 'string' ? saved : saved?.id;
+      const assignedNumber = typeof saved === 'object' ? saved?.reportNumber : undefined;
+      if (assignedNumber && assignedNumber !== getValues('reportNumber')) {
+        setValue('reportNumber', assignedNumber, { shouldDirty: false, shouldTouch: false, shouldValidate: false });
+      }
       setLastSaved(new Date());
       await fetchAnalysisFieldOptions();
       return savedId;
@@ -182,7 +194,7 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
     } finally {
       setIsSaving(false);
     }
-  }, [fetchAnalysisFieldOptions, onSave, methods, persistJudgeName, setValue]);
+  }, [fetchAnalysisFieldOptions, getValues, onSave, methods, persistJudgeName, setValue]);
 
   // Form Submission (Final Step)
   const onSubmit = async () => {
@@ -243,7 +255,7 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
                   <h1 className="text-sm font-bold tracking-tight">PSIR Workspace</h1>
                 </div>
                 <div className="font-mono text-[10px] text-muted-foreground bg-muted px-2 py-1 rounded inline-block">
-                  {watch('reportNumber')}
+                  {watch('reportNumber') || 'Number assigned on first save'}
                 </div>
               </div>
             </div>
@@ -276,7 +288,7 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
           <header className="lg:hidden sticky top-0 z-30 bg-white/95 backdrop-blur border-b px-4 py-3 flex items-center justify-between">
              <div className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-[var(--brand-primary)]" />
-                <span className="text-xs font-bold tracking-tight">{watch('reportNumber')}</span>
+                <span className="text-xs font-bold tracking-tight">{watch('reportNumber') || 'New report'}</span>
              </div>
              <AutoSaveIndicator isSaving={isSaving} lastSaved={lastSaved} error={saveError} />
           </header>

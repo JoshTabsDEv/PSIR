@@ -3,14 +3,14 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { PSIRForm } from '@/components/psir/PSIRForm';
+import { PSIRForm, type SaveResult } from '@/components/psir/PSIRForm';
 import type { PSIRFormData } from '@/types/psir';
 
 export default function NewReportPage() {
   const router = useRouter();
   const [reportId, setReportId] = useState<string | null>(null);
 
-  const handleSave = useCallback(async (data: PSIRFormData, status: 'draft' | 'completed'): Promise<string> => {
+  const handleSave = useCallback(async (data: PSIRFormData, status: 'draft' | 'completed'): Promise<string | SaveResult> => {
     // If we already have a report ID, update instead of create
     if (reportId) {
       const response = await fetch(`/api/reports/${reportId}`, {
@@ -53,6 +53,7 @@ export default function NewReportPage() {
 
       const result = await response.json();
       const newId: string = result.data._id;
+      const reportNumber: string | undefined = result.data.reportNumber;
 
       // Store the report ID for subsequent saves
       setReportId(newId);
@@ -64,7 +65,7 @@ export default function NewReportPage() {
         router.push(`/dashboard/reports/${newId}`);
       }
 
-      return newId;
+      return { id: newId, reportNumber };
     }
   }, [reportId, router]);
 
