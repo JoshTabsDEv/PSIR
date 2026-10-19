@@ -5,21 +5,25 @@ import * as path from 'path';
 /**
  * Minimal tag renderer for .xlsx templates.
  *
- * Any cell whose text contains `{Tag_Name}` is replaced with the value from
- * `data` (unknown tags become empty, like the DOCX renderer). Everything else
- * in the workbook (styles, merges, images, other sheets, print settings) is
- * left byte-for-byte untouched because we only rewrite the matched `<c>`
- * elements inside the worksheet XML.
+ * 1. Any cell whose text contains `{Tag_Name}` is replaced with the value from
+ *    `data` (unknown tags become empty, like the DOCX renderer).
+ * 2. Formula cells that are plain references (`='Clients Profile'!C16`, `=B12`)
+ *    get their cached result recomputed from the rendered cells, so dependent
+ *    sheets show the right values even in Excel's Protected View or in viewers
+ *    that never calculate. Other formulas lose their stale cached value and the
+ *    workbook is flagged for full recalculation on open.
+ *
+ * Everything else (styles, merges, images, print settings) is left untouched
+ * because only matched `<c>` elements inside the worksheet XML are rewritten.
  */
 
 const TAG_RE = /\{([A-Za-z0-9_]+)\}/g;
+const CELL_RE = /<c r="([A-Z]+\d+)"([^>]*?)(?:\/>|(?<!\/)>([\s\S]*?)<\/c>)/g;
+// 'Sheet Name'!A1 | Sheet!A1 | A1   (plain references only; $ anchors tolerated)
+const REF_FORMULA_RE = /^(?:'((?:[^']|'')+)'!|([A-Za-z0-9_.]+)!)?\$?([A-Z]+)\$?(\d+)$/;
 
 function escapeXml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function unescapeXml(value: string): string {
@@ -42,30 +46,109 @@ function loadSharedStrings(zip: PizZip): string[] {
   return [...file.asText().matchAll(/<si>([\s\S]*?)<\/si>/g)].map((m) => textOf(m[1]));
 }
 
-function renderSheet(xml: string, sharedStrings: string[], data: Record<string, string>): string {
-  // Cells with content: <c r="A1" s="3" t="s"><v>12</v></c> or <c ... t="inlineStr"><is>...</is></c>
-  // The (?<!\/) lookbehind skips self-closing empty cells (<c r="B2" s="1"/>), which would
-  // otherwise swallow everything up to the next </c>.
-  return xml.replace(/<c r="([A-Z]+\d+)"([^>]*?)(?<!\/)>([\s\S]*?)<\/c>/g, (whole, ref: string, attrs: string, inner: string) => {
+/** Sheet name -> zip path, from workbook.xml + its rels. */
+function loadSheetPaths(zip: PizZip): Map<string, string> {
+  const workbook = zip.file('xl/workbook.xml')?.asText() ?? '';
+  const rels = zip.file('xl/_rels/workbook.xml.rels')?.asText() ?? '';
+  const targets = new Map(
+    [...rels.matchAll(/<Relationship\b[^>]*\bId="([^"]+)"[^>]*\bTarget="([^"]+)"/g)].map((m) => [m[1], m[2]])
+  );
+  const paths = new Map<string, string>();
+  for (const m of workbook.matchAll(/<sheet\b[^>]*\bname="([^"]+)"[^>]*\br:id="([^"]+)"/g)) {
+    const target = targets.get(m[2]);
+    if (!target) continue;
+    const normalized = target.startsWith('/') ? target.slice(1) : `xl/${target.replace(/^\.\//, '')}`;
+    paths.set(unescapeXml(m[1]), normalized);
+  }
+  return paths;
+}
+
+interface Cell {
+  text: string;
+  formula?: string;
+}
+
+/** Parse every cell of a sheet into text (and formula when present). */
+function readCells(xml: string, sharedStrings: string[]): Map<string, Cell> {
+  const cells = new Map<string, Cell>();
+  for (const [, ref, attrs, inner = ''] of xml.matchAll(CELL_RE)) {
+    const type = (attrs.match(/\st="(\w+)"/) || [])[1];
+    const formula = (inner.match(/<f(?:\s[^>]*)?>([\s\S]*?)<\/f>/) || [])[1];
+    const v = (inner.match(/<v>([\s\S]*?)<\/v>/) || [])[1];
+    let text = '';
+    if (type === 's') text = sharedStrings[Number(v)] ?? '';
+    else if (type === 'inlineStr') text = textOf(inner);
+    else if (v !== undefined) text = unescapeXml(v);
+    cells.set(ref, { text, formula: formula ? unescapeXml(formula) : undefined });
+  }
+  return cells;
+}
+
+function renderTags(xml: string, sharedStrings: string[], data: Record<string, string>): string {
+  return xml.replace(CELL_RE, (whole, ref: string, attrs: string, inner?: string) => {
+    if (inner === undefined) return whole; // self-closing empty cell
     const type = (attrs.match(/\st="(\w+)"/) || [])[1];
     let text: string | undefined;
-
-    if (type === 's') {
-      const index = Number((inner.match(/<v>(\d+)<\/v>/) || [])[1]);
-      text = sharedStrings[index];
-    } else if (type === 'inlineStr') {
-      text = textOf(inner);
-    }
+    if (type === 's') text = sharedStrings[Number((inner.match(/<v>(\d+)<\/v>/) || [])[1])];
+    else if (type === 'inlineStr') text = textOf(inner);
 
     if (text === undefined || !TAG_RE.test(text)) return whole;
     TAG_RE.lastIndex = 0;
 
     const rendered = text.replace(TAG_RE, (_, key: string) => data[key] ?? '');
     const style = (attrs.match(/\ss="\d+"/) || [''])[0];
-
     if (rendered === '') return `<c r="${ref}"${style}/>`;
     return `<c r="${ref}"${style} t="inlineStr"><is><t xml:space="preserve">${escapeXml(rendered)}</t></is></c>`;
   });
+}
+
+/** Resolve a plain-reference formula to its final text, following chains across sheets. */
+function resolveReference(
+  formula: string,
+  currentSheet: string,
+  book: Map<string, Map<string, Cell>>,
+  seen = new Set<string>()
+): string | undefined {
+  const m = formula.trim().match(REF_FORMULA_RE);
+  if (!m) return undefined;
+  const sheet = m[1] ? m[1].replace(/''/g, "'") : m[2] || currentSheet;
+  const ref = `${m[3]}${m[4]}`;
+  const key = `${sheet}!${ref}`;
+  if (seen.has(key)) return undefined; // cycle
+  seen.add(key);
+
+  const cell = book.get(sheet)?.get(ref);
+  if (!cell) return '';
+  if (cell.formula) return resolveReference(cell.formula, sheet, book, seen);
+  return cell.text;
+}
+
+/** Rewrite formula cells: cached value recomputed for plain references, dropped otherwise. */
+function refreshFormulaCells(xml: string, sheetName: string, book: Map<string, Map<string, Cell>>): string {
+  return xml.replace(CELL_RE, (whole, ref: string, attrs: string, inner?: string) => {
+    if (!inner || !/<f[\s>]/.test(inner)) return whole;
+    const formulaXml = (inner.match(/<f(?:\s[^>]*)?>[\s\S]*?<\/f>|<f(?:\s[^>]*)?\/>/) || [''])[0];
+    const formula = (inner.match(/<f(?:\s[^>]*)?>([\s\S]*?)<\/f>/) || [])[1];
+    const style = (attrs.match(/\ss="\d+"/) || [''])[0];
+    const resolved = formula ? resolveReference(unescapeXml(formula), sheetName, book) : undefined;
+
+    if (resolved === undefined || resolved === '') {
+      return `<c r="${ref}"${style}>${formulaXml}</c>`; // let Excel compute it
+    }
+    return `<c r="${ref}"${style} t="str">${formulaXml}<v>${escapeXml(resolved)}</v></c>`;
+  });
+}
+
+/** Ask Excel to run a full calculation when the workbook is opened. */
+function forceRecalcOnOpen(zip: PizZip): void {
+  const file = zip.file('xl/workbook.xml');
+  if (!file) return;
+  let xml = file.asText();
+  if (/<calcPr\b[^>]*fullCalcOnLoad=/.test(xml)) return;
+  xml = /<calcPr\b/.test(xml)
+    ? xml.replace(/<calcPr\b/, '<calcPr fullCalcOnLoad="1"')
+    : xml.replace('</workbook>', '<calcPr fullCalcOnLoad="1"/></workbook>');
+  zip.file('xl/workbook.xml', xml);
 }
 
 export interface RenderXlsxOptions {
@@ -81,35 +164,23 @@ export function renderXlsxTemplate(data: Record<string, string>, options: Render
 
   const zip = new PizZip(fs.readFileSync(fullPath));
   const sharedStrings = loadSharedStrings(zip);
+  const sheetPaths = loadSheetPaths(zip);
 
-  for (const name of Object.keys(zip.files)) {
-    if (!/^xl\/worksheets\/sheet\d+\.xml$/.test(name)) continue;
-    const rendered = renderSheet(zip.file(name)!.asText(), sharedStrings, data);
-    zip.file(name, dropCachedFormulaValues(rendered));
+  // Pass 1: fill tags
+  const rendered = new Map<string, string>();
+  for (const [name, filePath] of sheetPaths) {
+    const file = zip.file(filePath);
+    if (file) rendered.set(name, renderTags(file.asText(), sharedStrings, data));
+  }
+
+  // Pass 2: recompute cached results of reference formulas from the filled cells
+  const book = new Map<string, Map<string, Cell>>();
+  for (const [name, xml] of rendered) book.set(name, readCells(xml, sharedStrings));
+  for (const [name, xml] of rendered) {
+    zip.file(sheetPaths.get(name)!, refreshFormulaCells(xml, name, book));
   }
 
   forceRecalcOnOpen(zip);
 
   return zip.generate({ type: 'nodebuffer', compression: 'DEFLATE' });
-}
-
-/**
- * Formula cells carry the value Excel last computed (from the sample data in
- * the template). Other sheets reference the profile sheet via formulas such as
- * ='Clients Profile'!C16, so strip those stale results; Excel recomputes them.
- */
-function dropCachedFormulaValues(xml: string): string {
-  return xml.replace(/(<f(?:\s[^>]*)?>[\s\S]*?<\/f>|<f(?:\s[^>]*)?\/>)<v>[\s\S]*?<\/v>/g, '$1');
-}
-
-/** Ask Excel to run a full calculation when the workbook is opened. */
-function forceRecalcOnOpen(zip: PizZip): void {
-  const file = zip.file('xl/workbook.xml');
-  if (!file) return;
-  let xml = file.asText();
-  if (/<calcPr\b[^>]*fullCalcOnLoad=/.test(xml)) return;
-  xml = /<calcPr\b/.test(xml)
-    ? xml.replace(/<calcPr\b/, '<calcPr fullCalcOnLoad="1"')
-    : xml.replace('</workbook>', '<calcPr fullCalcOnLoad="1"/></workbook>');
-  zip.file('xl/workbook.xml', xml);
 }
