@@ -1,45 +1,27 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { LogOut, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { clearCurrentUserCache, useCurrentUser } from '@/lib/hooks/useCurrentUser';
 
 interface HeaderProps {
   onMenuToggle?: () => void;
 }
 
-interface CurrentUser {
-  name: string;
-  username: string;
-  role: string;
-  officeCode: string;
-}
-
 export function Header({ onMenuToggle }: HeaderProps) {
   const router = useRouter();
-  const [user, setUser] = useState<CurrentUser | null>(null);
+  const user = useCurrentUser();
   const [signingOut, setSigningOut] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    fetch('/api/auth/me')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((result) => {
-        if (active && result?.success) setUser(result.data);
-      })
-      .catch(() => undefined);
-    return () => {
-      active = false;
-    };
-  }, []);
 
   async function handleSignOut() {
     setSigningOut(true);
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
     } finally {
+      clearCurrentUserCache();
       router.replace('/login');
       router.refresh();
     }
@@ -47,12 +29,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-white px-4 md:px-6">
-      <Button
-        variant="ghost"
-        size="icon"
-        className="md:hidden"
-        onClick={onMenuToggle}
-      >
+      <Button variant="ghost" size="icon" className="md:hidden" onClick={onMenuToggle}>
         <Menu className="h-5 w-5" />
         <span className="sr-only">Toggle menu</span>
       </Button>

@@ -109,6 +109,17 @@ Notes:
 - Report numbers are allocated per office and year inside a transaction (`report_counters`), so concurrent saves never collide.
 - "Prepared by" / "Reviewed by" names are matched to office users and linked (`preparedById` / `reviewedById`) so monthly and TEV exports stay accurate even if a name is typed differently later.
 
+## 🛡️ Administration (offices and users)
+
+Admins get an **Administration** entry in the sidebar (`/dashboard/admin`).
+
+- **Offices tab**: create offices (code, name, region, address), edit details, deactivate. The code is part of report numbers (`PI-TAG-2026-00001`) and cannot change.
+- **Users tab**: create a user (username, full name, office, role). The app shows a one-time **set-password link** (valid 7 days). Send it to the user; they open it, set their password, and sign in. Use **Reset link** to issue a fresh link (doubles as password reset), **Edit** to change name/office/role, **Deactivate** to block sign-in.
+- Admins cannot deactivate or demote themselves, nor deactivate their own office.
+- Set `APP_URL` (e.g. `https://psir.vercel.app`) in Vercel if generated links should use a custom domain; otherwise the request origin is used.
+
+The CLI scripts (`pnpm office:create`, `pnpm user:create`) still work for bootstrapping the first admin.
+
 ## ☁️ Deploy to Vercel
 
 1. In Vercel, **Add New Project** and import the `JoshTabsDEv/PSIR` repository.

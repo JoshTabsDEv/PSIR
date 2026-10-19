@@ -2,7 +2,16 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { SESSION_COOKIE, verifySessionToken } from '@/lib/auth/session';
 
 // Routes reachable without a session.
-const PUBLIC_PATHS = new Set(['/', '/login', '/api/auth/login']);
+const PUBLIC_PATHS = new Set(['/', '/login', '/set-password', '/api/auth/login', '/api/auth/set-password']);
+const PUBLIC_PREFIXES = ['/api/auth/invite'];
+
+function isPublic(pathname: string): boolean {
+  return PUBLIC_PATHS.has(pathname) || PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
+
+function isAdminArea(pathname: string): boolean {
+  return pathname.startsWith('/dashboard/admin') || pathname.startsWith('/api/admin');
+}
 
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
@@ -14,7 +23,16 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  if (PUBLIC_PATHS.has(pathname) || session) {
+  if (isPublic(pathname)) {
+    return NextResponse.next();
+  }
+
+  if (session) {
+    if (isAdminArea(pathname) && session.role !== 'ADMIN') {
+      return pathname.startsWith('/api/')
+        ? NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
+        : NextResponse.redirect(new URL('/dashboard', request.url));
+    }
     return NextResponse.next();
   }
 

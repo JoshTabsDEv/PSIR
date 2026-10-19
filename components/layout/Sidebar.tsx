@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, FilePlus, Search, BarChart3, X } from 'lucide-react';
+import { LayoutDashboard, FileText, FilePlus, Search, BarChart3, ShieldCheck, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -22,6 +23,10 @@ const navItems = [
 
 export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const me = useCurrentUser();
+  const items = me?.role === 'ADMIN'
+    ? [...navItems, { href: '/dashboard/admin', icon: ShieldCheck, label: 'Administration' }]
+    : navItems;
 
   return (
     <>
@@ -62,7 +67,7 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
         </div>
 
         <nav className="flex-1 space-y-1 p-4">
-          {navItems.map((item) => {
+          {items.map((item) => {
             const isActive = pathname === item.href ||
               (item.href !== '/dashboard' && pathname.startsWith(item.href));
 

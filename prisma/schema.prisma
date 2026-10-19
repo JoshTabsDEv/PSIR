@@ -133,10 +133,14 @@ model User {
   username     String   @unique
   name         String
   role         String   @default("OFFICER")
-  passwordHash String
+  passwordHash String? // null until the user sets a password via invite link
   isActive     Boolean  @default(true)
   officeId     Int
   office       Office   @relation(fields: [officeId], references: [id])
+
+  // One-time invite / password-reset link (SHA-256 of the token; raw token never stored)
+  inviteTokenHash String?   @unique
+  inviteExpiresAt DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

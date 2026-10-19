@@ -14,6 +14,16 @@ export function unauthorized() {
   return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
 }
 
+export function forbidden() {
+  return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+}
+
+/** Session if the caller is an ADMIN, otherwise null (callers answer 401/403). */
+export async function getAdminSession(): Promise<SessionUser | null> {
+  const session = await getSession();
+  return session?.role === 'ADMIN' ? session : null;
+}
+
 /**
  * Office scoping for report queries.
  * - OFFICER: always their own office.
