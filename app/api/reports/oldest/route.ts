@@ -12,6 +12,7 @@ export async function GET() {
         firstName: true,
         lastName: true,
         dateReceived: true,
+        status:true,
       },
     });
 
@@ -30,6 +31,7 @@ export async function GET() {
         reportNumber: oldestReport.investigationDocketNumber,
         petitionerName: `${oldestReport.firstName} ${oldestReport.lastName}`,
         createdAt: oldestReport.dateReceived,
+        status: oldestReport.status,
       },
     });
   } catch (error) {

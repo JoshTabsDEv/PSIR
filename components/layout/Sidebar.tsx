@@ -43,10 +43,11 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
         <div className="flex h-16 items-center justify-between border-b px-4">
           <div className="flex items-center gap-2">
             <Image
-              src="/Parole_and_Probation_Administration_(PPA).svg"
+              src="/ppa-logo.png"
               alt="Parole and Probation Administration logo"
-              width={24}
-              height={24}
+              width={32}
+              height={32}
+              className="h-8 w-8 object-contain"
             />
             <span className="font-semibold text-[var(--brand-primary)]">PSIR System</span>
           </div>

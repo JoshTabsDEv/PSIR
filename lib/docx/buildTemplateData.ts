@@ -51,12 +51,17 @@ export function buildTemplateData(report: PSIRReport): Record<string, unknown> {
   const socio = report.socioEconomicBackground;
   const analysis = report.analysisEvaluation;
   const previousConvictions = extractPreviousConvictions(crim.priorRecords);
+  const exportDate = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
 
   return {
     // ===== Report Metadata =====
     Report_Number: str(report.reportNumber),
     Status: str(report.status),
-    Created_Date: date(report.createdAt),
+    Export_Date: exportDate,
     Updated_Date: date(report.updatedAt),
 
     // ===== Section I: Identifying Data =====
@@ -155,7 +160,10 @@ export function buildTemplateData(report: PSIRReport): Record<string, unknown> {
     Previous_Convictions: formatPreviousConvictions(previousConvictions),
     Has_Previous_Convictions: checkbox(previousConvictions.length > 0),
     No_Previous_Convictions: checkbox(previousConvictions.length === 0),
-    Previous_Convictions_Count: num(previousConvictions.length),
+    Previous_Convictions_Count: String(previousConvictions.length),
+
+    // Simple date array for looping
+    Conviction_Dates: formatConvictionDates(crim.priorRecords),
 
     // ===== Section III: Socio-Economic Background =====
     // Family Economic Status
@@ -246,13 +254,22 @@ function formatPreviousConvictions(convictions: PriorRecord[]): Array<Record<str
   }));
 }
 
+function formatConvictionDates(records: PSIRReport['criminalHistory']['priorRecords']): Array<Record<string, string>> {
+  return [records.nbi, records.cmrd, records.others]
+    .filter(record => record.dateCharged)
+    .map((record, index) => ({
+      Index: String(index + 1),
+      Date: date(record.dateCharged),
+    }));
+}
+
 /**
  * Get list of all template tags for validation.
  */
 export function getAllTemplateTags(): string[] {
   return [
     // Metadata
-    'Report_Number', 'Status', 'Created_Date', 'Updated_Date',
+    'Report_Number', 'Status', 'Export_Date', 'Updated_Date',
     // Section I
     'Last_Name', 'First_Name', 'Middle_Name', 'True_Name', 'Full_Name', 'Alias',
     'Sex', 'Sex_Male', 'Sex_Female',

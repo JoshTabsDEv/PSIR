@@ -32,16 +32,17 @@ export interface TEVTemplateData {
 export function buildTEVData(
   reports: PSIRReport[],
   options: {
-    officerName: string;
+    officerName?: string;
     officeName: string;
     verifiedByName: string;
     certifiedByName: string;
     verifiedByTitle: string;
     certifiedByTitle: string;
+    preparedByName?: string;
   }
 ): TEVTemplateData {
   return {
-    Officer_Name: options.officerName,
+    Officer_Name: options.preparedByName || '',
     Office_Name: options.officeName,
     Verified_By_Name: options.verifiedByName,
     Certified_By_Name: options.certifiedByName,
@@ -49,7 +50,7 @@ export function buildTEVData(
     Certified_By_Title: options.certifiedByTitle,
     rows: reports.map((report) => ({
       Docket_No:
-        report.reportNumber ||
+        report.identifyingData.investigationDocketNumber ||
         '',
       Petitioner_Name: formatFullName(
         report.identifyingData.lastName,

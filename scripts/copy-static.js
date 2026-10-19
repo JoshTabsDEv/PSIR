@@ -97,6 +97,13 @@ copyDir(
 );
 console.log('[copy-static] ✓ templates/');
 
+// 3b. build/ (icons) → .next/standalone/build/
+copyDir(
+  path.join(root, 'build'),
+  path.join(standalone, 'build')
+);
+console.log('[copy-static] ✓ build/ (icons)');
+
 // 4. prisma/ → .next/standalone/prisma/
 copyDir(
   path.join(root, 'prisma'),

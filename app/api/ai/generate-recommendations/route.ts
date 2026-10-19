@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 
 type Tone = "objective" | "empathetic" | "firm";
 
@@ -9,25 +8,18 @@ function safeStr(v: unknown, fallback = "N/A") {
   return s.length ? s : fallback;
 }
 
-async function listModels(apiKey: string) {
-  // Optional debug helper recommended by the API error message (ListModels).
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
-    { method: "GET" }
-  );
-  const data = await res.json().catch(() => ({}));
-  return { ok: res.ok, status: res.status, data };
-}
+
 
 export async function POST(request: NextRequest) {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
+    const openRouterKey = process.env.OPENROUTER_API_KEY;
+
+    if (!openRouterKey) {
       return NextResponse.json(
         {
           success: false,
           error:
-            "Gemini API key is not configured. Add GEMINI_API_KEY to your .env.local file.",
+            "OpenRouter API key is not configured. Add OPENROUTER_API_KEY to your .env.local file.",
         },
         { status: 500 }
       );
@@ -67,11 +59,9 @@ export async function POST(request: NextRequest) {
     const chosenTone: Tone =
       tone === "empathetic" || tone === "firm" ? tone : "objective";
 
-
-    const PRIMARY_MODEL = "gemini-2.5-pro";
-    const FALLBACK_MODEL = "gemini-2.5-flash";
-
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const PRIMARY_MODEL = "deepseek/deepseek-chat-v3.1:free";
+    const FALLBACK_MODEL = "deepseek/deepseek-r1:free";
+    const FREE_ROUTER_MODEL = "openrouter/auto";
 
     const basePrompt = `
 You are a professional probation officer writing recommendations for a Post-Sentence Investigation Report (PSIR) in the Philippine correctional system.
@@ -130,20 +120,67 @@ Format: Professional paragraph without bullets or numbering.
       ? `${basePrompt}\n\nAdditional user instruction:\n${customPrompt}`
       : basePrompt;
 
+    async function generateWithOpenRouter(modelName: string) {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${openRouterKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: modelName,
+          messages: [
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          temperature: 0.7,
+          max_tokens: 538,
+        }),
+      });
 
-    async function generateWith(modelName: string) {
-      const model = genAI.getGenerativeModel({ model: modelName });
-      const result = await model.generateContent(prompt);
-      return result.response.text().trim();
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          `OpenRouter error: ${response.status} - ${errorData.error?.message || "Unknown error"}`
+        );
+      }
+
+      const data = await response.json();
+      if (!data.choices || !data.choices[0]?.message?.content) {
+        throw new Error("No response content from OpenRouter");
+      }
+
+      return data.choices[0].message.content.trim();
     }
 
     let recommendations = "";
+    let modelUsed = "";
+
+    // Try primary model
     try {
-      recommendations = await generateWith(PRIMARY_MODEL);
+      recommendations = await generateWithOpenRouter(PRIMARY_MODEL);
+      modelUsed = PRIMARY_MODEL;
     } catch (err: any) {
-      // If the primary model fails (quota/model availability), try fallback.
       console.error("Primary model failed:", err?.message || err);
-      recommendations = await generateWith(FALLBACK_MODEL);
+
+      // Try fallback model
+      try {
+        recommendations = await generateWithOpenRouter(FALLBACK_MODEL);
+        modelUsed = FALLBACK_MODEL;
+      } catch (fallbackErr: any) {
+        console.error("Fallback model failed:", fallbackErr?.message || fallbackErr);
+
+        // Try free router as last resort
+        try {
+          recommendations = await generateWithOpenRouter(FREE_ROUTER_MODEL);
+          modelUsed = FREE_ROUTER_MODEL;
+        } catch (routerErr: any) {
+          console.error("Free router also failed:", routerErr?.message || routerErr);
+          throw routerErr;
+        }
+      }
     }
 
     return NextResponse.json({
@@ -151,39 +188,19 @@ Format: Professional paragraph without bullets or numbering.
       data: { recommendations },
       meta: {
         tone: chosenTone,
-        modelUsed: recommendations ? PRIMARY_MODEL : FALLBACK_MODEL,
+        modelUsed,
+        provider: "openrouter",
       },
     });
   } catch (error: any) {
     console.error("Error generating recommendations:", error?.message || error);
-
-    // Helpful: if it smells like "model not found", show available models.
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (apiKey && String(error?.message || "").includes("models/")) {
-      const models = await listModels(apiKey);
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            error?.message ||
-            "Failed to generate recommendations. Check your API key, model name, and quotas.",
-          debug: {
-            listModelsStatus: models.status,
-            listModelsOk: models.ok,
-            // This can be large; keep it if you’re debugging locally.
-            models: models.data,
-          },
-        },
-        { status: 500 }
-      );
-    }
 
     return NextResponse.json(
       {
         success: false,
         error:
           error?.message ||
-          "Failed to generate recommendations. Please check your API key and try again.",
+          "Failed to generate recommendations. Check your OpenRouter API key and try again.",
       },
       { status: 500 }
     );

@@ -8,12 +8,13 @@ const MONTH_NAMES = [
   'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER',
 ];
 
-// GET /api/reports/export/monthly-summary?month=3&year=2026
+// GET /api/reports/export/monthly-summary?month=3&year=2026&preparedBy=John%20Doe
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const monthParam = searchParams.get('month');
     const yearParam = searchParams.get('year');
+    const preparedByParam = searchParams.get('preparedBy');
 
     // Validate params
     if (!monthParam || !yearParam) {
@@ -44,14 +45,22 @@ export async function GET(request: NextRequest) {
     const startDate = new Date(year, month - 1, 1); // First day of month
     const endDate = new Date(year, month, 0, 23, 59, 59, 999); // Last day of month
 
+    // Build where clause
+    const whereClause: any = {
+      createdAt: {
+        gte: startDate,
+        lte: endDate,
+      },
+    };
+
+    // Add prepared by filter if provided
+    if (preparedByParam && preparedByParam.trim() !== '') {
+      whereClause.preparedByName = preparedByParam.trim();
+    }
+
     // Query reports for the month
     const prismaReports = await prisma.pSIRReport.findMany({
-      where: {
-        createdAt: {
-          gte: startDate,
-          lte: endDate,
-        },
-      },
+      where: whereClause,
       orderBy: { createdAt: 'asc' },
     });
 

@@ -1,6 +1,6 @@
 {
   "name": "psir",
-  "version": "0.1.0",
+  "version": "1.0.1",
   "private": true,
   "description": "The PSIR System is a digital application for managing Post-Sentence Investigation Reports in the Philippine correctional system. It provides a comprehensive 4-section form for capturing offender data including identifying information, criminal history, socio-economic background, and analysis. The form auto-saves every 30 seconds, and report numbers are automatically generated sequentially. Users can download completed reports as DOCX or PDF documents and manage all reports through a dashboard with search and filter capabilities. The application is built with Next.js 16, React 19, TypeScript, TailwindCSS, and shadcn/ui, backed by a MySQL database using Prisma ORM.",
   "author": "Joshua Tabura <tabura.joshua10a@gmail.com>",
@@ -42,6 +42,10 @@
       {
         "from": "psir-seed.db",
         "to": "psir-seed.db"
+      },
+      {
+        "from": "build/icon.ico",
+        "to": "icon.ico"
       }
     ],
     "asar": true,
@@ -81,6 +85,7 @@
     "docx": "^9.5.2",
     "docxtemplater": "^3.68.1",
     "dotenv": "^17.3.1",
+    "electron-store": "^11.0.2",
     "file-saver": "^2.0.5",
     "jspdf": "^4.1.0",
     "jspdf-autotable": "^5.0.7",

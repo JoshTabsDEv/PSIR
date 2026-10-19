@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { FilePlus, Search, Clock, X, FileDown, Loader2, FileSpreadsheet } from 'lucide-react';
-import { format } from 'date-fns';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -45,6 +45,8 @@ export default function DashboardPage() {
   const [exportingPdf, setExportingPdf] = useState(false);
   const [exportingTev, setExportingTev] = useState(false);
   const [now, setNow] = useState(new Date());
+  const [preparedByNames, setPreparedByNames] = useState<string[]>([]);
+  const [selectedPreparedBy, setSelectedPreparedBy] = useState('');
 
   useEffect(() => {
     // Update the state every second
@@ -56,23 +58,118 @@ export default function DashboardPage() {
     return () => clearInterval(timer);
   }, []);
 
+  const fetchStats = useCallback(async () => {
+    try {
+      const response = await fetch('/api/reports/stats');
+      const result = await response.json();
+      if (result.success) {
+        setStats(result.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    async function fetchStats() {
+    fetchStats();
+  }, [fetchStats]);
+
+  useEffect(() => {
+    async function fetchPreparedByNames() {
       try {
-        const response = await fetch('/api/reports/stats');
+        const response = await fetch('/api/prepared-by/names');
         const result = await response.json();
         if (result.success) {
-          setStats(result.data);
+          setPreparedByNames(result.data);
         }
       } catch (error) {
-        console.error('Failed to fetch stats:', error);
-      } finally {
-        setLoading(false);
+        console.error('Failed to fetch prepared by names:', error);
       }
     }
 
-    fetchStats();
+    fetchPreparedByNames();
   }, []);
+
+  // Real-time refresh using Server-Sent Events
+  useEffect(() => {
+    let eventSource: EventSource | null = null;
+
+    function connectEventSource() {
+      // Close existing connection if any
+      if (eventSource) {
+        eventSource.close();
+      }
+
+      // Create new EventSource connection for real-time updates
+      eventSource = new EventSource('/api/reports/updates');
+
+      eventSource.onopen = () => {
+        console.log('Connected to real-time updates');
+      };
+
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          if (data.type === 'COURT_SUBMISSION') {
+            // Instant refresh when court submission happens
+            console.log('Court submission detected, refreshing stats');
+            fetchStats();
+            
+            // Show toast notification for court submission
+            if (data.reportNumber) {
+              toast.success(`Report ${data.reportNumber} submitted to court`);
+            }
+          } else if (data.type === 'STATS_UPDATE') {
+            // General stats update
+            setStats(data.stats);
+          }
+        } catch (error) {
+          console.error('Error parsing SSE message:', error);
+        }
+      };
+
+      eventSource.onerror = (error) => {
+        console.error('EventSource error:', error);
+        // Reconnect after 5 seconds
+        setTimeout(() => {
+          if (eventSource?.readyState === EventSource.CLOSED) {
+            connectEventSource();
+          }
+        }, 5000);
+      };
+    }
+
+    function handleVisibilityChange() {
+      if (document.hidden) {
+        // Tab is hidden, close connection to save resources
+        if (eventSource) {
+          eventSource.close();
+          eventSource = null;
+        }
+      } else {
+        // Tab is visible, reconnect and refresh immediately
+        fetchStats();
+        connectEventSource();
+      }
+    }
+
+    // Start connection
+    connectEventSource();
+
+    // Listen for visibility changes
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      // Cleanup
+      if (eventSource) {
+        eventSource.close();
+      }
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [fetchStats]);
 
   const handleSearch = useCallback(async () => {
     const query = searchQuery.trim();
@@ -101,14 +198,26 @@ export default function DashboardPage() {
   }, []);
 
   const handleExportTEV = useCallback(async () => {
+    // Validate that a prepared by person is selected
+    if (!selectedPreparedBy || selectedPreparedBy.trim() === '') {
+      toast.error('Please select a prepared by person. "All" is not allowed for WAR export.');
+      return;
+    }
+
     setExportingTev(true);
     try {
-      const url = `/api/reports/export/tev?month=${summaryMonth}&year=${summaryYear}`;
+      const params = new URLSearchParams({
+        month: summaryMonth,
+        year: summaryYear,
+        preparedBy: selectedPreparedBy.trim(),
+      });
+      
+      const url = `/api/reports/export/tev?${params.toString()}`;
       const response = await fetch(url);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.error || 'Failed to generate TEV export');
+        throw new Error(errorData?.error || 'Failed to generate WAR export');
       }
 
       const blob = await response.blob();
@@ -128,11 +237,11 @@ export default function DashboardPage() {
       setSummaryDialogOpen(false);
     } catch (error) {
       console.error('TEV export failed:', error);
-      alert(error instanceof Error ? error.message : 'Failed to export WAR');
+      toast.error(error instanceof Error ? error.message : 'Failed to export WAR');
     } finally {
       setExportingTev(false);
     }
-  }, [summaryMonth, summaryYear]);
+  }, [summaryMonth, summaryYear, selectedPreparedBy]);
 
   if (loading) {
     return <DashboardSkeleton />;
@@ -330,6 +439,25 @@ export default function DashboardPage() {
                     </option>
                   );
                 })}
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="prepared-by" className="text-sm font-medium text-foreground">
+                Prepared By <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                id="prepared-by"
+                value={selectedPreparedBy}
+                onChange={(e) => setSelectedPreparedBy(e.target.value)}
+                className="w-full"
+                required
+              >
+                <option value="">Select a person...</option>
+                {preparedByNames.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
               </Select>
             </div>
           </div>

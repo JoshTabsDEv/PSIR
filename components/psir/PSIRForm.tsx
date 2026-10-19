@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm, FormProvider, Resolver, FieldErrors } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm, FormProvider } from 'react-hook-form';
 import { Save, ChevronLeft, ChevronRight, Loader2, FileText, LayoutDashboard } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -13,22 +12,40 @@ import { SectionII_CriminalHistory } from './SectionII_CriminalHistory';
 import { SectionIII_SocioEconomic } from './SectionIII_SocioEconomic';
 import { SectionIV_Analysis } from './SectionIV_Analysis';
 import { AutoSaveIndicator } from './AutoSaveIndicator';
-import { psirFormSchema } from '@/lib/validations/psir-schema';
 import { defaultFormValues, generateReportNumber } from '@/lib/utils/form-helpers';
 import type { PSIRFormData } from '@/types/psir';
 import Link from 'next/link';
-
-const sectionFieldPaths: Record<number, (keyof PSIRFormData)[]> = {
-  1: ['identifyingData'],
-  2: ['criminalHistory'],
-  3: ['socioEconomicBackground'],
-  4: ['analysisEvaluation'],
-};
 
 interface PSIRFormProps {
   initialData?: Partial<PSIRFormData>;
   reportId?: string;
   onSave?: (data: PSIRFormData, status: 'draft' | 'completed') => Promise<string | void>;
+}
+
+interface AnalysisFieldOptions {
+  probationPeriods: string[];
+  communityServiceValues: string[];
+  preparedByNames: string[];
+  reviewedByNames: string[];
+}
+
+function normalizeJudgeName(judgeName: string): string {
+  return judgeName.trim().replace(/\s+/g, ' ');
+}
+
+function dedupeAndSortJudgeNames(judgeNames: string[]): string[] {
+  const uniqueNames = new Map<string, string>();
+
+  for (const judgeName of judgeNames) {
+    const normalizedJudgeName = normalizeJudgeName(judgeName);
+    if (!normalizedJudgeName) continue;
+
+    uniqueNames.set(normalizedJudgeName.toLowerCase(), normalizedJudgeName);
+  }
+
+  return Array.from(uniqueNames.values()).sort((left, right) =>
+    left.localeCompare(right, undefined, { sensitivity: 'base' })
+  );
 }
 
 export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
@@ -37,9 +54,16 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [judgeNames, setJudgeNames] = useState<string[]>([]);
+  const [judgeInputMode, setJudgeInputMode] = useState<'manual' | 'existing'>('manual');
+  const [analysisFieldOptions, setAnalysisFieldOptions] = useState<AnalysisFieldOptions>({
+    probationPeriods: [],
+    communityServiceValues: [],
+    preparedByNames: [],
+    reviewedByNames: [],
+  });
 
   const methods = useForm<PSIRFormData>({
-    resolver: zodResolver(psirFormSchema) as Resolver<PSIRFormData>,
     defaultValues: {
       ...defaultFormValues,
       reportNumber: initialData?.reportNumber || generateReportNumber(),
@@ -47,7 +71,104 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
     } as PSIRFormData,
   });
 
-  const { handleSubmit, watch, trigger, formState: { isDirty } } = methods;
+  const {
+    watch,
+    setValue,
+    getValues,
+    formState: { isDirty },
+  } = methods;
+
+  const persistJudgeName = useCallback(async (rawJudgeName: string) => {
+    if (!window.electron?.judgeName) return;
+
+    const normalizedJudgeName = normalizeJudgeName(rawJudgeName || '');
+    if (!normalizedJudgeName) return;
+
+    try {
+      const state = await window.electron.judgeName.save(normalizedJudgeName);
+      setJudgeNames((currentJudgeNames) =>
+        dedupeAndSortJudgeNames([...currentJudgeNames, ...state.judgeNames])
+      );
+    } catch (error) {
+      console.error('Failed to persist judge name:', error);
+    }
+  }, []);
+
+  const fetchAnalysisFieldOptions = useCallback(async () => {
+    try {
+      const response = await fetch('/api/reports/field-options');
+      const result = await response.json();
+
+      if (!response.ok || !result.success || !result.data) {
+        throw new Error(result.error || 'Failed to load report field options');
+      }
+
+      setAnalysisFieldOptions({
+        probationPeriods: Array.isArray(result.data.probationPeriods) ? result.data.probationPeriods : [],
+        communityServiceValues: Array.isArray(result.data.communityServiceValues) ? result.data.communityServiceValues : [],
+        preparedByNames: Array.isArray(result.data.preparedByNames) ? result.data.preparedByNames : [],
+        reviewedByNames: Array.isArray(result.data.reviewedByNames) ? result.data.reviewedByNames : [],
+      });
+    } catch (error) {
+      console.error('Failed to preload report field options:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function preloadJudgeNames() {
+      const judgeNameStatePromise = window.electron?.judgeName?.getState();
+      const databaseJudgeNamesPromise = fetch('/api/judge-names')
+        .then(async (response) => {
+          const result = await response.json();
+          if (!response.ok || !result.success || !Array.isArray(result.data)) {
+            throw new Error(result.error || 'Failed to load judge names');
+          }
+          return result.data as string[];
+        })
+        .catch((error) => {
+          console.error('Failed to load judge names from reports:', error);
+          return [] as string[];
+        });
+
+      try {
+        const [judgeNameState, databaseJudgeNames] = await Promise.all([
+          judgeNameStatePromise ?? Promise.resolve({ recentJudge: '', judgeNames: [] }),
+          databaseJudgeNamesPromise,
+        ]);
+
+        const mergedJudgeNames = dedupeAndSortJudgeNames([
+          ...judgeNameState.judgeNames,
+          ...databaseJudgeNames,
+        ]);
+        const currentJudgeName = getValues('identifyingData.letterJudge');
+
+        if (!isMounted) return;
+
+        setJudgeNames(mergedJudgeNames);
+
+        if (currentJudgeName) {
+          setJudgeInputMode('manual');
+        } else if (judgeNameState.recentJudge) {
+          setValue('identifyingData.letterJudge', judgeNameState.recentJudge, {
+            shouldDirty: false,
+            shouldTouch: false,
+            shouldValidate: false,
+          });
+        }
+      } catch (error) {
+        console.error('Failed to preload judge names:', error);
+      }
+    }
+
+    preloadJudgeNames();
+    void fetchAnalysisFieldOptions();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [fetchAnalysisFieldOptions, getValues, setValue]);
 
   // --- Unified Save Logic ---
   
@@ -55,19 +176,24 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
     if (!onSave) return;
     
     const formData = data || methods.getValues();
-    
-    // Validate the current section before saving
-    const isValid = await trigger(sectionFieldPaths[currentSection]);
-    if (!isValid) {
-      toast.error('Please fix validation errors before saving');
-      return;
+    const normalizedJudgeName = normalizeJudgeName(formData.identifyingData.letterJudge || '');
+    if (normalizedJudgeName && normalizedJudgeName !== formData.identifyingData.letterJudge) {
+      formData.identifyingData.letterJudge = normalizedJudgeName;
+      setValue('identifyingData.letterJudge', normalizedJudgeName, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: false,
+      });
     }
+
+    await persistJudgeName(normalizedJudgeName);
 
     setIsSaving(true);
     setSaveError(null);
     try {
       const savedId = await onSave(formData, 'draft');
       setLastSaved(new Date());
+      await fetchAnalysisFieldOptions();
       return savedId;
     } catch (error) {
       setSaveError('Failed to save');
@@ -76,18 +202,18 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
     } finally {
       setIsSaving(false);
     }
-  }, [onSave, methods, trigger, currentSection]);
+  }, [fetchAnalysisFieldOptions, onSave, methods, persistJudgeName, setValue]);
 
   // Form Submission (Final Step)
-  const onSubmit = async (data: PSIRFormData) => {
+  const onSubmit = async () => {
     try {
-      const savedId = await handleSaveDraft(data);
+      const savedId = await handleSaveDraft();
       toast.success('Report saved successfully');
       const redirectId = savedId || reportId;
       if (redirectId) {
         router.push(`/dashboard/reports/${redirectId}`);
       }
-    } catch (error) {
+    } catch {
       // Error handled in handleSaveDraft
     }
   };
@@ -97,35 +223,19 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
     if (currentSection === 4 || !isDirty) return;
 
     const timer = setTimeout(async () => {
-      const isValid = await trigger(sectionFieldPaths[currentSection]);
-      if (isValid) {
-        handleSaveDraft();
-      }
+      handleSaveDraft();
     }, 30000);
 
     return () => clearTimeout(timer);
-  }, [isDirty, currentSection, trigger, handleSaveDraft]);
+  }, [isDirty, currentSection, handleSaveDraft]);
 
   // --- Navigation Logic ---
 
-  const validateSection = async (sectionNumber: number): Promise<boolean> => {
-    const fieldsToValidate = sectionFieldPaths[sectionNumber];
-    const isValid = await trigger(fieldsToValidate);
-    if (!isValid) {
-      toast.error(`Please complete Section ${sectionNumber} correctly.`);
-    }
-    return isValid;
-  };
-
   const handleNext = async () => {
     if (currentSection < 4) {
-      const isValid = await validateSection(currentSection);
-      if (isValid) {
-        // Optional: Save on section transition
-        await handleSaveDraft();
-        setCurrentSection(prev => prev + 1);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
+      await handleSaveDraft();
+      setCurrentSection(prev => prev + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -162,8 +272,7 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
               <FormNavigation
                 currentSection={currentSection}
                 onSectionChange={setCurrentSection}
-                onValidateSection={validateSection}
-                allowNextSectionNavigation={false}
+                allowNextSectionNavigation
               />
             </div>
 
@@ -193,12 +302,33 @@ export function PSIRForm({ initialData, reportId, onSave }: PSIRFormProps) {
           </header>
 
           <div className="container max-w-4xl mx-auto py-8 px-4 lg:px-12">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                void onSubmit();
+              }}
+              className="space-y-8"
+            >
               <div className="page-transition">
-                {currentSection === 1 && <SectionI_IdentifyingData />}
+                {currentSection === 1 && (
+                  <SectionI_IdentifyingData
+                    judgeNames={judgeNames}
+                    judgeInputMode={judgeInputMode}
+                    onJudgeInputModeChange={setJudgeInputMode}
+                    onJudgeNamesChange={setJudgeNames}
+                    onJudgeNameCommit={persistJudgeName}
+                  />
+                )}
                 {currentSection === 2 && <SectionII_CriminalHistory />}
                 {currentSection === 3 && <SectionIII_SocioEconomic />}
-                {currentSection === 4 && <SectionIV_Analysis />}
+                {currentSection === 4 && (
+                  <SectionIV_Analysis
+                    probationPeriodOptions={analysisFieldOptions.probationPeriods}
+                    communityServiceOptions={analysisFieldOptions.communityServiceValues}
+                    preparedByOptions={analysisFieldOptions.preparedByNames}
+                    reviewedByOptions={analysisFieldOptions.reviewedByNames}
+                  />
+                )}
               </div>
 
               <div className="flex items-center justify-between pt-8 border-t border-border/50">

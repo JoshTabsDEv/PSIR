@@ -23,10 +23,11 @@ export function Header({ onMenuToggle }: HeaderProps) {
 
       <div className="flex items-center gap-2">
         <Image
-          src="/Parole_and_Probation_Administration_(PPA).svg"
+          src="/ppa-logo.png"
           alt="Parole and Probation Administration logo"
-          width={28}
-          height={28}
+          width={36}
+          height={36}
+          className="h-9 w-9 object-contain"
           priority
         />
         <h1 className="text-lg font-semibold text-gray-900">PSIR Management System</h1>

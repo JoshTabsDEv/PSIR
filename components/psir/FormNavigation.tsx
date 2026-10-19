@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckCircle2, Circle } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface FormNavigationProps {
@@ -21,19 +21,10 @@ const sections = [
 export function FormNavigation({
   currentSection,
   onSectionChange,
-  onValidateSection,
   completedSections = [],
-  allowNextSectionNavigation = false,
 }: FormNavigationProps) {
   const handleSectionClick = async (targetSection: number) => {
-    // Always allow navigation to previous sections
-    if (targetSection <= currentSection) {
-      onSectionChange(targetSection);
-      return;
-    }
-
-    // Block all forward navigation - only allow manual save button
-    return;
+    onSectionChange(targetSection);
   };
 
   const handleSectionClickEvent = (e: React.MouseEvent, targetSection: number) => {
@@ -47,9 +38,7 @@ export function FormNavigation({
       {sections.map((section) => {
         const isActive = currentSection === section.id;
         const isCompleted = completedSections.includes(section.id);
-        const isNextSection = section.id === currentSection + 1;
-        const isFutureSection = section.id > currentSection + 1;
-        const canNavigate = section.id <= currentSection || (allowNextSectionNavigation && isNextSection);
+        const canNavigate = true;
 
         return (
           <button

@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { DatePicker } from '@/components/ui/date-picker';
+import { AutocompleteInput } from './AutocompleteInput';
 import {
   FormField,
   FormItem,
@@ -21,7 +22,19 @@ import { cn } from '@/lib/utils';
 
 type ToneSuggestion = 'Objective' | 'Empathetic' | 'Firm';
 
-export function SectionIV_Analysis() {
+interface SectionIVAnalysisProps {
+  probationPeriodOptions: string[];
+  communityServiceOptions: string[];
+  preparedByOptions: string[];
+  reviewedByOptions: string[];
+}
+
+export function SectionIV_Analysis({
+  probationPeriodOptions,
+  communityServiceOptions,
+  preparedByOptions,
+  reviewedByOptions,
+}: SectionIVAnalysisProps) {
   const { control, watch, setValue } = useFormContext<PSIRFormData>();
   const [selectedTone, setSelectedTone] = useState<ToneSuggestion>('Objective');
   const [manualPrompt, setManualPrompt] = useState('');
@@ -190,7 +203,13 @@ export function SectionIV_Analysis() {
                 <FormItem>
                   <FormLabel>Recommended Probation Period</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., THREE (3) YEARS, SIX (6) MONTHS" {...field} className="bg-background shadow-none focus-visible:ring-1" />
+                    <AutocompleteInput
+                      placeholder="e.g., THREE (3) YEARS, SIX (6) MONTHS"
+                      {...field}
+                      value={field.value ?? ''}
+                      options={probationPeriodOptions}
+                      className="bg-background shadow-none focus-visible:ring-1"
+                    />
                   </FormControl>
                   <p className="text-[10px] text-muted-foreground">Specify the exact duration for the probation.</p>
                   <FormMessage />
@@ -203,12 +222,14 @@ export function SectionIV_Analysis() {
                 name="analysisEvaluation.communityServiceHours"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Community Service Hours</FormLabel>
-                    <FormControl>
-                      <Input 
+                  <FormLabel>Community Service Hours</FormLabel>
+                  <FormControl>
+                      <AutocompleteInput
                         type="text" 
-                        placeholder="e.g., Forty (40) hours" 
+                        placeholder="e.g., Forty-Eight (48) hours" 
                         {...field} 
+                        value={field.value ?? ''}
+                        options={communityServiceOptions}
                         onChange={(e) => field.onChange(e.target.value)}
                         className="bg-background shadow-none focus-visible:ring-1" 
                       />
@@ -255,7 +276,13 @@ export function SectionIV_Analysis() {
                   <FormItem>
                     <FormLabel>Prepared By (Name)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Full Name" {...field} className="bg-background shadow-none focus-visible:ring-1 font-bold" />
+                      <AutocompleteInput
+                        placeholder="FULL NAME"
+                        {...field}
+                        value={field.value ?? ''}
+                        options={preparedByOptions}
+                        className="bg-background shadow-none focus-visible:ring-1 font-bold"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -303,7 +330,13 @@ export function SectionIV_Analysis() {
                   <FormItem>
                     <FormLabel>Reviewed By (Name)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Full Name" {...field} className="bg-background shadow-none focus-visible:ring-1 font-bold" />
+                      <AutocompleteInput
+                        placeholder="FULL NAME"
+                        {...field}
+                        value={field.value ?? ''}
+                        options={reviewedByOptions}
+                        className="bg-background shadow-none focus-visible:ring-1 font-bold"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -1,13 +1,13 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { DatePicker } from '@/components/ui/date-picker';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import {
   FormField,
   FormItem,
@@ -18,12 +18,59 @@ import {
 import type { PSIRFormData } from '@/types/psir';
 import { civilStatusOptions, educationalAttainmentOptions, religionOptions } from '@/lib/utils/form-helpers';
 import { calculateAge } from '@/lib/utils/date-formatters';
-import { User, Calendar, MapPin, Briefcase, Users } from 'lucide-react';
+import { User, MapPin, Briefcase, Users } from 'lucide-react';
 
-export function SectionI_IdentifyingData() {
-  const { control, watch, setValue } = useFormContext<PSIRFormData>();
+interface SectionIIdentifyingDataProps {
+  judgeNames: string[];
+  judgeInputMode: 'manual' | 'existing';
+  onJudgeInputModeChange: (mode: 'manual' | 'existing') => void;
+  onJudgeNamesChange: (judgeNames: string[]) => void;
+  onJudgeNameCommit: (judgeName: string) => Promise<void>;
+}
 
-  const birthday = watch('identifyingData.birthday');
+function normalizeJudgeName(judgeName: string): string {
+  return judgeName.trim().replace(/\s+/g, ' ');
+}
+
+function dedupeAndSortJudgeNames(judgeNames: string[]): string[] {
+  const uniqueNames = new Map<string, string>();
+
+  for (const judgeName of judgeNames) {
+    const normalizedJudgeName = normalizeJudgeName(judgeName);
+    if (!normalizedJudgeName) continue;
+
+    uniqueNames.set(normalizedJudgeName.toLowerCase(), normalizedJudgeName);
+  }
+
+  return Array.from(uniqueNames.values()).sort((left, right) =>
+    left.localeCompare(right, undefined, { sensitivity: 'base' })
+  );
+}
+
+export function SectionI_IdentifyingData({
+  judgeNames,
+  judgeInputMode,
+  onJudgeInputModeChange,
+  onJudgeNamesChange,
+  onJudgeNameCommit,
+}: SectionIIdentifyingDataProps) {
+  const { control, setValue, watch } = useFormContext<PSIRFormData>();
+  const [judgeSearch, setJudgeSearch] = useState('');
+  const judgeFieldValue = watch('identifyingData.letterJudge');
+
+  const filteredJudgeNames = useMemo(() => {
+    const normalizedSearch = judgeSearch.trim().toLowerCase();
+    const sourceJudgeNames = dedupeAndSortJudgeNames([
+      ...judgeNames,
+      normalizeJudgeName(judgeFieldValue || ''),
+    ]);
+
+    if (!normalizedSearch) return sourceJudgeNames;
+
+    return sourceJudgeNames.filter((judgeName) =>
+      judgeName.toLowerCase().includes(normalizedSearch)
+    );
+  }, [judgeNames, judgeSearch, judgeFieldValue]);
 
   return (
     <Card className="shadow-none border border-border bg-card/50">
@@ -44,9 +91,36 @@ export function SectionI_IdentifyingData() {
       <CardContent className="space-y-10 pt-8">
         {/* Letter Information */}
         <div className="space-y-6">
-          <div className="flex items-center gap-2 pb-2 border-b border-border/50">
-            <Briefcase className="h-4 w-4 text-[var(--brand-primary)]" />
-            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/80">Letter Information</h3>
+          <div className="flex items-center justify-between gap-3 pb-2 border-b border-border/50">
+            <div className="flex items-center gap-2">
+              <Briefcase className="h-4 w-4 text-[var(--brand-primary)]" />
+              <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/80">Letter Information</h3>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="border-dashed"
+              onClick={async () => {
+                onJudgeInputModeChange('manual');
+                setJudgeSearch('');
+                setValue('identifyingData.letterJudge', '', {
+                  shouldDirty: true,
+                  shouldTouch: true,
+                  shouldValidate: true,
+                });
+
+                if (window.electron?.judgeName) {
+                  try {
+                    await window.electron.judgeName.clear();
+                  } catch (error) {
+                    console.error('Failed to clear saved judge name:', error);
+                  }
+                }
+              }}
+            >
+              Clear Saved Judge Name
+            </Button>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 pl-0 sm:pl-4 border-l-2 border-transparent sm:border-[var(--brand-primary)]/10">
             <FormField
@@ -54,12 +128,92 @@ export function SectionI_IdentifyingData() {
               name="identifyingData.letterJudge"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="flex items-center gap-1">
-                    Judge Name <span className="text-destructive">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter judge name" {...field} className="bg-background shadow-none focus-visible:ring-1" />
-                  </FormControl>
+                  <div className="flex items-center justify-between gap-3">
+                    <FormLabel className="flex items-center gap-1">
+                      Judge Name <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => {
+                        if (judgeInputMode === 'manual') {
+                          onJudgeInputModeChange('existing');
+                          setJudgeSearch(field.value || '');
+                          return;
+                        }
+
+                        onJudgeInputModeChange('manual');
+                        setJudgeSearch('');
+                      }}
+                    >
+                      {judgeInputMode === 'manual' ? 'Use Existing Judge' : '+ New Judge'}
+                    </Button>
+                  </div>
+
+                  {judgeInputMode === 'existing' ? (
+                    <div className="space-y-2">
+                      <Input
+                        value={judgeSearch}
+                        onChange={(event) => setJudgeSearch(event.target.value)}
+                        placeholder="Search judge names"
+                        className="bg-background shadow-none focus-visible:ring-1"
+                      />
+                      <FormControl>
+                        <Select
+                          value={field.value || ''}
+                          onChange={async (event) => {
+                            const selectedJudgeName = normalizeJudgeName(event.target.value);
+                            field.onChange(selectedJudgeName);
+                            if (selectedJudgeName) {
+                              onJudgeNamesChange(
+                                dedupeAndSortJudgeNames([...judgeNames, selectedJudgeName])
+                              );
+                              await onJudgeNameCommit(selectedJudgeName);
+                            }
+                          }}
+                          className="bg-background shadow-none focus-visible:ring-1"
+                        >
+                          <option value="">
+                            {filteredJudgeNames.length > 0 ? 'Select an existing judge' : 'No judges found'}
+                          </option>
+                          {filteredJudgeNames.map((judgeName) => (
+                            <option key={judgeName} value={judgeName}>
+                              {judgeName}
+                            </option>
+                          ))}
+                        </Select>
+                      </FormControl>
+                      {judgeNames.length === 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          No saved judge names yet. Switch to manual input to add one.
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <FormControl>
+                      <Input
+                        placeholder="eg. HON. JOHN DOE"
+                        {...field}
+                        onChange={(event) => {
+                          field.onChange(event.target.value);
+                        }}
+                        onBlur={async (event) => {
+                          field.onBlur();
+                          const normalizedJudgeName = normalizeJudgeName(event.target.value);
+                          if (!normalizedJudgeName) return;
+
+                          field.onChange(normalizedJudgeName);
+                          onJudgeNamesChange(
+                            dedupeAndSortJudgeNames([...judgeNames, normalizedJudgeName])
+                          );
+                          await onJudgeNameCommit(normalizedJudgeName);
+                        }}
+                        className="bg-background shadow-none focus-visible:ring-1"
+                      />
+                    </FormControl>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
@@ -73,7 +227,7 @@ export function SectionI_IdentifyingData() {
                     Court <span className="text-destructive">*</span>
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., RTC Branch 1" {...field} className="bg-background shadow-none focus-visible:ring-1" />
+                    <Input placeholder="e.g., RTC BRANCH 1" {...field} className="bg-background shadow-none focus-visible:ring-1" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -104,7 +258,7 @@ export function SectionI_IdentifyingData() {
                   </FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Complete court/office address"
+                      placeholder="Complete Court/Office Address"
                       rows={2}
                       className="resize-none bg-background shadow-none focus-visible:ring-1"
                       {...field}
@@ -351,7 +505,7 @@ export function SectionI_IdentifyingData() {
                 name="identifyingData.mother"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Mother's Maiden Name</FormLabel>
+                    <FormLabel>Mother&apos;s Maiden Name</FormLabel>
                     <FormControl>
                       <Input placeholder="Full name" {...field} className="bg-background shadow-none focus-visible:ring-1" />
                     </FormControl>
@@ -364,7 +518,7 @@ export function SectionI_IdentifyingData() {
                 name="identifyingData.father"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Father's Name</FormLabel>
+                    <FormLabel>Father&apos;s Name</FormLabel>
                     <FormControl>
                       <Input placeholder="Full name" {...field} className="bg-background shadow-none focus-visible:ring-1" />
                     </FormControl>

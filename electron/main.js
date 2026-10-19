@@ -1,17 +1,55 @@
 // electron/main.js — Electron main process for PSIR Management System
+/* eslint-disable @typescript-eslint/no-require-imports */
 const { app, BrowserWindow, shell, ipcMain } = require('electron');
 const path = require('path');
-const { fork, execSync } = require('child_process');
+const { fork, spawn } = require('child_process');
 const http = require('http');
 const fs = require('fs');
+const Store = require('electron-store').default;
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 const PORT = 3000;
 const HOST = 'localhost';
+// Resolve app icon for BrowserWindow (works in both dev and production)
+function getIconPath() {
+ 
+    return path.join(__dirname, '..', 'build', 'icon.ico');
+ 
+  // In production, icon.ico is placed in resources/ via extraResources in electron-builder config
+  // return path.join(process.resourcesPath, 'icon.ico');
+}
+
 
 let mainWindow = null;
 let serverProcess = null;
 let dbPath = null;
+const settingsStore = new Store({
+  name: 'preferences',
+  defaults: {
+    recentJudge: '',
+    judgeNames: [],
+  },
+});
+
+function normalizeJudgeName(judgeName) {
+  if (typeof judgeName !== 'string') return '';
+  return judgeName.trim().replace(/\s+/g, ' ');
+}
+
+function dedupeAndSortJudgeNames(judgeNames) {
+  const uniqueNames = new Map();
+
+  for (const judgeName of judgeNames) {
+    const normalizedJudgeName = normalizeJudgeName(judgeName);
+    if (!normalizedJudgeName) continue;
+
+    uniqueNames.set(normalizedJudgeName.toLowerCase(), normalizedJudgeName);
+  }
+
+  return Array.from(uniqueNames.values()).sort((left, right) =>
+    left.localeCompare(right, undefined, { sensitivity: 'base' })
+  );
+}
 
 // ── Utilities ──────────────────────────────────────────────────────────────
 
@@ -87,8 +125,6 @@ function ensureDatabase(dbPath) {
 function runMigrationsAsync(appRoot) {
   try {
     console.log('[electron] Starting prisma db push (background)...');
-    const { spawn } = require('child_process');
-
     const proc = spawn('npx', ['prisma', 'db', 'push', '--skip-generate'], {
       cwd: appRoot,
       stdio: ['ignore', 'pipe', 'pipe'],
@@ -279,6 +315,37 @@ ipcMain.handle('sync:restore', async (event, backupPath) => {
   }
 });
 
+ipcMain.handle('judge-name:get-state', () => {
+  return {
+    recentJudge: normalizeJudgeName(settingsStore.get('recentJudge', '')),
+    judgeNames: dedupeAndSortJudgeNames(settingsStore.get('judgeNames', [])),
+  };
+});
+
+ipcMain.handle('judge-name:save', (event, judgeName) => {
+  const normalizedJudgeName = normalizeJudgeName(judgeName);
+  const nextJudgeNames = dedupeAndSortJudgeNames([
+    ...settingsStore.get('judgeNames', []),
+    normalizedJudgeName,
+  ]);
+
+  settingsStore.set('judgeNames', nextJudgeNames);
+  settingsStore.set('recentJudge', normalizedJudgeName);
+
+  return {
+    recentJudge: normalizedJudgeName,
+    judgeNames: nextJudgeNames,
+  };
+});
+
+ipcMain.handle('judge-name:clear', () => {
+  settingsStore.set('recentJudge', '');
+  return {
+    recentJudge: '',
+    judgeNames: dedupeAndSortJudgeNames(settingsStore.get('judgeNames', [])),
+  };
+});
+
 // ── Window ─────────────────────────────────────────────────────────────────
 
 function createWindow() {
@@ -288,6 +355,7 @@ function createWindow() {
     minWidth: 900,
     minHeight: 600,
     title: 'PSIR Management System',
+    icon: getIconPath(),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -296,8 +364,8 @@ function createWindow() {
   });
 
   const url = isDev
-    ? `http://localhost:${PORT}/dashboard`
-    : `http://${HOST}:${PORT}/dashboard`;
+    ? `http://localhost:${PORT}/`
+    : `http://${HOST}:${PORT}/`;
 
   mainWindow.loadURL(url);
 

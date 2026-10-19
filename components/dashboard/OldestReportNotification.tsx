@@ -9,6 +9,7 @@ interface OldestReportData {
   reportNumber: string;
   petitionerName: string;
   createdAt: string;
+  status: string;
 }
 
 export function OldestReportNotification() {
@@ -57,11 +58,7 @@ export function OldestReportNotification() {
 
   console.log(numberofDays);
 
-  if (error || !data) {
-    return null; // Don't show notification if there's an error or no data
-  }
-
-  return (
+  return (error || !data || data?.status === 'completed') ? null : (
     <Card className="shadow-sm bg-gradient-to-r from-white to-blue-50/30 border-blue-200/50">
       <CardHeader className="pb-4">
         <div className="flex items-start gap-3">

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electron', {
@@ -8,5 +9,10 @@ contextBridge.exposeInMainWorld('electron', {
     backup: () => ipcRenderer.invoke('sync:backup'),
     backups: () => ipcRenderer.invoke('sync:backups'),
     restore: (backupPath) => ipcRenderer.invoke('sync:restore', backupPath)
+  },
+  judgeName: {
+    getState: () => ipcRenderer.invoke('judge-name:get-state'),
+    save: (judgeName) => ipcRenderer.invoke('judge-name:save', judgeName),
+    clear: () => ipcRenderer.invoke('judge-name:clear')
   }
 });

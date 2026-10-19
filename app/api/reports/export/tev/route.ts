@@ -9,23 +9,25 @@ const MONTH_NAMES = [
   'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER',
 ];
 
-// GET /api/reports/export/tev?month=3&year=2026
+// GET /api/reports/export/tev?month=3&year=2026&preparedBy=John%20Doe
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const monthParam = searchParams.get('month');
     const yearParam = searchParams.get('year');
+    const preparedByParam = searchParams.get('preparedBy');
 
     // Validate params
-    if (!monthParam || !yearParam) {
+    if (!monthParam || !yearParam || !preparedByParam) {
       return NextResponse.json(
-        { success: false, error: 'Both month and year query parameters are required' },
+        { success: false, error: 'Month, year, and preparedBy query parameters are required' },
         { status: 400 }
       );
     }
 
     const month = parseInt(monthParam, 10);
     const year = parseInt(yearParam, 10);
+    const preparedBy = preparedByParam.trim();
 
     if (isNaN(month) || month < 1 || month > 12) {
       return NextResponse.json(
@@ -41,19 +43,29 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    if (!preparedBy) {
+      return NextResponse.json(
+        { success: false, error: 'Prepared by parameter is required' },
+        { status: 400 }
+      );
+    }
+
     // Compute date range for the month
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0, 23, 59, 59, 999);
 
+    // Build where clause - only filter by date and status, not by prepared by
+    const whereClause: any = {
+      status: 'completed',
+      createdAt: {
+        gte: startDate,
+        lte: endDate,
+      },
+    };
+
     // Query reports for the month — completed reports only
     const prismaReports = await prisma.pSIRReport.findMany({
-      where: {
-        status: 'completed',
-        createdAt: {
-          gte: startDate,
-          lte: endDate,
-        },
-      },
+      where: whereClause,
       orderBy: { createdAt: 'asc' },
     });
 
@@ -70,6 +82,7 @@ export async function GET(request: NextRequest) {
       certifiedByName: 'FAITH KIRSTIE T. YAM',
       verifiedByTitle: 'Chief Probation and Parole Officer',
       certifiedByTitle: 'Investigating Officer',
+      preparedByName: preparedBy,
     });
 
     // Render DOCX
