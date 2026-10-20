@@ -19,9 +19,9 @@ Cell styles, merges and logos are preserved. Keep the tag as the only text in it
 ### Numbers
 | Tag | Source |
 |---|---|
-| `{PI_Number}` | PI No. = Section I "Investigation Docket #". If empty, the app asks for it before the first export and saves it on the report. |
+| `{PI_Number}` | PI No. = Section I "Investigation Docket #" (PI-xxxx-xx-xxxxx) |
+| `{PS_Number}` | PS No., the supervision docket (PS-xxxx-xx-xxxxx). If empty, the app asks for it before the first export and saves it on the report. |
 | `{Report_Number}` | Internal report number (e.g. `PI-TAG-2026-00001`), not placed on the sheet by default |
-| `{PS_Number}` | blank (no field yet) |
 
 ### Personal profile
 | Tag | Source |

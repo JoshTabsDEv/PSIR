@@ -13,6 +13,7 @@ export function prismaToFrontend(prismaReport: PrismaPSIRReport): PSIRReport {
     updatedAt: prismaReport.updatedAt,
     lastModifiedBy: prismaReport.lastModifiedBy,
     submittedToCourtDate: prismaReport.submittedToCourtDate ?? null,
+    psNumber: prismaReport.psNumber ?? null,
 
     // Section I: Identifying Data
     identifyingData: {
@@ -226,6 +227,9 @@ export function frontendToPrisma(frontendReport: Partial<PSIRFormData>): any {
       ? new Date(frontendReport.submittedToCourtDate as string)
       : undefined,
     ...(frontendReport.submittedToCourtDate ? { status: 'completed' } : {}),
+
+    // Supervision docket number: only touch it when the payload carries the key
+    ...(frontendReport.psNumber !== undefined ? { psNumber: frontendReport.psNumber?.trim() || null } : {}),
   };
 }
 

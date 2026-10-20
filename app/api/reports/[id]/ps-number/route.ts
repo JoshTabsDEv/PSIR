@@ -9,11 +9,10 @@ interface RouteParams {
 }
 
 const schema = z.object({
-  piNumber: z.string().trim().min(1, 'PI No. is required').max(64),
+  psNumber: z.string().trim().min(1, 'PS No. is required').max(64),
 });
 
-// PATCH /api/reports/[id]/pi-number - set the probation investigation number
-// (stored as the Section I "Investigation Docket #" field)
+// PATCH /api/reports/[id]/ps-number - set the probation supervision docket number (PS No.)
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const session = await getSession();
@@ -35,13 +34,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     const updated = await prisma.pSIRReport.update({
       where: { id: existing.id },
-      data: { investigationDocketNumber: parsed.data.piNumber, lastModifiedBy: session.name },
-      select: { investigationDocketNumber: true },
+      data: { psNumber: parsed.data.psNumber, lastModifiedBy: session.name },
+      select: { psNumber: true },
     });
 
-    return NextResponse.json({ success: true, data: { piNumber: updated.investigationDocketNumber } });
+    return NextResponse.json({ success: true, data: { psNumber: updated.psNumber } });
   } catch (error) {
-    console.error('Error saving PI number:', error);
-    return NextResponse.json({ success: false, error: 'Failed to save PI No.' }, { status: 500 });
+    console.error('Error saving PS number:', error);
+    return NextResponse.json({ success: false, error: 'Failed to save PS No.' }, { status: 500 });
   }
 }

@@ -120,6 +120,10 @@ model PSIRReport {
   // Submission tracking
   submittedToCourtDate  DateTime?
 
+  // Supervision docket number (PS-xxxx-xx-xxxxx), assigned when the client
+  // reports to the office after the court grants probation
+  psNumber              String?
+
   @@unique([officeId, reportNumber])
   @@index([officeId, status])
   @@index([officeId, createdAt])

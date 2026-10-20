@@ -20,16 +20,17 @@ interface Props {
   reportId: string;
   initialValue?: string;
   /** Called with the saved value; the caller then continues (e.g. starts the download). */
-  onSaved: (piNumber: string) => void;
+  onSaved: (psNumber: string) => void;
   onCancel: () => void;
 }
 
 /**
- * Asks for the PI No. (probation investigation docket number) before a
- * document that prints it is generated for the first time. Saves it on the
+ * Asks for the PS No. (probation supervision docket number, assigned when the
+ * client reports to the office after the court grants probation) before a
+ * document that prints it is generated for the first time. Saved on the
  * report so later exports and the Final Report reuse it.
  */
-export function PiNumberDialog({ open, reportId, initialValue = '', onSaved, onCancel }: Props) {
+export function PsNumberDialog({ open, reportId, initialValue = '', onSaved, onCancel }: Props) {
   const [value, setValue] = useState(initialValue);
   const [saving, setSaving] = useState(false);
 
@@ -39,21 +40,21 @@ export function PiNumberDialog({ open, reportId, initialValue = '', onSaved, onC
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const piNumber = value.trim();
-    if (!piNumber) return;
+    const psNumber = value.trim();
+    if (!psNumber) return;
 
     setSaving(true);
     try {
-      const response = await fetch(`/api/reports/${reportId}/pi-number`, {
+      const response = await fetch(`/api/reports/${reportId}/ps-number`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ piNumber }),
+        body: JSON.stringify({ psNumber }),
       });
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.error || 'Failed to save');
-      onSaved(result.data.piNumber as string);
+      onSaved(result.data.psNumber as string);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to save PI No.');
+      toast.error(error instanceof Error ? error.message : 'Failed to save PS No.');
     } finally {
       setSaving(false);
     }
@@ -64,19 +65,20 @@ export function PiNumberDialog({ open, reportId, initialValue = '', onSaved, onC
       <DialogContent>
         <form onSubmit={submit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>PI No. needed</DialogTitle>
+            <DialogTitle>PS No. needed</DialogTitle>
             <DialogDescription>
-              This document prints the probation investigation number (PI No.). It is saved on the
-              report and reused as the supervision docket number on the Final Report.
+              This document prints the probation supervision docket number (PS No.), assigned when the
+              client reports to the office. It is saved on the report and reused as the docket number on
+              the Final Report.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
-            <Label htmlFor="pi-number">PI No.</Label>
+            <Label htmlFor="ps-number">PS No.</Label>
             <Input
-              id="pi-number"
+              id="ps-number"
               value={value}
               autoFocus
-              placeholder="e.g., PI-2026-0001"
+              placeholder="e.g., PS-2026-01-00001"
               maxLength={64}
               onChange={(e) => setValue(e.target.value)}
               required

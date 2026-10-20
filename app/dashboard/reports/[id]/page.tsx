@@ -192,14 +192,8 @@ export default function ViewReportPage({ params }: PageProps) {
           <div className="pt-8 mt-8 border-t border-border/50 space-y-3">
             <ExportDocumentsMenu
               reportId={id}
-              piNumber={report.identifyingData.investigationDocketNumber}
-              onPiNumberSaved={(piNumber) =>
-                setReport((current) =>
-                  current
-                    ? { ...current, identifyingData: { ...current.identifyingData, investigationDocketNumber: piNumber } }
-                    : current
-                )
-              }
+              psNumber={report.psNumber}
+              onPsNumberSaved={(psNumber) => setReport((current) => (current ? { ...current, psNumber } : current))}
             >
               <Button variant="outline" className="w-full justify-start gap-2 h-9 border-dashed">
                 <Download className="h-3.5 w-3.5" />
@@ -264,7 +258,8 @@ export default function ViewReportPage({ params }: PageProps) {
                 { label: 'Mother\'s Maiden Name', value: report.identifyingData.mother },
                 { label: 'Father\'s Name', value: report.identifyingData.father },
                 { label: 'Gender Preference', value: report.identifyingData.genderPreference },
-                { label: 'Investigation Docket No.', value: report.identifyingData.investigationDocketNumber },
+                { label: 'Investigation Docket No. (PI)', value: report.identifyingData.investigationDocketNumber },
+                { label: 'Supervision Docket No. (PS)', value: report.psNumber },
                 { label: 'Criminal Case No.', value: report.identifyingData.criminalCaseNumber },
                 { label: 'Date of Order', value: formatDateDisplay(report.identifyingData.dateOfOrder) },
                 { label: 'Date Received', value: formatDateDisplay(report.identifyingData.dateReceived) },

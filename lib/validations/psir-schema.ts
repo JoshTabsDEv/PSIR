@@ -122,6 +122,7 @@ export const psirFormSchema = z.object({
   reportNumber: z.string().min(1, 'Report number is required'),
   status: z.enum(['draft', 'completed']).default('draft'),
   lastModifiedBy: z.string().default(''),
+  psNumber: z.string().nullable().optional(),
   identifyingData: identifyingDataSchema,
   criminalHistory: criminalHistorySchema.default({
     presentOffense: {

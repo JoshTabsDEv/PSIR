@@ -40,9 +40,9 @@ export function buildClientProfileData(report: PSIRReport, office?: ClientProfil
     Office_Name: str(office?.name).toUpperCase(),
 
     // Numbers
-    PI_Number: str(id.investigationDocketNumber), // office-assigned PI No. (Section I "Investigation Docket #")
+    PI_Number: str(id.investigationDocketNumber), // investigation docket (Section I "Investigation Docket #")
+    PS_Number: str(report.psNumber), // supervision docket, asked for before the first export
     Report_Number: str(report.reportNumber),
-    PS_Number: '',
 
     // Personal profile (left column)
     Full_Name: formatFullName(str(id.lastName), str(id.firstName), str(id.middleName)),

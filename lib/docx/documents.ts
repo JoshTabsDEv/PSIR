@@ -12,8 +12,8 @@ export interface ReportDocument {
   description: string;
   /** Builds the download URL for a report id */
   href: (reportId: string) => string;
-  /** Prompt for the PI No. (Investigation Docket #) when the report has none */
-  requiresPiNumber?: boolean;
+  /** Prompt for the PS No. (supervision docket number) when the report has none */
+  requiresPsNumber?: boolean;
 }
 
 export const REPORT_DOCUMENTS: ReportDocument[] = [
@@ -28,13 +28,13 @@ export const REPORT_DOCUMENTS: ReportDocument[] = [
     label: 'Client’s Profile (CP)',
     description: 'PPA Form 12, first report in person (XLSX)',
     href: (reportId) => `/api/reports/${reportId}/export/client-profile`,
-    requiresPiNumber: true,
+    requiresPsNumber: true,
   },
   {
     key: 'final-report',
     label: 'Final Report (FR)',
     description: 'Probation termination final report (DOCX)',
     href: (reportId) => `/api/reports/${reportId}/export/final-report`,
-    requiresPiNumber: true,
+    requiresPsNumber: true,
   },
 ];

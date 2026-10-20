@@ -12,14 +12,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { REPORT_DOCUMENTS, type ReportDocument } from '@/lib/docx/documents';
-import { PiNumberDialog } from './PiNumberDialog';
+import { PsNumberDialog } from './PsNumberDialog';
 
 interface Props {
   reportId: string;
-  /** Current PI No. (Investigation Docket #). Documents that print it prompt for it when empty. */
-  piNumber?: string | null;
-  /** Called after the PI No. is saved through the prompt, so the page can update its copy */
-  onPiNumberSaved?: (piNumber: string) => void;
+  /** Current PS No. (supervision docket). Documents that print it prompt for it when empty. */
+  psNumber?: string | null;
+  /** Called after the PS No. is saved through the prompt, so the page can update its copy */
+  onPsNumberSaved?: (psNumber: string) => void;
   /** The button that opens the menu */
   children: ReactNode;
   /** Which side of the trigger the menu opens on (flips automatically near viewport edges) */
@@ -30,8 +30,8 @@ interface Props {
 /** Menu listing every document that can be generated for a report. */
 export function ExportDocumentsMenu({
   reportId,
-  piNumber,
-  onPiNumberSaved,
+  psNumber,
+  onPsNumberSaved,
   children,
   side = 'right',
   align = 'start',
@@ -44,7 +44,7 @@ export function ExportDocumentsMenu({
   }
 
   function select(doc: ReportDocument) {
-    if (doc.requiresPiNumber && !piNumber?.trim()) {
+    if (doc.requiresPsNumber && !psNumber?.trim()) {
       setPending(doc); // ask first, download after save
       return;
     }
@@ -76,13 +76,13 @@ export function ExportDocumentsMenu({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <PiNumberDialog
+      <PsNumberDialog
         open={Boolean(pending)}
         reportId={reportId}
-        initialValue={piNumber ?? ''}
+        initialValue={psNumber ?? ''}
         onCancel={() => setPending(null)}
         onSaved={(value) => {
-          onPiNumberSaved?.(value);
+          onPsNumberSaved?.(value);
           const doc = pending;
           setPending(null);
           if (doc) download(doc);

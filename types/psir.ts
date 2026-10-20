@@ -101,6 +101,8 @@ export interface PSIRReport {
   updatedAt: Date | string;
   lastModifiedBy: string;
   submittedToCourtDate?: Date | string | null;
+  /** Probation supervision docket number (PS-xxxx-xx-xxxxx), set when the client reports to the office */
+  psNumber?: string | null;
   identifyingData: IdentifyingData;
   criminalHistory: CriminalHistory;
   socioEconomicBackground: SocioEconomicBackground;
