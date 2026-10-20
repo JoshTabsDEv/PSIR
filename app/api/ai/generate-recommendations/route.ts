@@ -2,24 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 
 type Tone = "objective" | "empathetic" | "firm";
 
+// Single model, no fallback chain. Override with OPENAI_MODEL if OpenAI renames it.
+const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-5-mini";
+
 function safeStr(v: unknown, fallback = "N/A") {
   if (v === null || v === undefined) return fallback;
   const s = String(v).trim();
   return s.length ? s : fallback;
 }
 
-
-
 export async function POST(request: NextRequest) {
   try {
-    const openRouterKey = process.env.OPENROUTER_API_KEY;
+    const apiKey = process.env.OPENAI_API_KEY;
 
-    if (!openRouterKey) {
+    if (!apiKey) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            "OpenRouter API key is not configured. Add OPENROUTER_API_KEY to your .env.local file.",
+          error: "OpenAI API key is not configured. Add OPENAI_API_KEY to your .env.local file.",
         },
         { status: 500 }
       );
@@ -27,41 +27,29 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json().catch(() => null);
     if (!body || typeof body !== "object") {
-      return NextResponse.json(
-        { success: false, error: "Invalid JSON body." },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: "Invalid JSON body." }, { status: 400 });
     }
 
-    const {
-      identifyingData,
-      criminalHistory,
-      socioEconomicBackground,
-      tone,
-      manualPrompt,
-    } =
-      body as {
-        identifyingData?: any;
-        criminalHistory?: any;
-        socioEconomicBackground?: any;
-        tone?: Tone;
-        manualPrompt?: string;
+    const { identifyingData, criminalHistory, socioEconomicBackground, tone, manualPrompt } = body as {
+      identifyingData?: Record<string, unknown>;
+      criminalHistory?: {
+        presentOffense?: Record<string, unknown>;
+        priorRecords?: { nbi?: Record<string, unknown> };
+        custodialStatus?: unknown;
       };
+      socioEconomicBackground?: Record<string, unknown>;
+      tone?: Tone;
+      manualPrompt?: string;
+    };
 
     const toneGuidance: Record<Tone, string> = {
-      objective:
-        "Write in a professional, neutral, and fact-based tone without emotional language.",
+      objective: "Write in a professional, neutral, and fact-based tone without emotional language.",
       empathetic:
         "Write with understanding and compassion while maintaining professionalism, acknowledging the subject's circumstances.",
       firm: "Write in a direct, authoritative tone that emphasizes accountability and consequences while remaining professional.",
     };
 
-    const chosenTone: Tone =
-      tone === "empathetic" || tone === "firm" ? tone : "objective";
-
-    const PRIMARY_MODEL = "deepseek/deepseek-chat-v3.1:free";
-    const FALLBACK_MODEL = "deepseek/deepseek-r1:free";
-    const FREE_ROUTER_MODEL = "openrouter/auto";
+    const chosenTone: Tone = tone === "empathetic" || tone === "firm" ? tone : "objective";
 
     const basePrompt = `
 You are a professional probation officer writing recommendations for a Post-Sentence Investigation Report (PSIR) in the Philippine correctional system.
@@ -87,14 +75,10 @@ Subject Information:
 
 Criminal History:
 - Present Offense: ${safeStr(
-      criminalHistory?.presentOffense?.convictedOf ??
-        criminalHistory?.presentOffense?.chargedWith
+      criminalHistory?.presentOffense?.convictedOf ?? criminalHistory?.presentOffense?.chargedWith
     )}
 - Sentence: ${safeStr(criminalHistory?.presentOffense?.sentence)}
-- Prior Criminal Record: ${safeStr(
-      criminalHistory?.priorRecords?.nbi?.decisionStatus,
-      "No record on file"
-    )}
+- Prior Criminal Record: ${safeStr(criminalHistory?.priorRecords?.nbi?.decisionStatus, "No record on file")}
 - Custodial Status: ${safeStr(criminalHistory?.custodialStatus)}
 
 Socio-Economic Factors:
@@ -114,73 +98,33 @@ dont include any disclaimers about being an AI model or needing more information
 Format: Professional paragraph without bullets or numbering.
 `.trim();
 
-    const customPrompt =
-      typeof manualPrompt === "string" ? manualPrompt.trim().slice(0, 2000) : "";
-    const prompt = customPrompt
-      ? `${basePrompt}\n\nAdditional user instruction:\n${customPrompt}`
-      : basePrompt;
+    const customPrompt = typeof manualPrompt === "string" ? manualPrompt.trim().slice(0, 2000) : "";
+    const prompt = customPrompt ? `${basePrompt}\n\nAdditional user instruction:\n${customPrompt}` : basePrompt;
 
-    async function generateWithOpenRouter(modelName: string) {
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${openRouterKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: modelName,
-          messages: [
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          temperature: 0.7,
-          max_tokens: 538,
-        }),
-      });
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: OPENAI_MODEL,
+        messages: [{ role: "user", content: prompt }],
+        // gpt-5 family: max_completion_tokens (not max_tokens); temperature is fixed
+        max_completion_tokens: 1200,
+        reasoning_effort: "low",
+      }),
+    });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          `OpenRouter error: ${response.status} - ${errorData.error?.message || "Unknown error"}`
-        );
-      }
-
-      const data = await response.json();
-      if (!data.choices || !data.choices[0]?.message?.content) {
-        throw new Error("No response content from OpenRouter");
-      }
-
-      return data.choices[0].message.content.trim();
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`OpenAI error: ${response.status} - ${errorData.error?.message || "Unknown error"}`);
     }
 
-    let recommendations = "";
-    let modelUsed = "";
-
-    // Try primary model
-    try {
-      recommendations = await generateWithOpenRouter(PRIMARY_MODEL);
-      modelUsed = PRIMARY_MODEL;
-    } catch (err: any) {
-      console.error("Primary model failed:", err?.message || err);
-
-      // Try fallback model
-      try {
-        recommendations = await generateWithOpenRouter(FALLBACK_MODEL);
-        modelUsed = FALLBACK_MODEL;
-      } catch (fallbackErr: any) {
-        console.error("Fallback model failed:", fallbackErr?.message || fallbackErr);
-
-        // Try free router as last resort
-        try {
-          recommendations = await generateWithOpenRouter(FREE_ROUTER_MODEL);
-          modelUsed = FREE_ROUTER_MODEL;
-        } catch (routerErr: any) {
-          console.error("Free router also failed:", routerErr?.message || routerErr);
-          throw routerErr;
-        }
-      }
+    const data = await response.json();
+    const recommendations: string = data.choices?.[0]?.message?.content?.trim() || "";
+    if (!recommendations) {
+      throw new Error("No response content from OpenAI");
     }
 
     return NextResponse.json({
@@ -188,19 +132,18 @@ Format: Professional paragraph without bullets or numbering.
       data: { recommendations },
       meta: {
         tone: chosenTone,
-        modelUsed,
-        provider: "openrouter",
+        modelUsed: OPENAI_MODEL,
+        provider: "openai",
       },
     });
-  } catch (error: any) {
-    console.error("Error generating recommendations:", error?.message || error);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Error generating recommendations:", message);
 
     return NextResponse.json(
       {
         success: false,
-        error:
-          error?.message ||
-          "Failed to generate recommendations. Check your OpenRouter API key and try again.",
+        error: message || "Failed to generate recommendations. Check your OpenAI API key and try again.",
       },
       { status: 500 }
     );

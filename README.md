@@ -83,7 +83,7 @@ Open `http://localhost:3000`.
 - Dashboard loads
 - Reports pages load
 - DB health check returns `ok: true`: `http://localhost:3000/api/db-check`
-- AI endpoints work only if `GEMINI_API_KEY` is valid
+- AI endpoints work only if the keys are valid: `GEMINI_API_KEY` (summaries), `OPENAI_API_KEY` (recommendations, gpt-5-mini)
 
 ## 🔐 Login & Users
 
