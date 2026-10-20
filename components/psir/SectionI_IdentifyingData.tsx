@@ -55,8 +55,11 @@ export function SectionI_IdentifyingData({
   onJudgeNamesChange,
   onJudgeNameCommit,
 }: SectionIIdentifyingDataProps) {
-  const { control, setValue, watch } = useFormContext<PSIRFormData>();
+  const { control, setValue, watch, getValues } = useFormContext<PSIRFormData>();
   const [judgeSearch, setJudgeSearch] = useState('');
+  // The PS No. is assigned later (via the export prompt). Show the field only once it exists,
+  // decided at load so it does not vanish while the officer is editing it.
+  const [hasPsNumber] = useState(() => Boolean(getValues('psNumber')?.trim()));
   const judgeFieldValue = watch('identifyingData.letterJudge');
 
   const filteredJudgeNames = useMemo(() => {
@@ -285,6 +288,26 @@ export function SectionI_IdentifyingData({
                 </FormItem>
               )}
             />
+            {hasPsNumber && (
+              <FormField
+                control={control}
+                name="psNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>PS No. (Supervision Docket)</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g., PS-2026-01-00001"
+                        {...field}
+                        value={field.value ?? ''}
+                        className="bg-background shadow-none focus-visible:ring-1"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             <FormField
               control={control}
               name="identifyingData.criminalCaseNumber"

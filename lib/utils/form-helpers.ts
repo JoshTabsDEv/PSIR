@@ -94,6 +94,7 @@ export const defaultFormValues = {
   reportNumber: '',
   status: 'draft' as const,
   lastModifiedBy: '',
+  psNumber: '',
   identifyingData: {
     lastName: '',
     firstName: '',
