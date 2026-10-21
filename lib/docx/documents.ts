@@ -31,6 +31,12 @@ export const REPORT_DOCUMENTS: ReportDocument[] = [
     requiresPsNumber: true,
   },
   {
+    key: 'records-check',
+    label: 'Records Check',
+    description: 'PPA Form 13, requests to RTC, MTCC, City Pros, PNP, Brgy, NBI, Others (XLSX)',
+    href: (reportId) => `/api/reports/${reportId}/export/records-check`,
+  },
+  {
     key: 'final-report',
     label: 'Final Report (FR)',
     description: 'Probation termination final report (DOCX)',
