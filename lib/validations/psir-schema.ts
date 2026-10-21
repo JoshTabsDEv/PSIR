@@ -123,6 +123,8 @@ export const psirFormSchema = z.object({
   status: z.enum(['draft', 'completed']).default('draft'),
   lastModifiedBy: z.string().default(''),
   psNumber: z.string().nullable().optional(),
+  probationGrantedDate: z.union([z.string(), z.date()]).nullable().optional(),
+  probationOrderReceivedDate: z.union([z.string(), z.date()]).nullable().optional(),
   identifyingData: identifyingDataSchema,
   criminalHistory: criminalHistorySchema.default({
     presentOffense: {

@@ -42,7 +42,7 @@ Cell styles, merges and logos are preserved. Keep the tag as the only text in it
 ### Case details
 | Tag | Source |
 |---|---|
-| `{Criminal_Case_Number}` | Criminal case no. |
+| `{Criminal_Case_Number}` | Criminal case no. (any typed "Crim. Case No." prefix is stripped) |
 | `{Charged_With}` / `{Charged_Date}` | Present offense charged with / date |
 | `{Convicted_Of}` / `{Convicted_Date}` | Convicted of / date |
 | `{Sentence}` | Sentence |
@@ -52,13 +52,15 @@ Cell styles, merges and logos are preserved. Keep the tag as the only text in it
 | `{Date_PSIR_Submitted}` | Date submitted to court |
 | `{Custodial_Status}` | On Bail / On Detention / ROR |
 | `{Probation_Period}` | Period of probation |
-| `{Date_Probation_Granted}`, `{Date_Probation_Order_Received}`, `{Date_Started}`, `{Date_FR_Submitted}`, `{Date_TO_RO}` | blank (no field yet) |
+| `{Date_Probation_Granted}` | Set from the reports list menu ("Set Date Probation Granted") |
+| `{Date_Probation_Order_Received}` | Set from the reports list menu ("Set Date Probation Order Received") |
+| `{Date_Started}`, `{Date_FR_Submitted}`, `{Date_TO_RO}` | blank (no field yet) |
 
 ### Signatures
 | Tag | Source |
 |---|---|
 | `{Investigating_Officer}` | Prepared-by name (upper case) |
-| `{Supervising_Officer}` | Reviewed-by name, or prepared-by if empty |
+| `{Supervising_Officer}` | Reviewed-by name, or prepared-by if empty. Also fills the Undertaking sheet (C16 and the signature line), which used to be a dropdown |
 
 The "NOTED" block (Chief Probation and Parole Officer) is fixed text in the template; edit it there.
 

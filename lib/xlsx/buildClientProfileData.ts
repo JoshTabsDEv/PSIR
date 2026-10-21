@@ -1,6 +1,7 @@
 import type { PSIRReport } from '@/types/psir';
 import { formatFullName } from '@/lib/utils/form-helpers';
 import { formatDateDisplay } from '@/lib/utils/date-formatters';
+import { bareCaseNumber } from '@/lib/reports/case-number';
 
 /**
  * Maps a report to the tags in templates/CLIENT_PROFILE.xlsx (PPA Form 12,
@@ -64,7 +65,7 @@ export function buildClientProfileData(report: PSIRReport, office?: ClientProfil
     Religion: str(id.religion),
 
     // Case details (right column)
-    Criminal_Case_Number: str(id.criminalCaseNumber),
+    Criminal_Case_Number: bareCaseNumber(id.criminalCaseNumber),
     Charged_With: str(offense?.chargedWith),
     Charged_Date: date(offense?.chargedDate),
     Convicted_Of: str(offense?.convictedOf),
@@ -75,8 +76,8 @@ export function buildClientProfileData(report: PSIRReport, office?: ClientProfil
     Date_Received: date(id.dateReceived),
     Date_PSIR_Submitted: date(report.submittedToCourtDate),
     Custodial_Status: str(crim.custodialStatus),
-    Date_Probation_Granted: '',
-    Date_Probation_Order_Received: '',
+    Date_Probation_Granted: date(report.probationGrantedDate),
+    Date_Probation_Order_Received: date(report.probationOrderReceivedDate),
     Probation_Period: str(analysis.probationPeriod),
     Date_Started: '',
     Date_FR_Submitted: '',

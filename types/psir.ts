@@ -103,6 +103,10 @@ export interface PSIRReport {
   submittedToCourtDate?: Date | string | null;
   /** Probation supervision docket number (PS-xxxx-xx-xxxxx), set when the client reports to the office */
   psNumber?: string | null;
+  /** Date the court granted probation (also the Final Report's "Date of Probation Order") */
+  probationGrantedDate?: Date | string | null;
+  /** Date the probation order was received by the office */
+  probationOrderReceivedDate?: Date | string | null;
   identifyingData: IdentifyingData;
   criminalHistory: CriminalHistory;
   socioEconomicBackground: SocioEconomicBackground;

@@ -11,7 +11,7 @@ The original "FR- AAA Format.docx" used Word mail-merge fields («Name_of_Petiti
 |---|---|
 | `{Office_Name}` | Office name (header) |
 | `{Export_Date}` | Date the document is generated (e.g. October 19, 2026) |
-| `{Criminal_Case_No}` | Criminal case number |
+| `{Criminal_Case_No}` | Criminal case number (any typed "Crim. Case No." prefix is stripped) |
 | `{Violation_For}` | Present offense charged with ("For:" line) |
 | `{Name_of_Petitioner_ALL_CAPS}` | FIRST MIDDLE LAST, upper case |
 | `{Offense_he_is_convicted}` | Convicted of |
@@ -21,7 +21,7 @@ The original "FR- AAA Format.docx" used Word mail-merge fields («Name_of_Petiti
 | `{Judge}` | Present-offense judge (falls back to letter judge) |
 | `{Court}` | Present-offense court (falls back to letter court) |
 | `{Address}` | Present address |
-| `{in_words}` | blank (date of probation order, no field yet) |
+| `{in_words}` | Date of Probation Order = "Date Probation Granted" set from the reports list menu |
 | `{Civil_Status}` / `{Age}` / `{Sex}` | Civil status, age, sex |
 | `{Probation_Period}` | Period of probation |
 | `{Supervising_Officer}` | Reviewed-by name, or prepared-by if empty, upper case |

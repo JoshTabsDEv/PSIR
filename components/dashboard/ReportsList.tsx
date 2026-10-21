@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { REPORT_DOCUMENTS, type ReportDocument } from '@/lib/docx/documents';
+import { PsNumberDialog } from '@/components/psir/PsNumberDialog';
 import Link from 'next/link';
 import { Eye, Pencil, Trash2, FileDown, FolderOpen, MoreHorizontal, CalendarCheck, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -36,6 +38,48 @@ import type { PSIRReport } from '@/types/psir';
 import { formatDateDisplay } from '@/lib/utils/date-formatters';
 import { formatFullName } from '@/lib/utils/form-helpers';
 
+type DateKind = 'court' | 'granted' | 'received';
+
+interface DateDialogConfig {
+  menu: string;
+  title: string;
+  label: string;
+  note: string;
+  confirm: string;
+  endpoint: 'submit' | 'dates';
+  field: 'submittedToCourtDate' | 'probationGrantedDate' | 'probationOrderReceivedDate';
+}
+
+const DATE_DIALOGS: Record<DateKind, DateDialogConfig> = {
+  court: {
+    menu: 'Set Date PSIR Submitted to Court',
+    title: 'Set Date PSIR Submitted to Court',
+    label: 'Date PSIR Submitted to Court',
+    note: 'Setting this date marks the report as Completed.',
+    confirm: 'Confirm & Complete',
+    endpoint: 'submit',
+    field: 'submittedToCourtDate',
+  },
+  granted: {
+    menu: 'Set Date Probation Granted',
+    title: 'Set Date Probation Granted',
+    label: 'Date Probation Granted',
+    note: 'Printed on the Client Profile and as the Date of Probation Order on the Final Report.',
+    confirm: 'Save',
+    endpoint: 'dates',
+    field: 'probationGrantedDate',
+  },
+  received: {
+    menu: 'Set Date Probation Order Received',
+    title: 'Set Date Probation Order Received',
+    label: 'Date Probation Order Received',
+    note: 'Printed on the Client Profile and the sheets linked to it.',
+    confirm: 'Save',
+    endpoint: 'dates',
+    field: 'probationOrderReceivedDate',
+  },
+};
+
 interface ReportsListProps {
   reports: PSIRReport[];
   title?: string;
@@ -50,11 +94,13 @@ export function ReportsList({
   onDelete,
   onReportUpdated,
 }: ReportsListProps) {
-  const [courtDateDialog, setCourtDateDialog] = useState<{ open: boolean; reportId: string; reportNumber: string }>({
+  const [courtDateDialog, setCourtDateDialog] = useState<{ open: boolean; reportId: string; reportNumber: string; kind: DateKind }>({
     open: false,
     reportId: '',
     reportNumber: '',
+    kind: 'court',
   });
+  const [psPrompt, setPsPrompt] = useState<{ report: PSIRReport; doc: ReportDocument } | null>(null);
   const [editWarning, setEditWarning] = useState<{ open: boolean; reportId: string }>({
     open: false,
     reportId: '',
@@ -63,10 +109,26 @@ export function ReportsList({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const openCourtDateDialog = (report: PSIRReport) => {
-    setCourtDate('');
+  const openCourtDateDialog = (report: PSIRReport, kind: DateKind = 'court') => {
+    const current =
+      kind === 'court' ? report.submittedToCourtDate : kind === 'granted' ? report.probationGrantedDate : report.probationOrderReceivedDate;
+    setCourtDate(current ? new Date(current).toISOString().split('T')[0] : '');
     setError('');
-    setCourtDateDialog({ open: true, reportId: report._id!, reportNumber: report.reportNumber });
+    setCourtDateDialog({ open: true, reportId: report._id!, reportNumber: report.reportNumber, kind });
+  };
+
+  const closeDateDialog = () => setCourtDateDialog((d) => ({ ...d, open: false }));
+
+  const downloadDocument = (report: PSIRReport, doc: ReportDocument) => {
+    window.open(doc.href(report._id!), '_blank');
+  };
+
+  const exportDocument = (report: PSIRReport, doc: ReportDocument) => {
+    if (doc.requiresPsNumber && !report.psNumber?.trim()) {
+      setPsPrompt({ report, doc }); // ask for the PS No. first, download after save
+      return;
+    }
+    downloadDocument(report, doc);
   };
 
   const handleEditClick = (report: PSIRReport) => {
@@ -85,10 +147,11 @@ export function ReportsList({
     setSubmitting(true);
     setError('');
     try {
-      const res = await fetch(`/api/reports/${courtDateDialog.reportId}/submit`, {
+      const cfg = DATE_DIALOGS[courtDateDialog.kind];
+      const res = await fetch(`/api/reports/${courtDateDialog.reportId}/${cfg.endpoint}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ submittedToCourtDate: courtDate }),
+        body: JSON.stringify({ [cfg.field]: courtDate }),
       });
       const result = await res.json();
       if (!res.ok || !result.success) {
@@ -96,7 +159,7 @@ export function ReportsList({
         return;
       }
       onReportUpdated?.(result.data);
-      setCourtDateDialog({ open: false, reportId: '', reportNumber: '' });
+      closeDateDialog();
     } catch {
       setError('An error occurred. Please try again.');
     } finally {
@@ -239,20 +302,27 @@ export function ReportsList({
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" sideOffset={4} collisionPadding={8} className="w-52">
-                          <DropdownMenuItem
-                            className="gap-2 cursor-pointer"
-                            onClick={() => window.open(`/api/reports/${report._id}/export/docx`, '_blank')}
-                          >
-                            <FileDown className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">Export DOCX</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="gap-2 cursor-pointer"
-                            onClick={() => openCourtDateDialog(report)}
-                          >
-                            <CalendarCheck className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">Set Court Submit Date</span>
-                          </DropdownMenuItem>
+                          {REPORT_DOCUMENTS.map((doc) => (
+                            <DropdownMenuItem
+                              key={doc.key}
+                              className="gap-2 cursor-pointer"
+                              onClick={() => exportDocument(report, doc)}
+                            >
+                              <FileDown className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm">Export {doc.label}</span>
+                            </DropdownMenuItem>
+                          ))}
+                          <DropdownMenuSeparator />
+                          {(Object.keys(DATE_DIALOGS) as DateKind[]).map((kind) => (
+                            <DropdownMenuItem
+                              key={kind}
+                              className="gap-2 cursor-pointer"
+                              onClick={() => openCourtDateDialog(report, kind)}
+                            >
+                              <CalendarCheck className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm">{DATE_DIALOGS[kind].menu}</span>
+                            </DropdownMenuItem>
+                          ))}
                           {onDelete && (
                             <>
                               <DropdownMenuSeparator />
@@ -277,25 +347,21 @@ export function ReportsList({
       </div>
 
       {/* Court Date Dialog */}
-      <Dialog
-        open={courtDateDialog.open}
-        onOpenChange={(open) => !open && setCourtDateDialog({ open: false, reportId: '', reportNumber: '' })}
-      >
-        <DialogContent onClose={() => setCourtDateDialog({ open: false, reportId: '', reportNumber: '' })} className="max-w-sm">
+      <Dialog open={courtDateDialog.open} onOpenChange={(open) => !open && closeDateDialog()}>
+        <DialogContent onClose={closeDateDialog} className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <CalendarCheck className="h-4 w-4 text-[var(--brand-primary)]" />
-              Set Submitted to Court Date
+              {DATE_DIALOGS[courtDateDialog.kind].title}
             </DialogTitle>
             <DialogDescription>
               <span className="font-mono text-xs">{courtDateDialog.reportNumber}</span>
-              {' '}— Setting this date will automatically mark the report as{' '}
-              <strong>Completed</strong>.
+              {' '}— {DATE_DIALOGS[courtDateDialog.kind].note}
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-3 py-2">
-            <Label htmlFor="court-date">Date Submitted to Court</Label>
+            <Label htmlFor="court-date">{DATE_DIALOGS[courtDateDialog.kind].label}</Label>
             <Input
               id="court-date"
               type="date"
@@ -308,11 +374,7 @@ export function ReportsList({
           </div>
 
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setCourtDateDialog({ open: false, reportId: '', reportNumber: '' })}
-              disabled={submitting}
-            >
+            <Button variant="outline" onClick={closeDateDialog} disabled={submitting}>
               Cancel
             </Button>
             <Button
@@ -320,11 +382,26 @@ export function ReportsList({
               disabled={submitting || !courtDate}
               className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90"
             >
-              {submitting ? 'Saving...' : 'Confirm & Complete'}
+              {submitting ? 'Saving...' : DATE_DIALOGS[courtDateDialog.kind].confirm}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <PsNumberDialog
+        open={Boolean(psPrompt)}
+        reportId={psPrompt?.report._id ?? ''}
+        initialValue={psPrompt?.report.psNumber ?? ''}
+        onCancel={() => setPsPrompt(null)}
+        onSaved={(psNumber) => {
+          const pending = psPrompt;
+          setPsPrompt(null);
+          if (!pending) return;
+          const updated = { ...pending.report, psNumber };
+          onReportUpdated?.(updated);
+          downloadDocument(updated, pending.doc);
+        }}
+      />
 
       {/* Edit Warning Dialog */}
       <Dialog open={editWarning.open} onOpenChange={(open) => !open && setEditWarning({ open: false, reportId: '' })}>

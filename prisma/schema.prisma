@@ -124,6 +124,10 @@ model PSIRReport {
   // reports to the office after the court grants probation
   psNumber              String?
 
+  // Probation milestones (set from the reports list menu)
+  probationGrantedDate       DateTime?
+  probationOrderReceivedDate DateTime?
+
   @@unique([officeId, reportNumber])
   @@index([officeId, status])
   @@index([officeId, createdAt])

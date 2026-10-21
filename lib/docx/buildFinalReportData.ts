@@ -1,5 +1,15 @@
 import type { PSIRReport } from '@/types/psir';
 import { formatDateDisplay } from '@/lib/utils/date-formatters';
+import { bareCaseNumber } from '@/lib/reports/case-number';
+
+function date(value: unknown): string {
+  if (!value) return '';
+  try {
+    return formatDateDisplay(value as Date | string);
+  } catch {
+    return '';
+  }
+}
 
 /**
  * Maps a report to the tags in templates/FINAL_REPORT.docx (probation Final
@@ -32,7 +42,7 @@ export function buildFinalReportData(report: PSIRReport, office?: FinalReportOff
     Export_Date: formatDateDisplay(new Date()),
 
     // Caption
-    Criminal_Case_No: str(id.criminalCaseNumber),
+    Criminal_Case_No: bareCaseNumber(id.criminalCaseNumber),
     Violation_For: str(offense?.chargedWith),
     Name_of_Petitioner_ALL_CAPS: fullNameCaps,
 
@@ -44,7 +54,7 @@ export function buildFinalReportData(report: PSIRReport, office?: FinalReportOff
     Judge: str(offense?.judge || id.letterJudge),
     Court: str(offense?.court || id.letterCourt),
     Address: str(id.presentAddress),
-    in_words: '', // date of probation order in words: no field yet
+    in_words: date(report.probationGrantedDate), // "Date of Probation Order" = date probation was granted
     Civil_Status: str(id.civilStatus),
     Probation_Period: str(analysis.probationPeriod),
     Age: id.age ? String(id.age) : '',

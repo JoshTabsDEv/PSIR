@@ -218,7 +218,7 @@ export default function ViewReportPage({ params }: PageProps) {
             >
               <CalendarCheck className="h-3.5 w-3.5" />
               <span className="text-xs font-bold uppercase tracking-wider">
-                {report.submittedToCourtDate ? 'Update Court Date' : 'Set Court Date'}
+                {report.submittedToCourtDate ? 'Update Date Submitted to Court' : 'Set Date PSIR Submitted to Court'}
               </span>
             </Button>
             <Button variant="ghost" className="w-full justify-start gap-2 h-9 text-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/5" onClick={() => setShowDelete(true)}>
@@ -260,6 +260,8 @@ export default function ViewReportPage({ params }: PageProps) {
                 { label: 'Gender Preference', value: report.identifyingData.genderPreference },
                 { label: 'Investigation Docket No. (PI)', value: report.identifyingData.investigationDocketNumber },
                 { label: 'Supervision Docket No. (PS)', value: report.psNumber },
+                { label: 'Date Probation Granted', value: formatDateDisplay(report.probationGrantedDate) },
+                { label: 'Date Probation Order Received', value: formatDateDisplay(report.probationOrderReceivedDate) },
                 { label: 'Criminal Case No.', value: report.identifyingData.criminalCaseNumber },
                 { label: 'Date of Order', value: formatDateDisplay(report.identifyingData.dateOfOrder) },
                 { label: 'Date Received', value: formatDateDisplay(report.identifyingData.dateReceived) },

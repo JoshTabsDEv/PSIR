@@ -14,6 +14,8 @@ export function prismaToFrontend(prismaReport: PrismaPSIRReport): PSIRReport {
     lastModifiedBy: prismaReport.lastModifiedBy,
     submittedToCourtDate: prismaReport.submittedToCourtDate ?? null,
     psNumber: prismaReport.psNumber ?? null,
+    probationGrantedDate: prismaReport.probationGrantedDate ?? null,
+    probationOrderReceivedDate: prismaReport.probationOrderReceivedDate ?? null,
 
     // Section I: Identifying Data
     identifyingData: {
@@ -230,6 +232,12 @@ export function frontendToPrisma(frontendReport: Partial<PSIRFormData>): any {
 
     // Supervision docket number: only touch it when the payload carries the key
     ...(frontendReport.psNumber !== undefined ? { psNumber: frontendReport.psNumber?.trim() || null } : {}),
+    ...(frontendReport.probationGrantedDate !== undefined
+      ? { probationGrantedDate: frontendReport.probationGrantedDate ? new Date(frontendReport.probationGrantedDate as string) : null }
+      : {}),
+    ...(frontendReport.probationOrderReceivedDate !== undefined
+      ? { probationOrderReceivedDate: frontendReport.probationOrderReceivedDate ? new Date(frontendReport.probationOrderReceivedDate as string) : null }
+      : {}),
   };
 }
 
