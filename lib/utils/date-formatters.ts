@@ -1,24 +1,42 @@
 import { format, parseISO, differenceInYears, isValid, formatDistanceToNow } from 'date-fns';
 
-export function formatDateDisplay(date: Date | string | null | undefined): string {
+/**
+ * Calendar dates are picked in the browser at Philippine local midnight and
+ * stored as UTC instants (e.g. Oct 6 PHT -> 2026-10-05T16:00:00Z). Exports run
+ * on the server, which is UTC on Vercel, so formatting in the server's local
+ * zone printed the previous day. Always resolve the calendar day in PHT.
+ */
+export const APP_TIME_ZONE = 'Asia/Manila';
+
+/** Re-anchors a date so its local Y/M/D equal the Philippine calendar day. */
+function toAppCalendarDate(date: Date): Date {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: APP_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date);
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value);
+  return new Date(get('year'), get('month') - 1, get('day'));
+}
+
+function formatCalendarDate(date: Date | string | null | undefined, pattern: string): string {
   if (!date) return '';
   const parsedDate = typeof date === 'string' ? parseISO(date) : date;
   if (!isValid(parsedDate)) return '';
-  return format(parsedDate, 'MMMM d, yyyy');
+  return format(toAppCalendarDate(parsedDate), pattern);
+}
+
+export function formatDateDisplay(date: Date | string | null | undefined): string {
+  return formatCalendarDate(date, 'MMMM d, yyyy');
 }
 
 export function formatDateInput(date: Date | string | null | undefined): string {
-  if (!date) return '';
-  const parsedDate = typeof date === 'string' ? parseISO(date) : date;
-  if (!isValid(parsedDate)) return '';
-  return format(parsedDate, 'yyyy-MM-dd');
+  return formatCalendarDate(date, 'yyyy-MM-dd');
 }
 
 export function formatDateShort(date: Date | string | null | undefined): string {
-  if (!date) return '';
-  const parsedDate = typeof date === 'string' ? parseISO(date) : date;
-  if (!isValid(parsedDate)) return '';
-  return format(parsedDate, 'MM/dd/yyyy');
+  return formatCalendarDate(date, 'MM/dd/yyyy');
 }
 
 export function calculateAge(birthday: Date | string | null | undefined): number {

@@ -51,11 +51,7 @@ export function buildTemplateData(report: PSIRReport): Record<string, unknown> {
   const socio = report.socioEconomicBackground;
   const analysis = report.analysisEvaluation;
   const previousConvictions = extractPreviousConvictions(crim.priorRecords);
-  const exportDate = new Date().toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  const exportDate = formatDateDisplay(new Date());
 
   return {
     // ===== Report Metadata =====

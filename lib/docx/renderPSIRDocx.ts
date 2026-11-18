@@ -10,6 +10,37 @@ export interface RenderOptions {
   strictMode?: boolean;
 }
 
+const WINGDINGS_BOX: Record<string, string> = {
+  '☐': 'F0A8', // empty box
+  '☑': 'F0FE', // checked box
+};
+
+/**
+ * The template's runs are Arial, which has no glyph for U+2610/U+2611, so each
+ * viewer substitutes its own fallback font and some draw garbage. Swap the
+ * characters for explicit Wingdings symbols, which carry their own font.
+ */
+function embedCheckboxSymbols(zip: InstanceType<typeof PizZip>): void {
+  for (const name of Object.keys(zip.files)) {
+    if (!/^word\/(document|header\d*|footer\d*)\.xml$/.test(name)) continue;
+    const xml = zip.file(name)!.asText();
+    const fixed = xml.replace(
+      /<w:t(?:\s[^>]*)?>([^<]*[☐☑][^<]*)<\/w:t>/g,
+      (_match, text: string) =>
+        text
+          .split(/([☐☑])/)
+          .filter((part) => part !== '')
+          .map((part) =>
+            WINGDINGS_BOX[part]
+              ? `<w:sym w:font="Wingdings" w:char="${WINGDINGS_BOX[part]}"/>`
+              : `<w:t xml:space="preserve">${part}</w:t>`
+          )
+          .join('')
+    );
+    if (fixed !== xml) zip.file(name, fixed);
+  }
+}
+
 /**
  * Renders a PSIR DOCX document using docxtemplater.
  *
@@ -122,8 +153,11 @@ export function renderPSIRDocx(
       nullGetter: () => '',
     });
     doc2.render(templateData);
+    embedCheckboxSymbols(doc2.getZip());
     return Buffer.from(doc2.getZip().generate({ type: 'nodebuffer' }));
   }
+
+  embedCheckboxSymbols(doc.getZip());
 
   // Generate output buffer
   const outputBuffer = doc.getZip().generate({
